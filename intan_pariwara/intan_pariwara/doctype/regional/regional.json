@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "REG-.###",
+ "creation": "2024-12-05 10:16:03.714893",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch",
+  "kode_sm",
+  "nik_am",
+  "column_break_gadu",
+  "email_sm",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "kode_sm",
+   "fieldtype": "Data",
+   "label": "Kode SM"
+  },
+  {
+   "fieldname": "nik_am",
+   "fieldtype": "Data",
+   "label": "NIK AM"
+  },
+  {
+   "fieldname": "column_break_gadu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email_sm",
+   "fieldtype": "Data",
+   "label": "Email SM"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-05 10:18:47.140820",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Regional",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
