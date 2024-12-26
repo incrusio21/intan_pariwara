@@ -129,9 +129,10 @@ app_license = "mit"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Delivery Note": "intan_pariwara.overrides.delivery_note.DeliveryNote",
+	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice"
+}
 
 # Document Events
 # ---------------

@@ -48,6 +48,7 @@
    "options": "Department",
    "owner": "Administrator",
    "permlevel": 0,
+   "placeholder": null,
    "precision": "",
    "print_hide": 0,
    "print_hide_if_no_value": 0,
