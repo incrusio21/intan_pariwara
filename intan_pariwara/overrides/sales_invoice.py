@@ -39,7 +39,7 @@ class SalesInvoice(SalesInvoice):
         for dn in set(updated_delivery_notes):
             dn_doc = frappe.get_doc("Delivery Note", dn)
             dn_doc.update_billing_percentage(update_modified=update_modified)
-            if self.docstatus == 1 and self.get("custom_use_delivery_account") and dn_doc.per_billed < 100:
+            if self.docstatus == 1 and not self.is_return and self.get("custom_use_delivery_account") and dn_doc.per_billed < 100:
                 frappe.throw(_("Invoice does not cover the entire Delivery Note #{}".format(dn)))
 
     def make_item_gl_entries(self, gl_entries):
