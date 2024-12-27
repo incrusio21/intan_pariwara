@@ -133,7 +133,8 @@ doctype_js = {
 
 override_doctype_class = {
 	"Delivery Note": "intan_pariwara.overrides.delivery_note.DeliveryNote",
-	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice"
+	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
+	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
 }
 
 # Document Events

@@ -57,7 +57,7 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		
 		var me = this;
 
-		if (doc.docstatus == 1 && !["Lost", "Ordered"].includes(doc.status)) {
+		if (doc.docstatus == 1 && doc.per_ordered < 100) {
 			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
 
 			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));

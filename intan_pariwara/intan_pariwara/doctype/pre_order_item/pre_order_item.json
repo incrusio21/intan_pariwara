@@ -74,6 +74,7 @@
   "prevdoc_docname",
   "item_balance",
   "projected_qty",
+  "ordered_qty",
   "col_break4",
   "stock_balance",
   "item_tax_rate",
@@ -685,11 +686,17 @@
    "oldfieldtype": "Check",
    "print_hide": 1,
    "report_hide": 1
+  },
+  {
+   "fieldname": "ordered_qty",
+   "fieldtype": "Float",
+   "label": "Ordered Qty",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-12-26 20:12:37.335093",
+ "modified": "2024-12-27 14:27:10.185936",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order Item",

@@ -120,6 +120,7 @@
   "status",
   "customer_group",
   "territory",
+  "per_ordered",
   "column_break_108",
   "campaign",
   "source",
@@ -1055,12 +1056,18 @@
    "fieldtype": "Link",
    "label": "Fund Source",
    "options": "Customer Fund Source"
+  },
+  {
+   "fieldname": "per_ordered",
+   "fieldtype": "Percent",
+   "label": "% Ordered",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-27 08:39:06.790273",
+ "modified": "2024-12-27 14:26:08.557352",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
