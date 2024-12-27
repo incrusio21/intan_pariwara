@@ -10,10 +10,12 @@ from erpnext import get_default_company
 from erpnext.accounts import party
 from erpnext.selling.doctype.quotation import quotation
 from erpnext.stock import get_item_details
+from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals
 
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
+
 def is_delivery_account_enabled(company):
 	if not company:
 		company = "_Test Company" if frappe.flags.in_test else get_default_company()
@@ -28,6 +30,7 @@ def is_delivery_account_enabled(company):
 
 	return frappe.local.enable_delivery_account[company]
 
+# custom menambahkan sales person berdasarkan custom field
 def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
     customer = quotation._make_customer(source_name, ignore_permissions)
     ordered_items = frappe._dict(
@@ -124,6 +127,7 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
 
     return doclist
 
+# custom untuk menambahkan isi field custom_default_delivery_account
 def get_basic_details(args, item, overwrite_warehouse=True):
 	"""
 	:param args: {
@@ -341,6 +345,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	return out
 
+# update untuk menambahkan field fund source
 def set_other_values(party_details, party, party_type):
 	# copy
 	if party_type == "Customer":
@@ -356,8 +361,64 @@ def set_other_values(party_details, party, party_type):
 			party_details[f] = party.get("default_" + f)
 
 	if party_type == "Customer":
-		party_details["fund_source"] = party.get("custom_customer_fund_group")
-		
+		party_details["fund_source"] = party_details["custom_fund_source"] = party.get("custom_customer_fund_group")
+
+# update agar doctype pre order dianggap bagian dari penjualan
+def calculate_totals(self):
+	if self.doc.get("taxes"):
+		self.doc.grand_total = flt(self.doc.get("taxes")[-1].total) + flt(
+			self.doc.get("grand_total_diff")
+		)
+	else:
+		self.doc.grand_total = flt(self.doc.net_total)
+
+	if self.doc.get("taxes"):
+		self.doc.total_taxes_and_charges = flt(
+			self.doc.grand_total - self.doc.net_total - flt(self.doc.get("grand_total_diff")),
+			self.doc.precision("total_taxes_and_charges"),
+		)
+	else:
+		self.doc.total_taxes_and_charges = 0.0
+
+	self._set_in_company_currency(self.doc, ["total_taxes_and_charges", "rounding_adjustment"])
+
+	if self.doc.doctype in [
+		"Pre Order",
+		"Quotation",
+		"Sales Order",
+		"Delivery Note",
+		"Sales Invoice",
+		"POS Invoice",
+	]:
+		self.doc.base_grand_total = (
+			flt(self.doc.grand_total * self.doc.conversion_rate, self.doc.precision("base_grand_total"))
+			if self.doc.total_taxes_and_charges
+			else self.doc.base_net_total
+		)
+	else:
+		self.doc.taxes_and_charges_added = self.doc.taxes_and_charges_deducted = 0.0
+		for tax in self.doc.get("taxes"):
+			if tax.category in ["Valuation and Total", "Total"]:
+				if tax.add_deduct_tax == "Add":
+					self.doc.taxes_and_charges_added += flt(tax.tax_amount_after_discount_amount)
+				else:
+					self.doc.taxes_and_charges_deducted += flt(tax.tax_amount_after_discount_amount)
+
+		self.doc.round_floats_in(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
+
+		self.doc.base_grand_total = (
+			flt(self.doc.grand_total * self.doc.conversion_rate)
+			if (self.doc.taxes_and_charges_added or self.doc.taxes_and_charges_deducted)
+			else self.doc.base_net_total
+		)
+
+		self._set_in_company_currency(self.doc, ["taxes_and_charges_added", "taxes_and_charges_deducted"])
+
+	self.doc.round_floats_in(self.doc, ["grand_total", "base_grand_total"])
+
+	self.set_rounded_total()
+
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
 party.set_other_values = set_other_values
+calculate_taxes_and_totals.calculate_totals = calculate_totals
