@@ -6,6 +6,7 @@ from frappe.model.mapper import get_mapped_doc
 
 from erpnext.controllers.selling_controller import SellingController
 from frappe.utils import flt
+from frappe.utils.csvutils import getlink
 
 class PreOrder(SellingController):
 	
@@ -43,7 +44,6 @@ class PreOrder(SellingController):
 
 @frappe.whitelist()
 def make_sales_order(source_name: str, target_doc=None):
-
 	# if not frappe.db.get_singles_value(
 	# 	"Selling Settings", "allow_sales_order_creation_for_expired_quotation"
 	# ):
@@ -54,15 +54,31 @@ def make_sales_order(source_name: str, target_doc=None):
 	# 		quotation.valid_till < quotation.transaction_date or quotation.valid_till < getdate(nowdate())
 	# 	):
 	# 		frappe.throw(_("Validity period of this quotation has ended."))
-	pass
+	sales_order_list = [] 
+	for row in ["Tax", "Non Tax"]:
+		doc = _make_sales_order(source_name, target_doc=None, item_type=row)
+		if len(doc.items) > 0:
+			doc.save()
+			sales_order_list.append(doc.name)
+	
+	if not sales_order_list:
+		frappe.throw("Can't make Sales Order")
 
-def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
+	message = "List Sales Order :"
+	for so in sales_order_list:
+		message += "<br> {}".format(getlink("Sales Order", so))
+
+	frappe.msgprint(message)
+
+def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_type_be="Non Tax"):
 	def set_missing_values(source, target):
 		if source.referral_sales_partner:
 			target.sales_partner = source.referral_sales_partner
 			target.commission_rate = frappe.get_value(
 				"Sales Partner", source.referral_sales_partner, "commission_rate"
 			)
+
+		target.delivery_date = target.transaction_date
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
 
@@ -85,6 +101,13 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
 		"""
 		has_qty = item.qty > 0
 
+		item_tax_type = frappe.get_cached_value("Item", item.item_code, "custom_tax_type")
+		if not item_tax_type: 
+			item_tax_type = null_type_be
+
+		if item_tax_type != item_type:
+			return False
+		
 		# if not selected_rows:
 		# 	return not item.is_alternative
 
@@ -105,7 +128,7 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
 			},
 			"Pre Order Item": {
 				"doctype": "Sales Order Item",
-				"field_map": {"parent": "prevdoc_docname", "name": "quotation_item"},
+				"field_map": {"parent": "custom_pre_order", "name": "custom_pre_order_item"},
 				"postprocess": update_item,
 				"condition": can_map_row,
 			},
