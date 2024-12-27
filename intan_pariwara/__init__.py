@@ -7,13 +7,13 @@ from frappe.utils import cstr
 from frappe.utils.data import flt
 
 from erpnext import get_default_company
+from erpnext.accounts import party
 from erpnext.selling.doctype.quotation import quotation
 from erpnext.stock import get_item_details
 
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
-
 def is_delivery_account_enabled(company):
 	if not company:
 		company = "_Test Company" if frappe.flags.in_test else get_default_company()
@@ -341,5 +341,23 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	return out
 
+def set_other_values(party_details, party, party_type):
+	# copy
+	if party_type == "Customer":
+		to_copy = ["customer_name", "customer_group", "territory", "language"]
+	else:
+		to_copy = ["supplier_name", "supplier_group", "language"]
+	for f in to_copy:
+		party_details[f] = party.get(f)
+
+	# fields prepended with default in Customer doctype
+	for f in ["currency"] + (["sales_partner", "commission_rate"] if party_type == "Customer" else []):
+		if party.get("default_" + f):
+			party_details[f] = party.get("default_" + f)
+
+	if party_type == "Customer":
+		party_details["fund_source"] = party.get("custom_customer_fund_group")
+		
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
+party.set_other_values = set_other_values

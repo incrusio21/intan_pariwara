@@ -11,6 +11,7 @@
   "naming_series",
   "customer",
   "customer_name",
+  "fund_source",
   "column_break_7",
   "transaction_date",
   "valid_till",
@@ -333,7 +334,7 @@
    "label": "Items",
    "oldfieldname": "quotation_details",
    "oldfieldtype": "Table",
-   "options": "Quotation Item",
+   "options": "Pre Order Item",
    "reqd": 1,
    "width": "40px"
   },
@@ -1048,12 +1049,18 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "fund_source",
+   "fieldtype": "Link",
+   "label": "Fund Source",
+   "options": "Customer Fund Source"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-20 08:55:46.663633",
+ "modified": "2024-12-27 08:39:06.790273",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
