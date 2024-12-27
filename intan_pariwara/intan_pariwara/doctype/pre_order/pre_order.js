@@ -58,13 +58,13 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		frappe.call({
 			method: "intan_pariwara.controllers.queries.get_price_list_fund",
 			args: {
-				customer: frm.doc.customer,
-				fund_source: frm.doc.fund_source,
+				customer: me.frm.doc.customer,
+				fund_source: me.frm.doc.fund_source,
 			},
 			callback: function (r) {
 				if (r.message) {
 					frappe.run_serially([
-						() => frm.set_value(r.message),
+						() => me.frm.set_value(r.message),
 						() => {
 							me.apply_price_list();
 						},
