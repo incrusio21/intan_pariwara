@@ -52,6 +52,18 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		super.onload(doc, dt, dn);
 	}
 
+	refresh(doc, dt, dn) {
+		super.refresh(doc, dt, dn);
+		
+		var me = this;
+
+		if (doc.docstatus == 1 && !["Lost", "Ordered"].includes(doc.status)) {
+			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
+
+			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
+		}
+	}
+
 	fund_source(){
 		var me = this;
 
@@ -85,6 +97,20 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		}
 	}
 
+	make_sales_order() {
+		var me = this;
+
+		let has_alternative_item = this.frm.doc.items.some((item) => item.is_alternative);
+		if (has_alternative_item) {
+			this.show_alternative_items_dialog();
+		} else {
+			frappe.model.open_mapped_doc({
+				method: "intan_pariwara.intan_pariwara.doctype.pre_order.pre_order.make_sales_order",
+				frm: me.frm,
+			});
+		}
+	}
+	
     calculate_totals() {
 		// Changing sequence can cause rounding_adjustmentng issue and on-screen discrepency
 		var me = this;

@@ -96,5 +96,25 @@ frappe.ui.form.on("Sales Order", {
 		if (frm.doc.docstatus > 0) {
 			frm.set_df_property("reserve_stock", "description", null);
 		}
+	},
+	custom_fund_source(frm){
+
+		frappe.call({
+			method: "intan_pariwara.controllers.queries.get_price_list_fund",
+			args: {
+				customer: frm.doc.customer,
+				fund_source: frm.doc.custom_fund_source,
+			},
+			callback: function (r) {
+				if (r.message) {
+					frappe.run_serially([
+						() => frm.set_value(r.message),
+						() => {
+							cur_frm.cscript.apply_price_list();
+						},
+					]);
+				}
+			},
+		});
 	}
 })
