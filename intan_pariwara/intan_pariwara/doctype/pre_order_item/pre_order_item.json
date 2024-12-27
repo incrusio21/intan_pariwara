@@ -39,11 +39,13 @@
   "discount_percentage",
   "discount_amount",
   "base_rate_with_margin",
+  "rebate",
   "section_break1",
   "rate",
   "net_rate",
   "amount",
   "net_amount",
+  "rebate_amount",
   "item_tax_template",
   "col_break3",
   "base_rate",
@@ -692,11 +694,24 @@
    "fieldtype": "Float",
    "label": "Ordered Qty",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.price_list_rate && parent.apply_rebate",
+   "fieldname": "rebate",
+   "fieldtype": "Percent",
+   "label": "Rebate"
+  },
+  {
+   "depends_on": "eval:parent.apply_rebate",
+   "fieldname": "rebate_amount",
+   "fieldtype": "Currency",
+   "label": "Rebate Amount",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-12-27 14:27:10.185936",
+ "modified": "2024-12-27 19:52:47.053028",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order Item",

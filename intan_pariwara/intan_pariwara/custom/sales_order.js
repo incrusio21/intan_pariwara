@@ -99,22 +99,32 @@ frappe.ui.form.on("Sales Order", {
 	},
 	custom_fund_source(frm){
 
-		frappe.call({
-			method: "intan_pariwara.controllers.queries.get_price_list_fund",
-			args: {
-				customer: frm.doc.customer,
-				fund_source: frm.doc.custom_fund_source,
-			},
-			callback: function (r) {
-				if (r.message) {
-					frappe.run_serially([
-						() => frm.set_value(r.message),
-						() => {
-							cur_frm.cscript.apply_price_list();
-						},
-					]);
-				}
-			},
-		});
+		if(!frm.doc.custom_fund_source){
+			return 
+		}
+
+		if(!frm.doc.customer){
+			frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
+			frm.set_value("custom_fund_source", "")
+		}else{
+			frappe.call({
+				method: "intan_pariwara.controllers.queries.get_price_list_fund",
+				args: {
+					customer: frm.doc.customer,
+					fund_source: frm.doc.custom_fund_source,
+				},
+				callback: function (r) {
+					if (r.message) {
+						frappe.run_serially([
+							() => frm.set_value(r.message),
+							() => {
+								cur_frm.cscript.apply_price_list();
+							},
+						]);
+					}
+				},
+			});
+		}
+
 	}
 })

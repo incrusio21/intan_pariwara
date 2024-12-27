@@ -66,24 +66,33 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 
 	fund_source(){
 		var me = this;
+		if(!me.frm.doc.fund_source){
+			return 
+		}
 
-		frappe.call({
-			method: "intan_pariwara.controllers.queries.get_price_list_fund",
-			args: {
-				customer: me.frm.doc.customer,
-				fund_source: me.frm.doc.fund_source,
-			},
-			callback: function (r) {
-				if (r.message) {
-					frappe.run_serially([
-						() => me.frm.set_value(r.message),
-						() => {
-							me.apply_price_list();
-						},
-					]);
-				}
-			},
-		});
+		if(!me.frm.doc.customer){
+			frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
+			this.frm.set_value("fund_source", "")
+		}else{
+			frappe.call({
+				method: "intan_pariwara.controllers.queries.get_price_list_fund",
+				args: {
+					customer: me.frm.doc.customer,
+					fund_source: me.frm.doc.fund_source,
+				},
+				callback: function (r) {
+					if (r.message) {
+						frappe.run_serially([
+							() => me.frm.set_value(r.message),
+							() => {
+								me.apply_price_list();
+							},
+						]);
+					}
+				},
+			});
+		}
+
 	}
 
     party_name() {
@@ -95,6 +104,10 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		if (me.frm.doc.quotation_to == "Lead" && me.frm.doc.party_name) {
 			me.frm.trigger("get_lead_details");
 		}
+	}
+
+	rebate(doc, cdt, cdn) {
+		this.price_list_rate(doc, cdt, cdn)
 	}
 
 	make_sales_order() {
@@ -109,6 +122,58 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 				frm: me.frm,
 			});
 		}
+	}
+	
+	calculate_item_values() {
+		var me = this;
+		if (!this.discount_amount_applied) {
+			for (const item of this.frm.doc.items || []) {
+				frappe.model.round_floats_in(item);
+				item.net_rate = item.rate;
+				item.qty = item.qty === undefined ? (me.frm.doc.is_return ? -1 : 1) : item.qty;
+
+				if (!(me.frm.doc.is_return || me.frm.doc.is_debit_note)) {
+					item.net_amount = item.amount = flt(item.rate * item.qty, precision("amount", item));
+					item.rebate_amount = flt((item.price_list_rate * item.rebate / 100) * item.qty, precision("rebate_amount", item))
+				}
+				else {
+					// allow for '0' qty on Credit/Debit notes
+					let qty = flt(item.qty);
+					if (!qty) {
+						qty = (me.frm.doc.is_debit_note ? 1 : -1);
+						if (me.frm.doc.doctype !== "Purchase Receipt" && me.frm.doc.is_return === 1) {
+							// In case of Purchase Receipt, qty can be 0 if all items are rejected
+							qty = flt(item.qty);
+						}
+					}
+
+					item.net_amount = item.amount = flt(item.rate * qty, precision("amount", item));
+				}
+				
+				item.item_tax_amount = 0.0;
+				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
+
+				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
+			}
+		}
+	}
+
+	calculate_net_total() {
+		var me = this;
+		this.frm.doc.total_qty = this.frm.doc.total = this.frm.doc.base_total = this.frm.doc.net_total = this.frm.doc.base_net_total = 
+			this.frm.doc.base_rebate_total = this.frm.doc.rebate_total = 0.0;
+
+		$.each(this.frm._items || [], function(i, item) {
+			me.frm.doc.total += item.amount;
+			me.frm.doc.total_qty += item.qty;
+			me.frm.doc.base_total += item.base_amount;
+			me.frm.doc.net_total += item.net_amount;
+			me.frm.doc.base_net_total += item.base_net_amount;
+			me.frm.doc.base_rebate_total += item.rebate_amount;
+			me.frm.doc.rebate_total += item.rebate_amount;
+		});
+
+		frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total", "base_rebate_total", "rebate_total"]);
 	}
 	
     calculate_totals() {
