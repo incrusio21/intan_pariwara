@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-28 15:08:37.774638",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_hyyy",
+  "sales_order",
+  "customer",
+  "fund_source",
+  "column_break_bxox",
+  "posting_date",
+  "order_date",
+  "column_break_vqyl",
+  "company",
+  "rebate_additional_entry",
+  "amended_from",
+  "account_detail_section",
+  "rebate_account_from",
+  "rebate_account_to",
+  "section_break_lzzp",
+  "rebate",
+  "sales_order_total",
+  "rebate_total"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_hyyy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Usulan Tambahan Rabat",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "sales_order.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_vqyl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "account_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Account Detail"
+  },
+  {
+   "fieldname": "rebate_account_from",
+   "fieldtype": "Link",
+   "label": "Rebate Account From",
+   "options": "Account"
+  },
+  {
+   "fieldname": "rebate_account_to",
+   "fieldtype": "Link",
+   "label": "Rebate Account To",
+   "options": "Account"
+  },
+  {
+   "fieldname": "section_break_lzzp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rebate_total",
+   "fieldtype": "Currency",
+   "label": "Rebate Total",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_bxox",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "sales_order.transaction_date",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "sales_order.fund_source",
+   "fieldname": "fund_source",
+   "fieldtype": "Link",
+   "label": "Fund Source",
+   "options": "Customer Fund Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rebate_additional_entry",
+   "fieldtype": "Link",
+   "label": "Rebate Additional Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rebate",
+   "fieldtype": "Percent",
+   "label": "Rebate",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "sales_order.net_total",
+   "fieldname": "sales_order_total",
+   "fieldtype": "Currency",
+   "label": "Sales Order Total",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-12-28 16:53:24.769927",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Usulan Tambahan Rabat",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

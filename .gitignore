@@ -4,4 +4,6 @@
 *.swp
 tags
 node_modules
+dist/
+intan_pariwara/public/dist
 __pycache__

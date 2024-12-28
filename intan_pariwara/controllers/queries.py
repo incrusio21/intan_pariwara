@@ -31,7 +31,26 @@ def get_price_list_fund(
 
         if not rebate_to:
             party_details["rebate_account_to"] = frappe.get_cached_value("Company", company, "custom_rebate_payable_account")
-            
+
     return party_details
 
+@frappe.whitelist()
+def additional_rebate_account(
+    company,
+    rebate_from=None,
+    rebate_to=None,
+):
+    account_detail = {
+
+    }
+    
+    if not (rebate_from and rebate_to):
+        if not rebate_from:
+            account_detail["rebate_account_from"] = frappe.get_cached_value("Company", company, "custom_rebate_additional_account")
+
+        if not rebate_to:
+            account_detail["rebate_account_to"] = frappe.get_cached_value("Company", company, "custom_rebate_additional_payable_account") or \
+                frappe.get_cached_value("Company", company, "custom_rebate_payable_account")
+
+    return account_detail
     

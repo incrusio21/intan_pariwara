@@ -150,7 +150,7 @@ doc_events = {
     "Sales Order": {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
-		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate"
+		"after_delete": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate"
 	}
 }
 

@@ -11,7 +11,7 @@ def create_and_delete_rebate(self, method):
         jv = frappe.get_doc("Journal Entry", self.custom_rebate_entry)
         if method == "on_cancel":
             jv.cancel()
-        elif method == "on_trash":
+        elif method == "after_delete":
             jv.delete(delete_permanently=True)
 
     if method == "on_submit":
