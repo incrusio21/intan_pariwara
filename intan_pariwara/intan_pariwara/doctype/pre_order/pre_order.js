@@ -1,11 +1,13 @@
 // Copyright (c) 2024, DAS and contributors
 // For license information, please see license.txt
+frappe.provide("intan_pariwara.selling")
 
 cur_frm.cscript.tax_table = "Sales Taxes and Charges";
 
 erpnext.accounts.taxes.setup_tax_validations("Sales Taxes and Charges Template");
 erpnext.accounts.taxes.setup_tax_filters("Sales Taxes and Charges");
 erpnext.sales_common.setup_selling_controller();
+intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.SellingController)
 
 frappe.ui.form.on("Pre Order", {
     setup: function (frm) {
@@ -47,7 +49,7 @@ frappe.ui.form.on("Pre Order", {
 	},
 });
 
-erpnext.selling.PreOrderController = class PreOrderController extends erpnext.selling.SellingController {
+intan_pariwara.selling.PreOrderController = class PreOrderController extends intan_pariwara.selling.SellingController {
     onload(doc, dt, dn) {
 		super.onload(doc, dt, dn);
 	}
@@ -64,37 +66,6 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		}
 	}
 
-	fund_source(){
-		var me = this;
-		if(!me.frm.doc.fund_source){
-			return 
-		}
-
-		if(!me.frm.doc.customer){
-			frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
-			this.frm.set_value("fund_source", "")
-		}else{
-			frappe.call({
-				method: "intan_pariwara.controllers.queries.get_price_list_fund",
-				args: {
-					customer: me.frm.doc.customer,
-					fund_source: me.frm.doc.fund_source,
-				},
-				callback: function (r) {
-					if (r.message) {
-						frappe.run_serially([
-							() => me.frm.set_value(r.message),
-							() => {
-								me.apply_price_list();
-							},
-						]);
-					}
-				},
-			});
-		}
-
-	}
-
     party_name() {
 		var me = this;
 		erpnext.utils.get_party_details(this.frm, null, null, function () {
@@ -105,11 +76,7 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 			me.frm.trigger("get_lead_details");
 		}
 	}
-
-	rebate(doc, cdt, cdn) {
-		this.price_list_rate(doc, cdt, cdn)
-	}
-
+	
 	make_sales_order() {
 		var me = this;
 
@@ -124,80 +91,6 @@ erpnext.selling.PreOrderController = class PreOrderController extends erpnext.se
 		}
 	}
 	
-	calculate_item_values() {
-		var me = this;
-		if (!this.discount_amount_applied) {
-			for (const item of this.frm.doc.items || []) {
-				frappe.model.round_floats_in(item);
-				item.net_rate = item.rate;
-				item.qty = item.qty === undefined ? (me.frm.doc.is_return ? -1 : 1) : item.qty;
-
-				if (!(me.frm.doc.is_return || me.frm.doc.is_debit_note)) {
-					item.net_amount = item.amount = flt(item.rate * item.qty, precision("amount", item));
-					item.rebate_amount = flt((item.price_list_rate * item.rebate / 100) * item.qty, precision("rebate_amount", item))
-				}
-				else {
-					// allow for '0' qty on Credit/Debit notes
-					let qty = flt(item.qty);
-					if (!qty) {
-						qty = (me.frm.doc.is_debit_note ? 1 : -1);
-						if (me.frm.doc.doctype !== "Purchase Receipt" && me.frm.doc.is_return === 1) {
-							// In case of Purchase Receipt, qty can be 0 if all items are rejected
-							qty = flt(item.qty);
-						}
-					}
-
-					item.net_amount = item.amount = flt(item.rate * qty, precision("amount", item));
-				}
-				
-				item.item_tax_amount = 0.0;
-				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
-
-				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
-			}
-		}
-	}
-
-	calculate_net_total() {
-		var me = this;
-		this.frm.doc.total_qty = this.frm.doc.total = this.frm.doc.base_total = this.frm.doc.net_total = this.frm.doc.base_net_total = 
-			this.frm.doc.base_rebate_total = this.frm.doc.rebate_total = 0.0;
-
-		$.each(this.frm._items || [], function(i, item) {
-			me.frm.doc.total += item.amount;
-			me.frm.doc.total_qty += item.qty;
-			me.frm.doc.base_total += item.base_amount;
-			me.frm.doc.net_total += item.net_amount;
-			me.frm.doc.base_net_total += item.base_net_amount;
-			me.frm.doc.base_rebate_total += item.rebate_amount;
-			me.frm.doc.rebate_total += item.rebate_amount;
-		});
-
-		frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total", "base_rebate_total", "rebate_total"]);
-	}
-	
-    calculate_totals() {
-		// Changing sequence can cause rounding_adjustmentng issue and on-screen discrepency
-		var me = this;
-		var tax_count = this.frm.doc["taxes"] ? this.frm.doc["taxes"].length : 0;
-		this.frm.doc.grand_total = flt(tax_count
-			? this.frm.doc["taxes"][tax_count - 1].total + flt(this.frm.doc.grand_total_diff)
-			: this.frm.doc.net_total);
-
-        this.frm.doc.base_grand_total = (this.frm.doc.total_taxes_and_charges) ?
-            flt(this.frm.doc.grand_total * this.frm.doc.conversion_rate) : this.frm.doc.base_net_total;
-		
-		this.frm.doc.total_taxes_and_charges = flt(this.frm.doc.grand_total - this.frm.doc.net_total
-			- flt(this.frm.doc.rounding_adjustment), precision("total_taxes_and_charges"));
-
-		this.set_in_company_currency(this.frm.doc, ["total_taxes_and_charges", "rounding_adjustment"]);
-
-		// Round grand total as per precision
-		frappe.model.round_floats_in(this.frm.doc, ["grand_total", "base_grand_total"]);
-
-		// rounded totals
-		this.set_rounded_total();
-	}
 }
 
-cur_frm.script_manager.make(erpnext.selling.PreOrderController);
+cur_frm.script_manager.make(intan_pariwara.selling.PreOrderController);

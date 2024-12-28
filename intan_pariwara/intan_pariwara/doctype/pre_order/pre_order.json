@@ -16,6 +16,7 @@
   "column_break_7",
   "transaction_date",
   "valid_till",
+  "transaction_type",
   "column_break1",
   "order_type",
   "company",
@@ -37,10 +38,15 @@
   "column_break_28",
   "base_total",
   "base_net_total",
-  "base_rebate_total",
   "column_break_31",
   "total",
   "net_total",
+  "rebate_section",
+  "rebate_account_from",
+  "rebate_account_to",
+  "column_break_xcuv",
+  "base_rebate_total",
+  "column_break_xlus",
   "rebate_total",
   "taxes_section",
   "tax_category",
@@ -1091,12 +1097,44 @@
    "label": "Rebate Total",
    "options": "currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "transaction_type",
+   "fieldtype": "Select",
+   "label": "Transaction Type",
+   "options": "Reguler\nProject"
+  },
+  {
+   "depends_on": "eval:doc.apply_rebate",
+   "fieldname": "rebate_section",
+   "fieldtype": "Section Break",
+   "label": "Rebate"
+  },
+  {
+   "fieldname": "rebate_account_from",
+   "fieldtype": "Link",
+   "label": "Rebate Account From",
+   "options": "Account"
+  },
+  {
+   "fieldname": "rebate_account_to",
+   "fieldtype": "Link",
+   "label": "Rebate Account To",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_xcuv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_xlus",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-27 19:45:29.637780",
+ "modified": "2024-12-28 13:08:36.408442",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

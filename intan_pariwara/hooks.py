@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/intan_pariwara/css/intan_pariwara.css"
-# app_include_js = "/assets/intan_pariwara/js/intan_pariwara.js"
+app_include_js = "intan_pariwara.bundle.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/intan_pariwara/css/intan_pariwara.css"
@@ -141,13 +141,18 @@ override_doctype_class = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	# "*": {
+	# 	"on_update": "method",
+	# 	"on_cancel": "method",
+	# 	"on_trash": "method"
+	# }
+    "Sales Order": {
+		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
+		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
+		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate"
+	}
+}
 
 # Scheduled Tasks
 # ---------------

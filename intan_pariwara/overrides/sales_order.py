@@ -3,8 +3,9 @@
 
 from erpnext.selling.doctype.sales_order.sales_order import SalesOrder
 
+from intan_pariwara.controllers.account_controller import AccountsController
 
-class SalesOrder(SalesOrder):
+class SalesOrder(AccountsController, SalesOrder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.status_updater = [

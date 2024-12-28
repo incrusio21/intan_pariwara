@@ -3,12 +3,14 @@
 
 import frappe
 from frappe.model.mapper import get_mapped_doc
-
-from erpnext.controllers.selling_controller import SellingController
 from frappe.utils import flt
 from frappe.utils.csvutils import getlink
 
-class PreOrder(SellingController):
+from erpnext.controllers.selling_controller import SellingController
+
+from intan_pariwara.controllers.account_controller import AccountsController
+
+class PreOrder(AccountsController, SellingController):
 	
 	def validate(self):
 		super().validate()
@@ -41,6 +43,8 @@ class PreOrder(SellingController):
 		self.set_status(update=True)
 		# self.update_opportunity("Open")
 		# self.update_lead()
+
+	
 
 @frappe.whitelist()
 def make_sales_order(source_name: str, target_doc=None):
@@ -124,7 +128,6 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 			"Pre Order": {
 				"doctype": "Sales Order", 
 				"validation": {"docstatus": ["=", 1]},
-				"field_map": {"fund_source": "custom_fund_source"},
 			},
 			"Pre Order Item": {
 				"doctype": "Sales Order Item",
