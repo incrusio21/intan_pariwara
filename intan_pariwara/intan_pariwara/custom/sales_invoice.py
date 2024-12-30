@@ -7,6 +7,15 @@ def create_and_delete_rebate(self, method):
     if not self.apply_rebate:
         return
     
+    rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doctype, "voucher_no": self.name}, pluck="name")
+    for rle in rle_list:
+        doc = frappe.get_doc("Rebate Ledger Entry", rle)
+        if method == "on_cancel":
+            doc.is_cancelled = 1
+            doc.save()
+        if method == "on_trash":
+            doc.delete()
+            
     if method == "on_submit":
         if not (self.rebate_account_from and self.rebate_account_to):
             frappe.throw("Select Rebate Account First")
@@ -17,14 +26,11 @@ def create_and_delete_rebate(self, method):
             self.company,
             self.doctype,
             self.name,
-            self.transaction_date,
+            self.posting_date,
             self.rebate_account_from,
             self.rebate_account_to,
             self.rebate_total,
         )
 
-    if method == "on_cancel":
-        rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doctype, "voucher_no": self.name}, pluck="name")
-        for rle in rle_list:
-            doc = frappe.get_doc("Rebate Ledger Entry", rle)
-            doc.delete()
+    
+        

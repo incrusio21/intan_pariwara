@@ -9,14 +9,17 @@ from erpnext.accounts.utils import _delete_accounting_ledger_entries
 
 class RebateLedgerEntry(Document):
 	def validate(self):
-		self.create_or_update_journal()
-	
+		if not self.is_cancelled:
+			self.create_or_update_journal()
+		else:
+			self.remove_rebate_je_entry()
+
 	def create_or_update_journal(self):
 		if self.rebate_je_entry:
 			jv = frappe.get_doc("Journal Entry", self.rebate_je_entry)
 		else:
 			jv = frappe.new_doc("Journal Entry")
-
+	
 		jv.company = self.company
 		jv.posting_date = self.posting_date
 
@@ -44,6 +47,9 @@ class RebateLedgerEntry(Document):
 			self.db_set("rebate_je_entry", jv.name)
 
 	def after_delete(self):
+		self.remove_rebate_je_entry(True)
+		
+	def remove_rebate_je_entry(self, remove=False):
 		if not self.rebate_je_entry:
 			return
 		
@@ -51,7 +57,8 @@ class RebateLedgerEntry(Document):
 		if jv.docstatus == 1:
 			jv.cancel()
 
-		jv.delete(delete_permanently=True)
+		if remove:
+			jv.delete(delete_permanently=True)
 
 def make_rebate_ledger_entry(
 	company,

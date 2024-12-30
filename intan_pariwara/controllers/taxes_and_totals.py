@@ -101,8 +101,9 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
                     "Purchase Order Item",
                     "Purchase Receipt Item",
                 ]:
-                    if transaction_type == "Requler" and \
-                        item.get("rebate") and \
+                    item.rebate_max = frappe.get_cached_value("Item", item.item_code, "custom_rabat_max")
+                    if item.get("rebate_max") and \
+                        transaction_type == "Requler" and \
                         item.rebate > item.rebate_max:
                         item.rebate = item.rebate_max
 
@@ -158,6 +159,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             self.doc.total_qty += item.qty
             self.doc.base_total += item.base_amount
             self.doc.net_total += item.net_amount
+            self.doc.base_net_total += item.base_net_amount
             self.doc.base_rebate_total += item.rebate_amount
             self.doc.rebate_total += item.rebate_amount
 

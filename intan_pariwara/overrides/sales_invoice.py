@@ -7,12 +7,10 @@ from frappe.utils import cint, flt
 
 from erpnext.accounts.general_ledger import process_gl_map
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
-from erpnext.controllers.selling_controller import get_serial_and_batch_bundle
-from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 
-import intan_pariwara
+from intan_pariwara.controllers.account_controller import AccountsController
 
-class SalesInvoice(SalesInvoice):
+class SalesInvoice(AccountsController, SalesInvoice):
     def make_item_gl_entries(self, gl_entries):
 		# income account gl entries
         super().make_item_gl_entries(gl_entries)
@@ -119,7 +117,7 @@ class SalesInvoice(SalesInvoice):
             from
                 `tabStock Ledger Entry`
             where
-                voucher_type="Delivery Note" and voucher_detail_no in (%(detail)s) and is_cancelled = 0
+                voucher_type="Delivery Note" and voucher_detail_no in %(detail)s and is_cancelled = 0
         """,
             {"detail": voucher_detail_no},
             as_dict=True

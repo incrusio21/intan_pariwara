@@ -44,7 +44,9 @@ app_include_js = "intan_pariwara.bundle.js"
 
 # include js in doctype views
 doctype_js = {
-    "Sales Order" : "intan_pariwara/custom/sales_order.js"
+    "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
+    "Sales Order" : "intan_pariwara/custom/sales_order.js",
+    "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -147,10 +149,10 @@ doc_events = {
 	# 	"on_cancel": "method",
 	# 	"on_trash": "method"
 	# }
-    "Sales Order": {
-		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
-		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate",
-		"after_delete": "intan_pariwara.intan_pariwara.custom.sales_order.create_and_delete_rebate"
+    "Sales Invoice": {
+		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
+		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
+		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
 	}
 }
 

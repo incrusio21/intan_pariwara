@@ -3,16 +3,17 @@
 
 import frappe
 from frappe import _
-from frappe.model.meta import get_field_precision
 from frappe.utils import flt
 
 from erpnext.stock import get_warehouse_account_map
 from erpnext.accounts.general_ledger import process_gl_map, toggle_debit_credit_if_negative
-from erpnext.accounts.utils import _delete_accounting_ledger_entries, compare_existing_and_expected_gle, get_voucherwise_gl_entries
+from erpnext.accounts.utils import _delete_accounting_ledger_entries
 from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
-import intan_pariwara
 
-class DeliveryNote(DeliveryNote):
+import intan_pariwara
+from intan_pariwara.controllers.account_controller import AccountsController
+
+class DeliveryNote(AccountsController, DeliveryNote):
     def make_gl_entries(self, gl_entries=None, from_repost=False, via_landed_cost_voucher=False):
         super().make_gl_entries(gl_entries, from_repost, via_landed_cost_voucher)
 

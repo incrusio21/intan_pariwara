@@ -31,9 +31,15 @@ class UsulanTambahanRabat(Document):
 	def on_cancel(self):
 		self.remove_rebate_entry()
 
-	def remove_rebate_entry(self):
+	def on_trash(self):
+		self.remove_rebate_entry(True)
+
+	def remove_rebate_entry(self, remove=False):
 		rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doctype, "voucher_no": self.name}, pluck="name")
 		for rle in rle_list:
 			doc = frappe.get_doc("Rebate Ledger Entry", rle)
-			doc.delete()
-	
+			if not remove:
+				doc.is_cancelled = 1
+				doc.save()
+			else:
+				doc.delete()

@@ -19,7 +19,7 @@ intan_pariwara.sales_common = {
 
             rebate(doc, cdt, cdn) {
                 var item = frappe.get_doc(cdt, cdn);
-                if(doc.transaction_type == "Reguler" && item.rebate > item.rebate_max){
+                if(item.rebate_max && doc.transaction_type == "Reguler" && item.rebate > item.rebate_max){
                     frappe.msgprint(__("Maximum Rebate limit exceeded."))
                     item.rebate = item.rebate_max
                 }
@@ -59,6 +59,33 @@ intan_pariwara.sales_common = {
                 }
             }
 
+            is_a_mapped_document(item) {
+                const mapped_item_field_map = {
+                    "Delivery Note": ["si_detail", "so_detail", "dn_detail"],
+                    "Sales Invoice": ["dn_detail", "so_detail", "sales_invoice_item"],
+                    "Purchase Receipt": ["purchase_order_item", "purchase_invoice_item", "purchase_receipt_item"],
+                    "Purchase Invoice": ["purchase_order_item", "pr_detail", "po_detail"],
+                    "Sales Order": ["prevdoc_docname", "quotation_item", "custom_pre_order_item"],
+                    "Purchase Order": ["supplier_quotation_item"],
+                };
+                const mappped_fields = mapped_item_field_map[this.frm.doc.doctype] || [];
+        
+                if (item) {
+                    return mappped_fields
+                        .map((field) => item[field])
+                        .filter(Boolean).length > 0;
+                } else if (this.frm.doc?.items) {
+                    let first_row = this.frm.doc.items[0];
+                    if (!first_row) {
+                        return false
+                    };
+        
+                    let mapped_rows = mappped_fields.filter(d => first_row[d])
+        
+                    return mapped_rows?.length > 0;
+                }
+            }
+
             change_form_labels(company_currency) {
                 let me = this;
         
@@ -67,13 +94,13 @@ intan_pariwara.sales_common = {
                     "base_taxes_and_charges_added", "base_taxes_and_charges_deducted", "total_amount_to_pay",
                     "base_paid_amount", "base_write_off_amount", "base_change_amount", "base_operating_cost",
                     "base_raw_material_cost", "base_total_cost", "base_scrap_material_cost",
-                    "base_rounding_adjustment"], company_currency);
+                    "base_rounding_adjustment", "base_rebate_total"], company_currency);
         
                 this.frm.set_currency_labels(["total", "net_total", "total_taxes_and_charges", "discount_amount",
                     "grand_total", "taxes_and_charges_added", "taxes_and_charges_deducted","tax_withholding_net_total",
                     "rounded_total", "in_words", "paid_amount", "write_off_amount", "operating_cost",
                     "scrap_material_cost", "rounding_adjustment", "raw_material_cost",
-                    "total_cost"], this.frm.doc.currency);
+                    "total_cost", "rebate_total"], this.frm.doc.currency);
         
                 this.frm.set_currency_labels(["outstanding_amount", "total_advance"],
                     this.frm.doc.party_account_currency);
