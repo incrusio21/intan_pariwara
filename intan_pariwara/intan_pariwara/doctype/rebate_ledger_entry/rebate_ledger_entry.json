@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-30 11:05:52.647318",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "posting_date",
+  "account_from",
+  "account_to",
+  "column_break_eurq",
+  "voucher_type",
+  "voucher_no",
+  "rebate_je_entry",
+  "section_break_ajze",
+  "rebate_total"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_from",
+   "fieldtype": "Link",
+   "label": "Account From",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_to",
+   "fieldtype": "Link",
+   "label": "Account To",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_eurq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "voucher_type",
+   "fieldtype": "Link",
+   "label": "Voucher Type",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ajze",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rebate_total",
+   "fieldtype": "Currency",
+   "label": "Rebate Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "voucher_no",
+   "fieldtype": "Dynamic Link",
+   "label": "Voucher No",
+   "options": "voucher_type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rebate_je_entry",
+   "fieldtype": "Link",
+   "label": "Rebate JE Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-30 11:53:47.870508",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Rebate Ledger Entry",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

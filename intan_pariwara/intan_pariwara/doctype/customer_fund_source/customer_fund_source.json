@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:customer_fund_source",
+ "creation": "2024-12-06 15:55:10.605024",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "apply_rebate",
+  "customer_fund_source",
+  "description",
+  "section_break_pmly",
+  "account_details"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "apply_rebate",
+   "fieldtype": "Check",
+   "label": "Apply Rebate?"
+  },
+  {
+   "fieldname": "customer_fund_source",
+   "fieldtype": "Data",
+   "label": "Customer Fund Source",
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_pmly",
+   "fieldtype": "Section Break",
+   "label": "Rebate Account"
+  },
+  {
+   "fieldname": "account_details",
+   "fieldtype": "Table",
+   "label": "Account Details",
+   "options": "Fund Source Accounts"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-30 10:39:51.140526",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Customer Fund Source",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

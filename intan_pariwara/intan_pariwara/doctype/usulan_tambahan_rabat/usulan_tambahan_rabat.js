@@ -2,11 +2,6 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Usulan Tambahan Rabat", {
-    setup(frm) {
-        if(!(frm.doc.rebate_account_from && frm.doc.rebate_account_to)){
-            frm.trigger("get_rebate_account")
-        }
-    },
 	refresh(frm) {
         frm.set_query("sales_order", function (doc) {
 			return {
@@ -27,6 +22,9 @@ frappe.ui.form.on("Usulan Tambahan Rabat", {
     company(frm){
         frm.trigger("get_rebate_account")
     },
+    sales_order(frm){
+        frm.trigger("get_rebate_account")
+    },
     get_rebate_account(frm){
         if(!frm.doc.company){
             frappe.throw("Please Select Company First")
@@ -36,8 +34,7 @@ frappe.ui.form.on("Usulan Tambahan Rabat", {
             method: "intan_pariwara.controllers.queries.additional_rebate_account",
             args: {
                 company: frm.doc.company,
-                rebate_from: frm.doc.rebate_account_from,
-                rebate_to: frm.doc.rebate_account_to,
+                transaction_type: frm.doc.transaction_type,
             },
             callback: function (r) {
                 if (r.message) {

@@ -12,9 +12,9 @@
   "column_break_bxox",
   "posting_date",
   "order_date",
+  "transaction_type",
   "column_break_vqyl",
   "company",
-  "rebate_additional_entry",
   "amended_from",
   "account_detail_section",
   "rebate_account_from",
@@ -123,13 +123,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "rebate_additional_entry",
-   "fieldtype": "Link",
-   "label": "Rebate Additional Entry",
-   "options": "Journal Entry",
-   "read_only": 1
-  },
-  {
    "fieldname": "rebate",
    "fieldtype": "Percent",
    "label": "Rebate",
@@ -141,12 +134,20 @@
    "fieldtype": "Currency",
    "label": "Sales Order Total",
    "read_only": 1
+  },
+  {
+   "fetch_from": "sales_order.transaction_type",
+   "fieldname": "transaction_type",
+   "fieldtype": "Link",
+   "label": "Transaction Type",
+   "options": "Transaction Type",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-28 16:53:24.769927",
+ "modified": "2024-12-30 11:54:33.136912",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Usulan Tambahan Rabat",

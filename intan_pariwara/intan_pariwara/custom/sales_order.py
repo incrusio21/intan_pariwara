@@ -7,32 +7,24 @@ def create_and_delete_rebate(self, method):
     if not self.apply_rebate:
         return
     
-    if self.get("custom_rebate_entry"):
-        jv = frappe.get_doc("Journal Entry", self.custom_rebate_entry)
-        if method == "on_cancel":
-            jv.cancel()
-        elif method == "after_delete":
-            jv.delete(delete_permanently=True)
-
     if method == "on_submit":
         if not (self.rebate_account_from and self.rebate_account_to):
             frappe.throw("Select Rebate Account First")
 
-        je = frappe.new_doc("Journal Entry")
-        je.company = self.company
-        je.posting_date = self.transaction_date
-        je.append("accounts", {
-            "account": self.rebate_account_from,
-            "debit_in_account_currency": self.rebate_total
-        })
+        from intan_pariwara.intan_pariwara.doctype.rebate_ledger_entry.rebate_ledger_entry import make_rebate_ledger_entry
 
-        je.append("accounts", {
-            "account": self.rebate_account_to,
-            "credit_in_account_currency": self.rebate_total
-        })
+        make_rebate_ledger_entry(
+            self.company,
+            self.doctype,
+            self.name,
+            self.transaction_date,
+            self.rebate_account_from,
+            self.rebate_account_to,
+            self.rebate_total,
+        )
 
-        je.flags.ignore_permissions = 1
-        je.submit()
-
-        self.db_set("custom_rebate_entry", je.name)
-        self.reload()
+    if method == "on_cancel":
+        rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doctype, "voucher_no": self.name}, pluck="name")
+        for rle in rle_list:
+            doc = frappe.get_doc("Rebate Ledger Entry", rle)
+            doc.delete()

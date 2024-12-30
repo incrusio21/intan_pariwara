@@ -10,6 +10,24 @@ intan_pariwara.sales_common = {
         intan_pariwara.selling.SellingController = class SellingController extends extend_class {
             
             fund_source(doc){
+                this.get_rebate_account(doc)
+            }
+            
+            transaction_type(doc){
+                this.get_rebate_account(doc)
+            }
+
+            rebate(doc, cdt, cdn) {
+                var item = frappe.get_doc(cdt, cdn);
+                if(doc.transaction_type == "Reguler" && item.rebate > item.rebate_max){
+                    frappe.msgprint(__("Maximum Rebate limit exceeded."))
+                    item.rebate = item.rebate_max
+                }
+        
+                this.price_list_rate(doc, cdt, cdn)
+            }
+            
+            get_rebate_account(doc){
                 var me = this;
                 if(!doc.fund_source){
                     return 
@@ -25,8 +43,7 @@ intan_pariwara.sales_common = {
                             company: doc.company,
                             customer: doc.customer,
                             fund_source: doc.fund_source,
-                            rebate_from: doc.rebate_account_from,
-                            rebate_to: doc.rebate_account_to,
+                            transaction_type: doc.transaction_type,
                         },
                         callback: function (r) {
                             if (r.message) {
@@ -40,19 +57,8 @@ intan_pariwara.sales_common = {
                         },
                     });
                 }
+            }
 
-            }
-            
-            rebate(doc, cdt, cdn) {
-                var item = frappe.get_doc(cdt, cdn);
-                if(doc.transaction_type == "Reguler" && item.rebate > item.rebate_max){
-                    frappe.msgprint(__("Maximum Rebate limit exceeded."))
-                    item.rebate = item.rebate_max
-                }
-        
-                this.price_list_rate(doc, cdt, cdn)
-            }
-        
             change_form_labels(company_currency) {
                 let me = this;
         

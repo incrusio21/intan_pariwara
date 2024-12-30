@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-30 08:57:09.090650",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "transaction_type",
+  "section_break_eywj",
+  "rebate_order_account",
+  "rebate_additional_account",
+  "column_break_dzrm",
+  "rebate_payable_account",
+  "rebate_additional_payable_account"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "transaction_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Transaction Type",
+   "options": "Transaction Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_eywj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rebate_order_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rebate Order Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "rebate_additional_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rebate Additional Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_dzrm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rebate_payable_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rebate Payable Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "rebate_additional_payable_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rebate Additional Payable Account",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-12-30 09:01:44.015686",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Fund Source Accounts",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1100,9 +1100,9 @@
   },
   {
    "fieldname": "transaction_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Transaction Type",
-   "options": "Reguler\nProject"
+   "options": "Transaction Type"
   },
   {
    "depends_on": "eval:doc.apply_rebate",
@@ -1134,7 +1134,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-28 13:08:36.408442",
+ "modified": "2024-12-30 08:54:50.794354",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
