@@ -39,6 +39,8 @@ erpnext.PointOfOrder.ItemCart = class {
 		frm.set_value("customer", "");
 		this.make_customer_selector();
 		this.customer_field.set_focus();
+
+		this.events.cart_item_price_list()
 	}
 
 	init_cart_components() {
@@ -203,7 +205,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			if (!this.discount_field || can_edit_discount) this.show_discount_control();
 		});
 
-		frappe.ui.form.on("POS Invoice", "paid_amount", (frm) => {
+		frappe.ui.form.on("Pre Order", "paid_amount", (frm) => {
 			// called when discount is applied
 			this.update_totals_section(frm);
 		});
@@ -430,7 +432,7 @@ erpnext.PointOfOrder.ItemCart = class {
 	update_customer_section() {
 		const me = this;
 		const { customer, email_id = "", mobile_no = "", image } = this.customer_info || {};
-
+		
 		if (customer) {
 			this.$customer_section.html(
 				`<div class="customer-details">
@@ -448,6 +450,8 @@ erpnext.PointOfOrder.ItemCart = class {
 					</div>
 				</div>`
 			);
+
+			this.events.cart_item_price_list(this.events.get_frm().doc.selling_price_list || null)
 		} else {
 			// reset customer selector
 			this.reset_customer_selector();
@@ -956,9 +960,9 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	fetch_customer_transactions() {
 		frappe.db
-			.get_list("POS Invoice", {
+			.get_list("Pre Order", {
 				filters: { customer: this.customer_info.customer, docstatus: 1 },
-				fields: ["name", "grand_total", "status", "posting_date", "posting_time", "currency"],
+				fields: ["name", "grand_total", "status", "transaction_date", "currency"],
 				limit: 20,
 			})
 			.then((res) => {
@@ -971,12 +975,12 @@ erpnext.PointOfOrder.ItemCart = class {
 					return;
 				}
 
-				const elapsed_time = moment(res[0].posting_date + " " + res[0].posting_time).fromNow();
+				const elapsed_time = moment(res[0].transaction_date).fromNow();
 				this.$customer_section.find(".customer-desc").html(`Last transacted ${elapsed_time}`);
 
 				res.forEach((invoice) => {
-					const posting_datetime = moment(invoice.posting_date + " " + invoice.posting_time).format(
-						"Do MMMM, h:mma"
+					const posting_datetime = moment(invoice.transaction_date).format(
+						"Do MMMM"
 					);
 					let indicator_color = {
 						Paid: "green",

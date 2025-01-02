@@ -159,7 +159,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				onchange: function () {
 					me.item_group = this.value;
 					!me.item_group && (me.item_group = me.parent_item_group);
-					me.filter_items();
+					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
 				},
 				get_query: function () {
 					const doc = me.events.get_frm().doc;
@@ -324,8 +324,8 @@ erpnext.PointOfOrder.ItemSelector = class {
 		});
 	}
 
-	filter_items({ search_term = "" } = {}) {
-		if (search_term) {
+	filter_items({ search_term = "", refresh=false } = {}) {
+		if (search_term && !refresh) {
 			search_term = search_term.toLowerCase();
 
 			// memoize
@@ -381,5 +381,20 @@ erpnext.PointOfOrder.ItemSelector = class {
 	toggle_component(show) {
 		this.set_search_value("");
 		this.$component.css("display", show ? "flex" : "none");
+	}
+
+	async update_price_list_item(price_list=null) {
+		if (!price_list) {
+			const res = await frappe.db.get_value("POE Profile", this.poe_profile, "selling_price_list");
+			price_list = res.message.selling_price_list;
+		}
+
+		if(price_list != this.price_list){
+			this.price_list = price_list
+			this.filter_items({ 
+				search_term: this.search_field.last_value, 
+				refresh: true 
+			});
+		}
 	}
 };

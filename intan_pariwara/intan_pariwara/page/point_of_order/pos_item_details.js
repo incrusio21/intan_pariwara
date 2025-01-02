@@ -246,19 +246,19 @@ erpnext.PointOfOrder.ItemDetails = class {
 				if (this.value) {
 					me.events.form_updated(me.current_item, "warehouse", this.value).then(() => {
 						me.item_stock_map = me.events.get_item_stock_map();
-						const available_qty = me.item_stock_map[me.item_row.item_code][this.value][0];
+						const available_qty = me.item_stock_map[me.item_row.item_code][me.value][0];
 						const is_stock_item = Boolean(
-							me.item_stock_map[me.item_row.item_code][this.value][1]
+							me.item_stock_map[me.item_row.item_code][me.value][1]
 						);
 						if (available_qty === undefined) {
-							me.events.get_available_stock(me.item_row.item_code, this.value).then(() => {
+							me.events.get_available_stock(me.item_row.item_code, me.value).then(() => {
 								// item stock map is updated now reset warehouse
-								me.warehouse_control.set_value(this.value);
+								me.warehouse_control.set_value(me.value);
 							});
 						} else if (available_qty === 0 && is_stock_item) {
 							me.warehouse_control.set_value("");
 							const bold_item_code = me.item_row.item_code.bold();
-							const bold_warehouse = this.value.bold();
+							const bold_warehouse = me.value.bold();
 							frappe.throw(
 								__("Item Code: {0} is not available under warehouse {1}.", [
 									bold_item_code,
@@ -312,7 +312,7 @@ erpnext.PointOfOrder.ItemDetails = class {
 			};
 		}
 
-		frappe.model.on("POS Invoice Item", "*", (fieldname, value, item_row) => {
+		frappe.model.on("Pre Order Item", "*", (fieldname, value, item_row) => {
 			const field_control = this[`${fieldname}_control`];
 			const item_row_is_being_edited = this.compare_with_current_item(item_row);
 

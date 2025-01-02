@@ -160,7 +160,7 @@ erpnext.PointOfOrder.Payment = class {
 			}
 		});
 
-		frappe.ui.form.on("POS Invoice", "contact_mobile", (frm) => {
+		frappe.ui.form.on("Pre Order", "contact_mobile", (frm) => {
 			const contact = frm.doc.contact_mobile;
 			const request_button = $(this.request_for_payment_field?.$input[0]);
 			if (contact) {
@@ -170,7 +170,7 @@ erpnext.PointOfOrder.Payment = class {
 			}
 		});
 
-		frappe.ui.form.on("POS Invoice", "coupon_code", (frm) => {
+		frappe.ui.form.on("Pre Order", "coupon_code", (frm) => {
 			if (frm.doc.coupon_code && !frm.applying_pos_coupon_code) {
 				if (!frm.doc.ignore_pricing_rule) {
 					frm.applying_pos_coupon_code = true;
@@ -216,7 +216,7 @@ erpnext.PointOfOrder.Payment = class {
 			this.events.submit_invoice();
 		});
 
-		frappe.ui.form.on("POS Invoice", "paid_amount", (frm) => {
+		frappe.ui.form.on("Pre Order", "paid_amount", (frm) => {
 			this.update_totals_section(frm.doc);
 
 			// need to re calculate cash shortcuts after discount is applied
@@ -227,7 +227,7 @@ erpnext.PointOfOrder.Payment = class {
 			this.render_payment_mode_dom();
 		});
 
-		frappe.ui.form.on("POS Invoice", "loyalty_amount", (frm) => {
+		frappe.ui.form.on("Pre Order", "loyalty_amount", (frm) => {
 			const formatted_currency = format_currency(frm.doc.loyalty_amount, frm.doc.currency);
 			this.$payment_modes.find(`.loyalty-amount-amount`).html(formatted_currency);
 		});

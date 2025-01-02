@@ -78,8 +78,7 @@ def get_items(start, page_length, price_list, item_group, poe_profile, search_te
             bin_join_condition=bin_join_condition,
         ),
         {"warehouse": warehouse},
-        as_dict=1,
-        debug=1
+        as_dict=1
     )
 
     # return (empty) list if there are no results
@@ -178,3 +177,30 @@ def get_poe_profile_data(poe_profile):
 
 	poe_profile.customer_groups = _customer_groups_with_children
 	return poe_profile
+
+@frappe.whitelist()
+def get_past_order_list(search_term, status, limit=20):
+	fields = ["name", "grand_total", "currency", "customer", "transaction_date"]
+	invoice_list = []
+
+	if search_term and status:
+		invoices_by_customer = frappe.db.get_all(
+			"Pre Order",
+			filters={"customer": ["like", f"%{search_term}%"], "status": status},
+			fields=fields,
+			page_length=limit,
+		)
+		invoices_by_name = frappe.db.get_all(
+			"Pre Order",
+			filters={"name": ["like", f"%{search_term}%"], "status": status},
+			fields=fields,
+			page_length=limit,
+		)
+
+		invoice_list = invoices_by_customer + invoices_by_name
+	elif status:
+		invoice_list = frappe.db.get_all(
+			"Pre Order", filters={"status": status}, fields=fields, page_length=limit
+		)
+
+	return invoice_list

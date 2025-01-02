@@ -82,7 +82,7 @@ erpnext.PointOfOrder.PastOrderList = class {
 		this.$invoices_container.html("");
 
 		return frappe.call({
-			method: "erpnext.selling.page.point_of_sale.point_of_sale.get_past_order_list",
+			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_past_order_list",
 			freeze: true,
 			args: { search_term, status },
 			callback: (response) => {
@@ -96,8 +96,8 @@ erpnext.PointOfOrder.PastOrderList = class {
 	}
 
 	get_invoice_html(invoice) {
-		const posting_datetime = moment(invoice.posting_date + " " + invoice.posting_time).format(
-			"Do MMMM, h:mma"
+		const posting_datetime = moment(invoice.transaction_date).format(
+			"Do MMMM"
 		);
 		return `<div class="invoice-wrapper" data-invoice-name="${escape(invoice.name)}">
 				<div class="invoice-name-date">

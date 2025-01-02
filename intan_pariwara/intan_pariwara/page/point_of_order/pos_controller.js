@@ -247,6 +247,11 @@ erpnext.PointOfOrder.Controller = class {
 					// will add/remove LP payment method
 					this.payment.render_loyalty_points_payment_mode();
 				},
+
+				cart_item_price_list: (price_list) => {
+					this.item_selector.update_price_list_item(price_list)
+				}
+				
 			},
 		});
 	}
@@ -377,7 +382,7 @@ erpnext.PointOfOrder.Controller = class {
 
 				process_return: (name) => {
 					this.recent_order_list.toggle_component(false);
-					frappe.db.get_doc("POS Invoice", name).then((doc) => {
+					frappe.db.get_doc("Pre Order", name).then((doc) => {
 						frappe.run_serially([
 							() => this.make_return_invoice(doc),
 							() => this.cart.load_invoice(),
@@ -389,7 +394,7 @@ erpnext.PointOfOrder.Controller = class {
 					this.recent_order_list.toggle_component(false);
 					frappe.run_serially([
 						() => this.frm.refresh(name),
-						() => this.frm.call("reset_mode_of_payments"),
+						// () => this.frm.call("reset_mode_of_payments"),
 						() => this.cart.load_invoice(),
 						() => this.item_selector.toggle_component(true),
 					]);
@@ -429,7 +434,7 @@ erpnext.PointOfOrder.Controller = class {
 		return frappe.run_serially([
 			() => frappe.dom.freeze(),
 			() => this.make_sales_invoice_frm(),
-			() => this.set_pos_profile_data(),
+			// () => this.set_pos_profile_data(),
 			() => this.set_pos_profile_status(),
 			() => this.cart.load_invoice(),
 			() => frappe.dom.unfreeze(),
@@ -476,29 +481,29 @@ erpnext.PointOfOrder.Controller = class {
 			callback: (r) => {
 				frappe.model.sync(r.message);
 				frappe.get_doc(r.message.doctype, r.message.name).__run_link_triggers = false;
-				this.set_pos_profile_data().then(() => {
+				// this.set_pos_profile_data().then(() => {
 					frappe.dom.unfreeze();
-				});
+				// });
 			},
 		});
 	}
 
-	set_pos_profile_data() {
-		if (this.company && !this.frm.doc.company) this.frm.doc.company = this.company;
-		if (
-			(this.pos_profile && !this.frm.doc.pos_profile) |
-			(this.frm.doc.is_return && this.pos_profile != this.frm.doc.pos_profile)
-		) {
-			this.frm.doc.pos_profile = this.pos_profile;
-		}
+	// set_pos_profile_data() {
+	// 	if (this.company && !this.frm.doc.company) this.frm.doc.company = this.company;
+	// 	if (
+	// 		(this.pos_profile && !this.frm.doc.pos_profile) |
+	// 		(this.frm.doc.is_return && this.pos_profile != this.frm.doc.pos_profile)
+	// 	) {
+	// 		this.frm.doc.pos_profile = this.pos_profile;
+	// 	}
 
-		if (!this.frm.doc.company) return;
+	// 	if (!this.frm.doc.company) return;
 
-		return this.frm.trigger("set_pos_data");
-	}
+	// 	return this.frm.trigger("set_pos_data");
+	// }
 
 	set_pos_profile_status() {
-		this.page.set_indicator(this.pos_profile, "blue");
+		this.page.set_indicator(this.poe_profile, "blue");
 	}
 
 	async on_cart_update(args) {
@@ -612,6 +617,22 @@ erpnext.PointOfOrder.Controller = class {
 	update_cart_html(item_row, remove_item) {
 		this.cart.update_item_html(item_row, remove_item);
 		this.cart.update_totals_section(this.frm);
+	}
+
+	async update_price_list_item(price_list=null) {
+		if (!price_list) {
+			const res = await frappe.db.get_value("POE Profile", this.poe_profile, "selling_price_list");
+			price_list = res.message.selling_price_list;
+		}
+
+		if(price_list != this.item_details.price_list){
+			console.log(this.item_details.search_field)
+			me.price_list = price_list
+			me.filter_items({ 
+				search_term: me.search_field.last_value, 
+				refresh: true 
+			});
+		}
 	}
 
 	check_serial_batch_selection_needed(item_row) {

@@ -26,8 +26,6 @@ erpnext.PointOfOrder.PastOrderSummary = class {
 						<div class="items-container summary-container"></div>
 						<div class="label">${__("Totals")}</div>
 						<div class="totals-container summary-container"></div>
-						<div class="label">${__("Payments")}</div>
-						<div class="payments-container summary-container"></div>
 						<div class="summary-btns"></div>
 					</div>
 				</div>
@@ -83,8 +81,8 @@ erpnext.PointOfOrder.PastOrderSummary = class {
 					<div class="cashier">${__("Sold by")}: ${doc.owner}</div>
 				</div>
 				<div class="right-section">
-					<div class="paid-amount">${format_currency(doc.paid_amount, doc.currency)}</div>
-					<div class="invoice-name">${doc.name}</div>
+					<div class="paid-amount">${doc.name}</div>
+					<div class="invoice-name"></div>
 					<span class="indicator-pill whitespace-nowrap ${indicator_color}"><span>${doc.status}</span></span>
 				</div>`;
 	}
@@ -350,7 +348,7 @@ erpnext.PointOfOrder.PastOrderSummary = class {
 
 		this.attach_totals_info(doc);
 
-		this.attach_payments_info(doc);
+		// this.attach_payments_info(doc);
 
 		const condition_btns_map = this.get_condition_btn_map(after_submission);
 
