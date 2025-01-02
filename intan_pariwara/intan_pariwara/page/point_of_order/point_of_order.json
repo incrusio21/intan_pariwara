@@ -1,0 +1,33 @@
+{
+ "content": null,
+ "creation": "2024-12-27 15:55:55.657157",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-01-02 10:19:03.980732",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "point-of-order",
+ "owner": "Administrator",
+ "page_name": "point-of-order",
+ "restrict_to_domain": "Retail",
+ "roles": [
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Sales Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Point Of Order"
+}

@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "creation": "2025-01-02 11:15:51.090462",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "poe_profile",
+  "column_break_qphn",
+  "company"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "poe_profile",
+   "fieldtype": "Link",
+   "label": "POE Profile",
+   "options": "POE Profile",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qphn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "links": [],
+ "modified": "2025-01-02 11:24:33.130123",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "POE Profile Session",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "read_only": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

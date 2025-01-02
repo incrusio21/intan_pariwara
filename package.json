@@ -1,0 +1,11 @@
+{
+  "name": "intan_pariwara",
+  "version": "1.0.0",
+  "description": "DAS",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "onscan.js": "^1.5.2"
+  }
+}
