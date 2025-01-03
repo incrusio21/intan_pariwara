@@ -174,6 +174,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			parent: this.$component.find(".item-group-field"),
 			render_input: true,
 		});
+
 		this.search_field.toggle_label(false);
 		this.item_group_field.toggle_label(false);
 

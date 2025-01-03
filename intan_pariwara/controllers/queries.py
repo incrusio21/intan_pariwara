@@ -19,9 +19,10 @@ def get_price_list_fund(
     # if fund_source and fund_source != party.custom_customer_fund_group:
     #     party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {"parent": customer, "fund_source": fund_source}, "price_list") or party_details["selling_price_list"]
 
+    fund_source = fund_source or party.get("custom_customer_fund_group")
     party_details["apply_rebate"] = frappe.get_value("Customer Fund Source", 
-        party.get("custom_customer_fund_group"), "apply_rebate"
-    ) if party.get("custom_customer_fund_group") else 0
+        fund_source, "apply_rebate"
+    ) if fund_source else 0
 
     if party_details.get("apply_rebate"):
         if transaction_type:

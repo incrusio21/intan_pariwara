@@ -1,0 +1,16 @@
+.point-of-sale-app {
+    .customer-cart-container {
+        .transaction-section {
+            display: flex;
+			flex-direction: column;
+			padding: var(--padding-md) var(--padding-lg);
+			overflow: visible;
+
+            .fund-source-field {
+				display: flex;
+				align-items: center;
+				padding-top: var(--padding-xs);
+			}
+        }
+    }
+}

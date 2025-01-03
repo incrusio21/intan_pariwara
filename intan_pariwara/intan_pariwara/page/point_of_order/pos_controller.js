@@ -757,14 +757,15 @@ erpnext.PointOfOrder.Controller = class {
 			let save_error = false;
 			await this.frm.save(null, null, null, () => (save_error = true));
 			// only move to payment section if save is successful
-			!save_error && this.payment.checkout();
+			!save_error && this.open_form_view(); // this.payment.checkout();
 			// show checkout button on error
 			save_error &&
 				setTimeout(() => {
 					this.cart.toggle_checkout_btn(true);
 				}, 300); // wait for save to finish
 		} else {
-			this.payment.checkout();
+			this.open_form_view();
+			// this.payment.checkout();
 		}
 	}
 };

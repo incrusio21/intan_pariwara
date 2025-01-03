@@ -25,6 +25,7 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	init_child_components() {
 		this.init_customer_selector();
+		this.init_transaction_selector();
 		this.init_cart_components();
 	}
 
@@ -40,7 +41,14 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.make_customer_selector();
 		this.customer_field.set_focus();
 
+		this.$transaction_section.html("");
+
 		this.events.cart_item_price_list()
+	}
+
+	init_transaction_selector() {
+		this.$component.append(`<div class="transaction-section"></div>`);
+		this.$transaction_section = this.$component.find(".transaction-section");
 	}
 
 	init_cart_components() {
@@ -377,6 +385,57 @@ erpnext.PointOfOrder.ItemCart = class {
 		}
 	}
 
+	make_transaction_selector(frm) {
+		this.$transaction_section.html(`
+			<div class="fund-source-field"></div>
+		`);
+		const me = this;
+		// const allowed_customer_group = this.allowed_customer_groups || [];
+		// let filters = {};
+		// if (allowed_customer_group.length) {
+		// 	filters = {
+		// 		customer_group: ["in", allowed_customer_group],
+		// 	};
+		// }
+		
+		if (!frm) frm = this.events.get_frm();
+
+		this.fund_source_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Fund Source"),
+				fieldtype: "Link",
+				options: "Customer Fund Source",
+				
+				placeholder: __("Select Fund Source"),
+				// get_query: function () {
+				// 	return {
+				// 		filters: filters,
+				// 	};
+				// },
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.dom.freeze();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "fund_source", this.value);
+						frm.script_manager.trigger("fund_source", frm.doc.doctype, frm.doc.name).then(() => {
+							frappe.run_serially([
+								// () => me.fetch_customer_details(this.value),
+								// () => me.events.customer_details_updated(me.customer_info),
+								// () => me.update_customer_section(),
+								// () => me.update_totals_section(),
+								() => frappe.dom.unfreeze(),
+							]);
+						});
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".fund-source-field"),
+			render_input: true,
+			value: frm.doc.fund_source,
+		});
+		this.fund_source_field.toggle_label(false);
+	}
+
 	show_discount_control() {
 		this.$add_discount_elem.css({ padding: "0px", border: "none" });
 		this.$add_discount_elem.html(`<div class="add-discount-field"></div>`);
@@ -448,6 +507,7 @@ erpnext.PointOfOrder.ItemCart = class {
 							</svg>
 						</div>
 					</div>
+					
 				</div>`
 			);
 
@@ -1015,6 +1075,10 @@ erpnext.PointOfOrder.ItemCart = class {
 	attach_refresh_field_event(frm) {
 		$(frm.wrapper).off("refresh-fields");
 		$(frm.wrapper).on("refresh-fields", () => {
+			if(frm.doc.customer){
+				this.make_transaction_selector(frm)
+			}
+
 			if (frm.doc.items.length) {
 				this.$cart_items_wrapper.html("");
 				frm.doc.items.forEach((item) => {
@@ -1035,6 +1099,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			this.update_customer_section();
 		});
 
+		
 		this.$cart_items_wrapper.html("");
 		if (frm.doc.items.length) {
 			frm.doc.items.forEach((item) => {

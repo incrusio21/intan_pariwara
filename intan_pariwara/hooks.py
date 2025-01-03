@@ -25,7 +25,7 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/intan_pariwara/css/intan_pariwara.css"
+app_include_css = "intan_pariwara.bundle.css"
 app_include_js = "intan_pariwara.bundle.js"
 
 # include js, css files in header of web template
