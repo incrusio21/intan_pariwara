@@ -4,6 +4,7 @@ erpnext.PointOfOrder.ItemDetails = class {
 		this.events = events;
 		this.hide_images = settings.hide_images;
 		this.allow_rate_change = settings.allow_rate_change;
+		this.skip_validate_stock = settings.skip_validate_stock_item;
 		this.allow_discount_change = settings.allow_discount_change;
 		this.current_item = {};
 
@@ -244,6 +245,7 @@ erpnext.PointOfOrder.ItemDetails = class {
 			this.warehouse_control.df.reqd = 1;
 			this.warehouse_control.df.onchange = function () {
 				if (this.value) {
+					console.log(this.skip_validate_stock)
 					me.events.form_updated(me.current_item, "warehouse", this.value).then(() => {
 						me.item_stock_map = me.events.get_item_stock_map();
 						const available_qty = me.item_stock_map[me.item_row.item_code][me.value][0];
@@ -255,7 +257,7 @@ erpnext.PointOfOrder.ItemDetails = class {
 								// item stock map is updated now reset warehouse
 								me.warehouse_control.set_value(me.value);
 							});
-						} else if (available_qty === 0 && is_stock_item) {
+						} else if (!me.skip_validate_stock && available_qty === 0 && is_stock_item) {
 							me.warehouse_control.set_value("");
 							const bold_item_code = me.item_row.item_code.bold();
 							const bold_warehouse = me.value.bold();

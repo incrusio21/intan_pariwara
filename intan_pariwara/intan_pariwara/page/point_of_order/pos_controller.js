@@ -659,6 +659,8 @@ erpnext.PointOfOrder.Controller = class {
 	}
 
 	async check_stock_availability(item_row, qty_needed, warehouse) {
+		if(this.settings.skip_validate_stock_item) return;
+		
 		const resp = (await this.get_available_stock(item_row.item_code, warehouse)).message;
 		const available_qty = resp[0];
 		const is_stock_item = resp[1];
@@ -757,14 +759,14 @@ erpnext.PointOfOrder.Controller = class {
 			let save_error = false;
 			await this.frm.save(null, null, null, () => (save_error = true));
 			// only move to payment section if save is successful
-			!save_error && this.open_form_view(); // this.payment.checkout();
+			!save_error && this.make_new_invoice(); // this.payment.checkout();
 			// show checkout button on error
 			save_error &&
 				setTimeout(() => {
 					this.cart.toggle_checkout_btn(true);
 				}, 300); // wait for save to finish
 		} else {
-			this.open_form_view();
+			this.make_new_invoice();
 			// this.payment.checkout();
 		}
 	}
