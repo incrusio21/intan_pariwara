@@ -586,6 +586,7 @@ erpnext.PointOfOrder.Controller = class {
 	}
 
 	get_item_from_frm({ name, item_code, batch_no, uom, rate }) {
+		console.log(name)
 		let item_row = null;
 		if (name) {
 			item_row = this.frm.doc.items.find((i) => i.name == name);
@@ -593,7 +594,7 @@ erpnext.PointOfOrder.Controller = class {
 			// if item is clicked twice from item selector
 			// then "item_code, batch_no, uom, rate" will help in getting the exact item
 			// to increase the qty by one
-			const has_batch_no = batch_no !== "null" && batch_no !== null;
+			const has_batch_no = batch_no !== "null" && batch_no !== null && batch_no !== undefined;
 			item_row = this.frm.doc.items.find(
 				(i) =>
 					i.item_code === item_code &&
@@ -626,7 +627,6 @@ erpnext.PointOfOrder.Controller = class {
 		}
 
 		if(price_list != this.item_details.price_list){
-			console.log(this.item_details.search_field)
 			me.price_list = price_list
 			me.filter_items({ 
 				search_term: me.search_field.last_value, 
