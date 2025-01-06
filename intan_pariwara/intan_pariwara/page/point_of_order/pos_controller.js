@@ -586,7 +586,7 @@ erpnext.PointOfOrder.Controller = class {
 	}
 
 	get_item_from_frm({ name, item_code, batch_no, uom, rate }) {
-		console.log(name)
+		
 		let item_row = null;
 		if (name) {
 			item_row = this.frm.doc.items.find((i) => i.name == name);
@@ -600,7 +600,7 @@ erpnext.PointOfOrder.Controller = class {
 					i.item_code === item_code &&
 					(!has_batch_no || (has_batch_no && i.batch_no === batch_no)) &&
 					i.uom === uom &&
-					i.rate === flt(rate)
+					i.rate === flt(parseFloat(rate))
 			);
 		}
 
