@@ -2,29 +2,27 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:produk_inti",
- "creation": "2024-12-03 09:09:40.435766",
+ "autoname": "field:kode_pos",
+ "creation": "2024-12-29 11:25:30.379950",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "produk_inti"
+  "kode_pos"
  ],
  "fields": [
   {
-   "fieldname": "produk_inti",
+   "fieldname": "kode_pos",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Produk Inti",
-   "reqd": 1,
+   "label": "Kode POS",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-22 21:42:07.677158",
+ "modified": "2024-12-29 11:25:50.926232",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
- "name": "Produk Inti",
+ "name": "Kode POS",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

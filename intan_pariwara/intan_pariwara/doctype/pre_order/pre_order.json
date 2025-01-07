@@ -17,9 +17,13 @@
   "transaction_date",
   "valid_till",
   "transaction_type",
+  "branch",
+  "set_warehouse",
   "column_break1",
   "order_type",
   "company",
+  "delivery_date",
+  "custom_calon_siplah",
   "amended_from",
   "currency_and_price_list",
   "currency",
@@ -148,7 +152,7 @@
    "no_copy": 1,
    "oldfieldname": "amended_from",
    "oldfieldtype": "Data",
-   "options": "Quotation",
+   "options": "Pre Order",
    "print_hide": 1,
    "read_only": 1,
    "width": "150px"
@@ -1099,6 +1103,7 @@
    "read_only": 1
   },
   {
+   "default": "Reguler",
    "fieldname": "transaction_type",
    "fieldtype": "Link",
    "label": "Transaction Type",
@@ -1129,12 +1134,37 @@
   {
    "fieldname": "column_break_xlus",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fetch_from": "branch.custom_default_warehouse",
+   "fieldname": "set_warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Expected Delivery Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "custom_calon_siplah",
+   "fieldtype": "Select",
+   "label": "Calon Siplah",
+   "options": "\nYa\nTidak"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-30 08:54:50.794354",
+ "modified": "2025-01-06 15:15:29.457498",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

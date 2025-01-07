@@ -8,24 +8,27 @@
  "engine": "InnoDB",
  "field_order": [
   "kode_kelas",
-  "description"
+  "kelas"
  ],
  "fields": [
   {
    "fieldname": "kode_kelas",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Kode Kelas",
+   "reqd": 1,
    "unique": 1
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
+   "fieldname": "kelas",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Kelas"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-06 13:22:42.468759",
+ "modified": "2025-01-02 14:03:55.565447",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Kode Kelas",
@@ -45,6 +48,7 @@
    "write": 1
   }
  ],
+ "search_fields": "kelas",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

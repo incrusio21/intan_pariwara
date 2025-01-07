@@ -9,6 +9,7 @@
   "apply_rebate",
   "customer_fund_source",
   "description",
+  "fund_source_type",
   "section_break_pmly",
   "account_details"
  ],
@@ -31,7 +32,6 @@
    "label": "Description"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_pmly",
    "fieldtype": "Section Break",
    "label": "Rebate Account"
@@ -41,11 +41,17 @@
    "fieldtype": "Table",
    "label": "Account Details",
    "options": "Fund Source Accounts"
+  },
+  {
+   "fieldname": "fund_source_type",
+   "fieldtype": "Select",
+   "label": "Customer Fund Source Type",
+   "options": "\nReguler - Dana Negara\nReguler - Dana Siswa\nProyek"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-30 10:39:51.140526",
+ "modified": "2025-01-07 09:27:03.364022",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Customer Fund Source",

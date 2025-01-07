@@ -2,29 +2,27 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:produk_inti",
- "creation": "2024-12-03 09:09:40.435766",
+ "autoname": "field:kode_pwk",
+ "creation": "2024-12-09 20:10:09.024139",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "produk_inti"
+  "kode_pwk"
  ],
  "fields": [
   {
-   "fieldname": "produk_inti",
+   "fieldname": "kode_pwk",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Produk Inti",
-   "reqd": 1,
+   "label": "Kode PWK",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-22 21:42:07.677158",
+ "modified": "2024-12-29 11:24:08.887916",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
- "name": "Produk Inti",
+ "name": "Kode PWK",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

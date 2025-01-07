@@ -1,30 +1,33 @@
 {
  "actions": [],
- "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:produk_inti",
- "creation": "2024-12-03 09:09:40.435766",
+ "autoname": "field:id_buku_pem",
+ "creation": "2024-12-16 13:22:26.630307",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "produk_inti"
+  "id_buku_pem",
+  "description"
  ],
  "fields": [
   {
-   "fieldname": "produk_inti",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "id_buku_pem",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Produk Inti",
-   "reqd": 1,
+   "label": "ID Buku Pem",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-22 21:42:07.677158",
+ "modified": "2024-12-16 13:29:20.403681",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
- "name": "Produk Inti",
+ "name": "Principal",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

@@ -8,24 +8,27 @@
  "engine": "InnoDB",
  "field_order": [
   "kode_jenjang",
-  "description"
+  "jenjang"
  ],
  "fields": [
   {
    "fieldname": "kode_jenjang",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Kode Jenjang",
+   "reqd": 1,
    "unique": 1
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
+   "fieldname": "jenjang",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Jenjang"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-06 11:00:07.355532",
+ "modified": "2024-12-24 14:35:07.448775",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Kode Jenjang",
@@ -45,6 +48,7 @@
    "write": 1
   }
  ],
+ "search_fields": "jenjang",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
