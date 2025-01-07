@@ -388,6 +388,8 @@ erpnext.PointOfOrder.ItemCart = class {
 	make_transaction_selector(frm) {
 		this.$transaction_section.html(`
 			<div class="fund-source-field"></div>
+			<div class="delivery-date-field"></div>
+			<div class="calon-siplah-field"></div>
 		`);
 		const me = this;
 		// const allowed_customer_group = this.allowed_customer_groups || [];
@@ -433,7 +435,45 @@ erpnext.PointOfOrder.ItemCart = class {
 			render_input: true,
 			value: frm.doc.fund_source,
 		});
+
+		this.delivery_date_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Delivery Date"),
+				fieldtype: "Date",
+				placeholder: __("Fill Delivery Date"),
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "delivery_date", this.value);
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".delivery-date-field"),
+			render_input: true,
+			value: frm.doc.delivery_date,
+		});
+
+		this.calon_siplah_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Calon Siplah"),
+				fieldtype: "Select",
+				options: ["", "Ya", "Tidak"],
+				placeholder: __("Select Calon Siplah"),
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "custom_calon_siplah", this.value);
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".calon-siplah-field"),
+			render_input: true,
+			value: frm.doc.custom_calon_siplah,
+		});
+
 		this.fund_source_field.toggle_label(false);
+		this.delivery_date_field.toggle_label(false);
+		this.calon_siplah_field.toggle_label(false);
 	}
 
 	show_discount_control() {

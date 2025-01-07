@@ -14,6 +14,7 @@ class PreOrder(AccountsController, SellingController):
 	
 	def validate(self):
 		super().validate()
+		self.validate_item_tax_type()
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
@@ -23,6 +24,11 @@ class PreOrder(AccountsController, SellingController):
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
 		make_packing_list(self)
+
+	def validate_item_tax_type(self):
+		tax_type = set(d.tax_type for d in self.items)
+		if len(set(tax_type)) > 1:
+			frappe.throw("Multiple Tax Types are present among Items.")
 
 	def on_submit(self):
 		# Check for Approving Authority
