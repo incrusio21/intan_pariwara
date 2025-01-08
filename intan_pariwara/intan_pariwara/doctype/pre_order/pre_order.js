@@ -26,7 +26,6 @@ frappe.ui.form.on("Pre Order", {
 				},
 			};
 		});
-
     },
 	refresh(frm) {
         frm.trigger("set_label");

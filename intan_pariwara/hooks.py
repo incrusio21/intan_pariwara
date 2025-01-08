@@ -137,6 +137,7 @@ override_doctype_class = {
 	"Delivery Note": "intan_pariwara.overrides.delivery_note.DeliveryNote",
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
+	# "Selling Setting": "intan_pariwara.overrides.selling_settings.SellingSettings",
 }
 
 # Document Events
@@ -185,9 +186,10 @@ doc_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "intan_pariwara.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
+	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

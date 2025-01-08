@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2025-01-07 13:51:31.948767",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "disabled",
+  "is_max_rebate_applied",
+  "is_rebate_fixed"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_max_rebate_applied",
+   "fieldtype": "Check",
+   "label": "Is Max Rebate / Discount Applied?"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_rebate_fixed",
+   "fieldtype": "Check",
+   "label": "Is Rebate / Discount Fixed"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-08 12:51:55.630009",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Fund Source Type",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

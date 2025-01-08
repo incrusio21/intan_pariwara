@@ -7,8 +7,26 @@ from frappe.model.document import Document
 
 from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals, get_round_off_applicable_accounts
 
+from intan_pariwara.controllers.queries import get_price_list_fund
 
 class calculate_taxes_and_totals(calculate_taxes_and_totals):
+    def __init__(self, doc: Document):
+        self.doc = doc
+        frappe.flags.round_off_applicable_accounts = []
+        frappe.flags.round_row_wise_tax = frappe.db.get_single_value(
+            "Accounts Settings", "round_row_wise_tax"
+        )
+
+        fund_source = get_price_list_fund(self.doc.company, self.doc.customer, self.doc.fund_source, self.doc.transaction_type)
+        for key, value in fund_source.items():
+            if not self.doc.get(key):
+                self.doc.set(key, value)
+                
+        self._items = self.filter_rows() if self.doc.doctype == "Quotation" else self.doc.get("items")
+
+        get_round_off_applicable_accounts(self.doc.company, frappe.flags.round_off_applicable_accounts)
+        self.calculate()
+
     # update agar doctype pre order dianggap bagian dari penjualan
     def calculate_totals(self):
         if self.doc.get("taxes"):
@@ -70,12 +88,21 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             return
 
         if not self.discount_amount_applied:
-            transaction_type = self.doc.get("transaction_type")
+            field = "rebate" if self.doc.get("apply_rebate") else "discount_percentage"
+            is_max_applied = self.doc.get("is_max_rebate_applied")
+            is_fixed = self.doc.get("is_rebate_fixed")
 
             for item in self.doc.items:
                 self.doc.round_floats_in(item)
                 item.rebate_amount = 0
-                
+
+                # set nilai rebate sesuai dengan rebate max dan fix dari doctype item 
+                item.rebate_max, item.rebate_fix = frappe.get_cached_value("Item", item.item_code, ["custom_rabat_max","custom_cb"])
+                if is_fixed:
+                    item.set(field, item.rebate_fix)
+                elif is_max_applied and item.get("rebate_max") and item.get(field) > item.rebate_max:
+                    item.set(field, item.rebate_max)
+
                 if item.discount_percentage == 100:
                     item.rate = 0.0
                 elif item.price_list_rate:
@@ -101,12 +128,6 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
                     "Purchase Order Item",
                     "Purchase Receipt Item",
                 ]:
-                    item.rebate_max = frappe.get_cached_value("Item", item.item_code, "custom_rabat_max")
-                    if item.get("rebate_max") and \
-                        transaction_type == "Requler" and \
-                        item.rebate > item.rebate_max:
-                        item.rebate = item.rebate_max
-
                     item.rate_with_margin, item.base_rate_with_margin = self.calculate_margin(item)
                     if flt(item.rate_with_margin) > 0:
                         item.rate = flt(

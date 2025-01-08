@@ -28,6 +28,8 @@
   "currency_and_price_list",
   "currency",
   "conversion_rate",
+  "is_max_rebate_applied",
+  "is_rebate_fixed",
   "column_break2",
   "selling_price_list",
   "price_list_currency",
@@ -80,6 +82,7 @@
   "apply_discount_on",
   "base_discount_amount",
   "coupon_code",
+  "additional_discount_account",
   "column_break_46",
   "additional_discount_percentage",
   "discount_amount",
@@ -1095,7 +1098,6 @@
    "width": "100px"
   },
   {
-   "depends_on": "eval:doc.apply_rebate",
    "fieldname": "rebate_total",
    "fieldtype": "Currency",
    "label": "Rebate Total",
@@ -1159,12 +1161,33 @@
    "fieldtype": "Select",
    "label": "Calon Siplah",
    "options": "\nYa\nTidak"
+  },
+  {
+   "fieldname": "additional_discount_account",
+   "fieldtype": "Link",
+   "label": "Discount Account",
+   "mandatory_depends_on": "eval: doc.discount_amount",
+   "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_max_rebate_applied",
+   "fieldtype": "Check",
+   "label": " Is Max Rebate / Discount Applied?",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_rebate_fixed",
+   "fieldtype": "Check",
+   "label": "Is Rebate / Discount Fixed",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-06 15:15:29.457498",
+ "modified": "2025-01-08 13:36:01.167430",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

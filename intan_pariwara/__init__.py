@@ -255,6 +255,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"discount_percentage": 0.0,
 			"discount_amount": flt(args.discount_amount) or 0.0,
 			"rebate_max": flt(item.get("custom_rabat_max")),
+			"rebate_fix": flt(item.get("custom_cb")),
 			"custom_rabat_max": flt(item.get("custom_rabat_max")),
 			"update_stock": args.get("update_stock")
 			if args.get("doctype") in ["Sales Invoice", "Purchase Invoice"]

@@ -36,11 +36,14 @@
   "margin_type",
   "margin_rate_or_amount",
   "rate_with_margin",
-  "rebate_max",
   "column_break_18",
   "discount_percentage",
   "discount_amount",
   "base_rate_with_margin",
+  "rebate_section",
+  "rebate_max",
+  "rebate_fix",
+  "column_break_bxig",
   "rebate",
   "section_break1",
   "rate",
@@ -352,7 +355,8 @@
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
    "label": "Discount Amount",
-   "options": "currency"
+   "options": "currency",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.margin_type && doc.price_list_rate && doc.margin_rate_or_amount",
@@ -699,7 +703,6 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.price_list_rate && parent.apply_rebate",
    "fieldname": "rebate",
    "fieldtype": "Percent",
    "label": "Rebate"
@@ -714,7 +717,6 @@
   {
    "fieldname": "rebate_max",
    "fieldtype": "Percent",
-   "hidden": 1,
    "label": "Rebate Max",
    "read_only": 1
   },
@@ -732,11 +734,28 @@
    "fieldtype": "Select",
    "label": "Tax Type",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:parent.apply_rebate",
+   "fieldname": "rebate_section",
+   "fieldtype": "Section Break",
+   "label": "Rebate"
+  },
+  {
+   "fieldname": "column_break_bxig",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rebate_fix",
+   "fieldtype": "Percent",
+   "label": "Rebate Fix",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-01-07 11:06:30.287949",
+ "modified": "2025-01-08 16:06:42.555405",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order Item",

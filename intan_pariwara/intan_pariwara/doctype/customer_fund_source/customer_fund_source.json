@@ -44,14 +44,14 @@
   },
   {
    "fieldname": "fund_source_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Customer Fund Source Type",
-   "options": "\nReguler - Dana Negara\nReguler - Dana Siswa\nProyek"
+   "options": "Fund Source Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-07 09:27:03.364022",
+ "modified": "2025-01-08 12:35:07.070517",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Customer Fund Source",
