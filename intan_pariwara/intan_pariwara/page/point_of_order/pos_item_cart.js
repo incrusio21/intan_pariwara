@@ -390,7 +390,9 @@ erpnext.PointOfOrder.ItemCart = class {
 			<div class="fund-source-field"></div>
 			<div class="delivery-date-field"></div>
 			<div class="calon-siplah-field"></div>
+			<div class="relasi-field"></div>
 		`);
+
 		const me = this;
 		// const allowed_customer_group = this.allowed_customer_groups || [];
 		// let filters = {};
@@ -474,6 +476,34 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.fund_source_field.toggle_label(false);
 		this.delivery_date_field.toggle_label(false);
 		this.calon_siplah_field.toggle_label(false);
+		
+		if(frm.doc.has_relation){
+			this.relasi_field = frappe.ui.form.make_control({
+				df: {
+					label: __("Relasi"),
+					fieldtype: "Link",
+					options: "Customer",
+					placeholder: __("Select Relasi"),
+					get_query: function () {
+						return {
+							filters: {
+								customer_group: frm.doc.relasi_group
+							},
+						};
+					},
+					onchange: function () {
+						if (this.value) {
+							const frm = me.events.get_frm();
+							frappe.model.set_value(frm.doc.doctype, frm.doc.name, "relasi", this.value);
+						}
+					},
+				},
+				parent: this.$transaction_section.find(".relasi-field"),
+				render_input: true,
+				value: frm.doc.relasi,
+			});
+			this.relasi_field.toggle_label(false);
+		}
 	}
 
 	show_discount_control() {

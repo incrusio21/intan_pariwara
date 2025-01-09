@@ -8,7 +8,23 @@ intan_pariwara.sales_common = {
         // erpnext.sales_common.setup_selling_controller();
 
         intan_pariwara.selling.SellingController = class SellingController extends extend_class {
+            refresh(doc, dt, dn) {
+                super.refresh(doc, dt, dn);
+                
+                var me = this;
 
+                me.frm.set_query("relasi", function(doc){
+                    if(!doc.relasi_group){
+                        frappe.throw("Please Set Customer Group in Doctype Jenis Relasi First")
+                    }
+
+                    return {
+                        filters: {
+                            customer_group: doc.relasi_group
+                        },
+                    }
+                })
+            }
             item_code(doc, cdt, cdn) {
                 var me = this;
                 var item = frappe.get_doc(cdt, cdn);
@@ -225,6 +241,59 @@ intan_pariwara.sales_common = {
 				this.apply_discount_on_item(doc, cdt, cdn, "discount_percentage");
 			}
             
+            _set_values_for_item_list(children) {
+                const items_rule_dict = {};
+        
+                for (const child of children) {
+                    const existing_pricing_rule = frappe.model.get_value(child.doctype, child.name, "pricing_rules");
+        
+                    for (const [key, value] of Object.entries(child)) {
+                        if (!["doctype", "name"].includes(key)) {
+                            if (key === "price_list_rate" && child.price_list_rate != value) {
+                                frappe.model.set_value(child.doctype, child.name, "rate", value);
+                            }
+        
+                            if (key === "pricing_rules") {
+                                frappe.model.set_value(child.doctype, child.name, key, value);
+                            }
+        
+                            if (key !== "free_item_data") {
+                                if (child.apply_rule_on_other_items && JSON.parse(child.apply_rule_on_other_items).length) {
+                                    if (!in_list(JSON.parse(child.apply_rule_on_other_items), child.item_code)) {
+                                        continue;
+                                    }
+                                }
+        
+                                frappe.model.set_value(child.doctype, child.name, key, value);
+                            }
+                        }
+                    }
+        
+                    frappe.model.round_floats_in(
+                        frappe.get_doc(child.doctype, child.name),
+                        ["price_list_rate", "discount_percentage"],
+                    );
+        
+                    // if pricing rule set as blank from an existing value, apply price_list
+                    if (!this.frm.doc.ignore_pricing_rule && existing_pricing_rule && !child.pricing_rules) {
+                        this.apply_price_list(frappe.get_doc(child.doctype, child.name));
+                    } else if (!child.pricing_rules) {
+                        this.remove_pricing_rule(frappe.get_doc(child.doctype, child.name));
+                    }
+        
+                    if (child.free_item_data && child.free_item_data.length > 0) {
+                        this.apply_product_discount(child);
+                    }
+        
+                    if (child.apply_rule_on_other_items && JSON.parse(child.apply_rule_on_other_items).length) {
+                        items_rule_dict[child.name] = child;
+                    }
+                }
+        
+                this.apply_rule_on_other_items(items_rule_dict);
+                this.calculate_taxes_and_totals();
+            }
+
             apply_price_list(item, reset_plc_conversion) {
                 // We need to reset plc_conversion_rate sometimes because the call to
                 // `erpnext.stock.get_item_details.apply_price_list` is sensitive to its value
@@ -264,6 +333,9 @@ intan_pariwara.sales_common = {
                                 () => {
                                     if(args.items.length) {
                                         me._set_values_for_item_list(r.message.children);
+                                        // $.each(r.message.children || [], function(i, d) {
+                                        //     me.apply_discount_on_item(d, d.doctype, d.name, 'discount_percentage');
+                                        // });
                                     }
                                 },
                                 () => { me.in_apply_price_list = false; }

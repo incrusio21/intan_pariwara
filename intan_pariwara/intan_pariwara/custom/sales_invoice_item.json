@@ -545,7 +545,7 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2024-08-10 14:49:36.112403",
+   "creation": "2025-01-08 17:21:18.074789",
    "default_value": null,
    "doc_type": "Sales Invoice Item",
    "docstatus": 0,
@@ -553,7 +553,7 @@
    "field_name": "discount_account",
    "idx": 0,
    "is_system_generated": 0,
-   "modified": "2025-01-08 12:15:11.696896",
+   "modified": "2025-01-08 17:21:18.074789",
    "modified_by": "Administrator",
    "module": null,
    "name": "Sales Invoice Item-discount_account-hidden",
@@ -561,14 +561,14 @@
    "property": "hidden",
    "property_type": "Check",
    "row_name": null,
-   "value": "1"
+   "value": "0"
   },
   {
    "_assign": null,
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2024-08-10 14:49:36.129470",
+   "creation": "2025-01-08 17:21:18.101559",
    "default_value": null,
    "doc_type": "Sales Invoice Item",
    "docstatus": 0,
@@ -576,7 +576,7 @@
    "field_name": "discount_account",
    "idx": 0,
    "is_system_generated": 0,
-   "modified": "2025-01-08 12:15:11.725098",
+   "modified": "2025-01-08 17:21:18.101559",
    "modified_by": "Administrator",
    "module": null,
    "name": "Sales Invoice Item-discount_account-mandatory_depends_on",
@@ -584,7 +584,7 @@
    "property": "mandatory_depends_on",
    "property_type": "Code",
    "row_name": null,
-   "value": ""
+   "value": "eval: doc.discount_amount"
   },
   {
    "_assign": null,

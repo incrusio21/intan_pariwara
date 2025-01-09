@@ -187,8 +187,8 @@ doc_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
+	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
-	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice"
 }
 #
 # each overriding function accepts a `data` argument;

@@ -363,7 +363,20 @@ def set_other_values(party_details, party, party_type):
 			party_details[f] = party.get("default_" + f)
 
 	if party_type == "Customer":
-		party_details["fund_source"] = party.get("custom_customer_fund_group")
+		party_details.update({
+			"fund_source": party.get("custom_customer_fund_group"),
+			"has_relation": 0,
+			"apply_rebate": frappe.get_cached_value("Customer Fund Source", party.custom_customer_fund_group, "apply_rebate") \
+				if party.get("custom_customer_fund_group") else 0,
+		})
+		
+		if party.get("custom_jenis_relasi"):
+			jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group"], as_dict=1)
+
+			party_details["has_relation"] = jenis_relasi.has_relation
+			party_details["relasi_group"] = jenis_relasi.customer_group
+			if jenis_relasi.cant_have_rebate:
+				party_details["apply_rebate"] = 0 
 
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order

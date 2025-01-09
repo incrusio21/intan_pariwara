@@ -34,7 +34,11 @@ def get_price_list_fund(
 
     # cek customer fund source dapat apply rabat
     party_details["apply_rebate"] = c_fund.apply_rebate if c_fund else 0
-
+    
+    # cant_have_rebate memebuat apply rebate di non aktifkan 
+    if party.custom_jenis_relasi and frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, "cant_have_rebate"):
+        party_details["apply_rebate"] = 0
+    
     if c_fund and c_fund.fund_source_type and transaction_type == "Reguler":
         party_details.update(
             frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
