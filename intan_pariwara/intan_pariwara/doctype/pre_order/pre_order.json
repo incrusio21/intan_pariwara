@@ -11,6 +11,9 @@
   "naming_series",
   "customer",
   "customer_name",
+  "has_relation",
+  "relasi_group",
+  "relasi",
   "fund_source",
   "sales_person",
   "apply_rebate",
@@ -20,6 +23,7 @@
   "transaction_type",
   "branch",
   "set_warehouse",
+  "apply_rebate",
   "column_break1",
   "order_type",
   "company",
@@ -1099,6 +1103,7 @@
    "width": "100px"
   },
   {
+   "depends_on": "eval:doc.apply_rebate",
    "fieldname": "rebate_total",
    "fieldtype": "Currency",
    "label": "Rebate Total",
@@ -1113,7 +1118,6 @@
    "options": "Transaction Type"
   },
   {
-   "depends_on": "eval:doc.apply_rebate",
    "fieldname": "rebate_section",
    "fieldtype": "Section Break",
    "label": "Rebate"
@@ -1121,10 +1125,12 @@
   {
    "fieldname": "rebate_account_from",
    "fieldtype": "Link",
-   "label": "Rebate Account From",
-   "options": "Account"
+   "label": "Rebate / Discount Account",
+   "options": "Account",
+   "read_only_depends_on": "eval:!doc.apply_rebate"
   },
   {
+   "depends_on": "eval:doc.apply_rebate",
    "fieldname": "rebate_account_to",
    "fieldtype": "Link",
    "label": "Rebate Account To",
@@ -1189,12 +1195,33 @@
    "fieldtype": "Link",
    "label": "Sales Person",
    "options": "Sales Person"
+  },
+  {
+   "default": "0",
+   "fieldname": "has_relation",
+   "fieldtype": "Check",
+   "label": "Has Relation",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.has_relation",
+   "fieldname": "relasi",
+   "fieldtype": "Link",
+   "label": "Relasi",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "relasi_group",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Relasi Group",
+   "options": "Customer Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-09 15:59:52.587275",
+ "modified": "2025-01-09 15:54:58.605857",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
