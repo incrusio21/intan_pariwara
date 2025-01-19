@@ -83,8 +83,7 @@ def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=N
             bin_join_condition=bin_join_condition,
         ),
         {"warehouse": warehouse},
-        as_dict=1,
-        debug=1
+        as_dict=1
     )
 
     # return (empty) list if there are no results

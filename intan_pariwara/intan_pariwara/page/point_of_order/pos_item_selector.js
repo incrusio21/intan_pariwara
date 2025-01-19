@@ -8,6 +8,10 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.poe_profile = poe_profile;
 		this.hide_images = settings.hide_images;
 		this.auto_add_item = settings.auto_add_item_to_cart;
+		// memoize
+		this.search_index = {}
+		this.non_search_term = "showallitems";
+		this.request_item = null
 
 		this.inti_component();
 	}
@@ -49,29 +53,47 @@ erpnext.PointOfOrder.ItemSelector = class {
 			this.price_list = res.message.selling_price_list;
 		}
 
+		let key = [
+			this.price_list, 
+			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
+			...(this.jenjang ? [this.jenjang] : []), 
+			...(this.kode_kelas ? [this.kode_kelas] : [])];
+		
+		this.search_index[key] = this.search_index[key] || {}
+
 		this.get_items({}).then(({ message }) => {
+			// eslint-disable-next-line no-unused-vars
+			const { items, serial_no, batch_no, barcode } = message;
+			if (!barcode) {
+				this.search_index[key][this.non_search_term] = items;
+			}
+			
 			this.render_item_list(message.items);
 		});
 	}
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
-		const doc = this.events.get_frm().doc;
-		const price_list = (doc && doc.selling_price_list) || this.price_list;
+		const price_list = this.price_list;
 		let { item_group, jenjang, kode_kelas, poe_profile } = this;
-		
-		if(!doc || !doc.customer){
-			return new Promise((resolve) => {
-				resolve({ message: { items: [] } })
-			})
-		}
 
 		!item_group && (item_group = this.parent_item_group);
+		
+		if (this.request_item && this.request_item.state() === 'pending') {
+			this.request_item.abort();
+		}
 
-		return frappe.call({
+		this.$items_container.html(`
+			<div class="spinner-overlay">
+				<div class="spinner"></div>
+			</div>
+		`);
+		
+		this.request_item = frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
-			freeze: true,
 			args: { start, page_length, price_list, item_group, jenjang, kode_kelas, search_term, poe_profile },
 		});
+
+		return this.request_item
 	}
 
 	render_item_list(items) {
@@ -171,7 +193,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				onchange: function () {
 					me.item_group = this.value;
 					!me.item_group && (me.item_group = me.parent_item_group);
-					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
+					me.filter_items({ search_term: me.search_field.last_value });
 				},
 				get_query: function () {
 					const doc = me.events.get_frm().doc;
@@ -195,7 +217,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				placeholder: __("Select Jenjang"),
 				onchange: function () {
 					me.jenjang = this.value;
-					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
+					me.filter_items({ search_term: me.search_field.last_value });
 				},
 			},
 			parent: this.$component.find(".jenjang-field"),
@@ -210,7 +232,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				placeholder: __("Select Kode Kelas"),
 				onchange: function () {
 					me.kode_kelas = this.value;
-					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
+					me.filter_items({ search_term: me.search_field.last_value });
 				},
 				get_query: function () {
 					const doc = me.events.get_frm().doc;
@@ -378,21 +400,25 @@ erpnext.PointOfOrder.ItemSelector = class {
 		});
 	}
 
-	filter_items({ search_term = "", refresh=false } = {}) {
+	filter_items({ search_term = "" } = {}) {
 		let cache_term = search_term
-		if (!cache_term) cache_term = "showallitems";
-		if (cache_term && !refresh) {
-			cache_term = cache_term.toLowerCase();
+		if (!cache_term) cache_term = this.non_search_term;
+		cache_term = cache_term.toLowerCase();
+		
+		let key = [
+			this.price_list, 
+			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
+			...(this.jenjang ? [this.jenjang] : []), 
+			...(this.kode_kelas ? [this.kode_kelas] : [])];
+		
+		this.search_index[key] = this.search_index[key] || {}
 
-			// memoize
-			this.search_index = this.search_index || {};
-			if (this.search_index[cache_term]) {
-				const items = this.search_index[cache_term];
-				this.items = items;
-				this.render_item_list(items);
-				this.auto_add_item && this.items.length == 1 && this.add_filtered_item_to_cart();
-				return;
-			}
+		if (this.search_index[key][cache_term]) {
+			const items = this.search_index[key][cache_term];
+			this.items = items;
+			this.render_item_list(items);
+			this.auto_add_item && this.items.length == 1 && this.add_filtered_item_to_cart();
+			return;
 		}
 		
 
@@ -400,7 +426,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			// eslint-disable-next-line no-unused-vars
 			const { items, serial_no, batch_no, barcode } = message;
 			if (!barcode) {
-				this.search_index[cache_term] = items;
+				this.search_index[key][cache_term] = items;
 			}
 			
 			this.items = items;
@@ -450,8 +476,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		if(price_list != this.price_list){
 			this.price_list = price_list
 			this.filter_items({ 
-				search_term: this.search_field.last_value, 
-				refresh: true 
+				search_term: this.search_field.last_value
 			});
 		}
 	}

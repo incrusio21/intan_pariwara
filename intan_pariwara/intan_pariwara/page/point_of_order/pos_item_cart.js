@@ -42,8 +42,6 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.customer_field.set_focus();
 
 		this.$transaction_section.html("");
-
-		this.events.refresh_item_selector()
 	}
 
 	init_transaction_selector() {
