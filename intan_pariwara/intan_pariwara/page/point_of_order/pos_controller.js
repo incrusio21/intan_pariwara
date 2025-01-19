@@ -249,14 +249,8 @@ erpnext.PointOfOrder.Controller = class {
 				},
 
 				cart_item_price_list: (price_list) => {
-					this.item_selector.search_index = {}
 					this.item_selector.update_price_list_item(price_list)
 				},
-
-				refresh_item_selector: () => {
-					this.item_selector.search_index = {}
-					this.item_selector.filter_items({refresh: true})
-				}
 				
 			},
 		});
