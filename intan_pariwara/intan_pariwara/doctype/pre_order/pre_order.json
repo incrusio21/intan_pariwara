@@ -15,13 +15,15 @@
   "relasi_group",
   "relasi",
   "fund_source",
+  "apply_rebate",
+  "sales_person",
+  "sales_id",
   "column_break_7",
   "transaction_date",
   "valid_till",
   "transaction_type",
   "branch",
   "set_warehouse",
-  "apply_rebate",
   "column_break1",
   "order_type",
   "company",
@@ -1081,6 +1083,7 @@
    "fieldname": "per_ordered",
    "fieldtype": "Percent",
    "label": "% Ordered",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1211,10 +1214,19 @@
    "options": "Customer Group"
   },
   {
-   "fieldname": "payment_date",
-   "fieldtype": "Date",
-   "label": "Expected Payment Date",
-   "reqd": 1
+    "fieldname": "payment_date",
+    "fieldtype": "Date",
+    "label": "Expected Payment Date",
+    "reqd": 1
+   },
+  {
+   "bold": 1,
+   "fetch_from": "sales_person.employee",
+   "fieldname": "sales_id",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Sales ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

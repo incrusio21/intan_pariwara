@@ -15,7 +15,8 @@ from intan_pariwara.controllers.account_controller import AccountsController
 
 class DeliveryNote(AccountsController, DeliveryNote):
     def make_gl_entries(self, gl_entries=None, from_repost=False, via_landed_cost_voucher=False):
-        super().make_gl_entries(gl_entries, from_repost, via_landed_cost_voucher)
+        # ctt: jgn d push krn hanya masalah beda vesrion
+        super().make_gl_entries(gl_entries, from_repost)
 
         # ketika hasil dari repost. ubah ledger invoice
         if from_repost and self.get("custom_use_delivery_account"):

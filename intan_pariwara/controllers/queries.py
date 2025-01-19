@@ -146,7 +146,8 @@ def apply_price_list(args, as_doc=False, doc=None):
         for item in item_list:
             args_copy = frappe._dict(args.copy())
             args_copy.update(item)
-            item_details = apply_price_list_on_item(args_copy, doc=doc)
+            # ctt: jgn d push. krn ini masalah versi erpnext
+            item_details = apply_price_list_on_item(args_copy)
 
             if field == "rebate":
                 item_details.discount_percentage = 0.0
