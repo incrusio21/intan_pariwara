@@ -1,4 +1,20 @@
 .point-of-sale-app {
+	.items-selector {
+		.filter-section {
+			.jenjang-field {
+				grid-column: span 4 / span 4;
+				display: flex;
+				align-items: center;
+				margin: 0px var(--margin-sm);
+			}
+
+			.kode-kelas-field {
+				grid-column: span 3 / span 3;
+				display: flex;
+				align-items: center;
+			}
+		}
+	}
     .customer-cart-container {
         .transaction-section {
             display: flex;

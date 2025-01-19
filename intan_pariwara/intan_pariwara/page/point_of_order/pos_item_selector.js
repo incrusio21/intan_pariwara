@@ -24,9 +24,12 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.wrapper.append(
 			`<section class="items-selector">
 				<div class="filter-section">
-					<div class="label">${__("All Items")}</div>
+					<div class="label" style="grid-row: 2 span / span 2;">${__("All Items")}</div>
 					<div class="search-field"></div>
 					<div class="item-group-field"></div>
+					<div style="grid-column: 1 span / span 1;"></div>
+					<div class="jenjang-field"></div>
+					<div class="kode-kelas-field"></div>
 				</div>
 				<div class="items-container"></div>
 			</section>`
@@ -54,14 +57,20 @@ erpnext.PointOfOrder.ItemSelector = class {
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const doc = this.events.get_frm().doc;
 		const price_list = (doc && doc.selling_price_list) || this.price_list;
-		let { item_group, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas, poe_profile } = this;
+		
+		if(!doc || !doc.customer){
+			return new Promise((resolve) => {
+				resolve({ message: { items: [] } })
+			})
+		}
 
 		!item_group && (item_group = this.parent_item_group);
 
 		return frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
 			freeze: true,
-			args: { start, page_length, price_list, item_group, search_term, poe_profile },
+			args: { start, page_length, price_list, item_group, jenjang, kode_kelas, search_term, poe_profile },
 		});
 	}
 
@@ -140,6 +149,8 @@ erpnext.PointOfOrder.ItemSelector = class {
 		const me = this;
 		this.$component.find(".search-field").html("");
 		this.$component.find(".item-group-field").html("");
+		this.$component.find(".jenjang-field").html("");
+		this.$component.find(".kode-kelas-field").html("");
 
 		this.search_field = frappe.ui.form.make_control({
 			df: {
@@ -150,6 +161,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			parent: this.$component.find(".search-field"),
 			render_input: true,
 		});
+
 		this.item_group_field = frappe.ui.form.make_control({
 			df: {
 				label: __("Item Group"),
@@ -175,8 +187,49 @@ erpnext.PointOfOrder.ItemSelector = class {
 			render_input: true,
 		});
 
+		this.jenjang_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Jejang"),
+				fieldtype: "Link",
+				options: "Kode Jenjang",
+				placeholder: __("Select Jenjang"),
+				onchange: function () {
+					me.jenjang = this.value;
+					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
+				},
+			},
+			parent: this.$component.find(".jenjang-field"),
+			render_input: true,
+		});
+
+		this.kode_kelas_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Kode Kelas"),
+				fieldtype: "Link",
+				options: "K010",
+				placeholder: __("Select Kode Kelas"),
+				onchange: function () {
+					me.kode_kelas = this.value;
+					me.filter_items({ search_term: me.search_field.last_value, refresh: true });
+				},
+				get_query: function () {
+					const doc = me.events.get_frm().doc;
+					return {
+						query: "erpnext.selling.page.point_of_sale.point_of_sale.item_group_query",
+						filters: {
+							pos_profile: doc ? doc.pos_profile : "",
+						},
+					};
+				},
+			},
+			parent: this.$component.find(".kode-kelas-field"),
+			render_input: true,
+		});
+
 		this.search_field.toggle_label(false);
 		this.item_group_field.toggle_label(false);
+		this.jenjang_field.toggle_label(false);
+		this.kode_kelas_field.toggle_label(false);
 
 		this.attach_clear_btn();
 	}
@@ -272,7 +325,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			this.last_search = setTimeout(() => {
 				const search_term = e.target.value;
 				this.filter_items({ search_term });
-			}, 300);
+			}, 500);
 
 			this.$clear_search_btn.toggle(Boolean(this.search_field.$input.val()));
 		});
@@ -326,26 +379,30 @@ erpnext.PointOfOrder.ItemSelector = class {
 	}
 
 	filter_items({ search_term = "", refresh=false } = {}) {
-		if (search_term && !refresh) {
-			search_term = search_term.toLowerCase();
+		let cache_term = search_term
+		if (!cache_term) cache_term = "showallitems";
+		if (cache_term && !refresh) {
+			cache_term = cache_term.toLowerCase();
 
 			// memoize
 			this.search_index = this.search_index || {};
-			if (this.search_index[search_term]) {
-				const items = this.search_index[search_term];
+			if (this.search_index[cache_term]) {
+				const items = this.search_index[cache_term];
 				this.items = items;
 				this.render_item_list(items);
 				this.auto_add_item && this.items.length == 1 && this.add_filtered_item_to_cart();
 				return;
 			}
 		}
+		
 
 		this.get_items({ search_term }).then(({ message }) => {
 			// eslint-disable-next-line no-unused-vars
 			const { items, serial_no, batch_no, barcode } = message;
-			if (search_term && !barcode) {
-				this.search_index[search_term] = items;
+			if (!barcode) {
+				this.search_index[cache_term] = items;
 			}
+			
 			this.items = items;
 			this.render_item_list(items);
 			this.auto_add_item && this.items.length == 1 && this.add_filtered_item_to_cart();

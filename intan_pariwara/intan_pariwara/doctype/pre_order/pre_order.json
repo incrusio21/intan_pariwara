@@ -15,8 +15,6 @@
   "relasi_group",
   "relasi",
   "fund_source",
-  "sales_person",
-  "apply_rebate",
   "column_break_7",
   "transaction_date",
   "valid_till",
@@ -28,6 +26,7 @@
   "order_type",
   "company",
   "delivery_date",
+  "payment_date",
   "custom_calon_siplah",
   "amended_from",
   "currency_and_price_list",
@@ -1191,12 +1190,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "sales_person",
-   "fieldtype": "Link",
-   "label": "Sales Person",
-   "options": "Sales Person"
-  },
-  {
    "default": "0",
    "fieldname": "has_relation",
    "fieldtype": "Check",
@@ -1216,12 +1209,18 @@
    "hidden": 1,
    "label": "Relasi Group",
    "options": "Customer Group"
+  },
+  {
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "Expected Payment Date",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-09 15:54:58.605857",
+ "modified": "2025-01-18 14:04:22.840200",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

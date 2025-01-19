@@ -249,7 +249,13 @@ erpnext.PointOfOrder.Controller = class {
 				},
 
 				cart_item_price_list: (price_list) => {
+					this.item_selector.search_index = {}
 					this.item_selector.update_price_list_item(price_list)
+				},
+
+				refresh_item_selector: () => {
+					this.item_selector.search_index = {}
+					this.item_selector.filter_items({refresh: true})
 				}
 				
 			},
@@ -620,21 +626,6 @@ erpnext.PointOfOrder.Controller = class {
 		this.cart.update_totals_section(this.frm);
 	}
 
-	async update_price_list_item(price_list=null) {
-		if (!price_list) {
-			const res = await frappe.db.get_value("POE Profile", this.poe_profile, "selling_price_list");
-			price_list = res.message.selling_price_list;
-		}
-
-		if(price_list != this.item_details.price_list){
-			me.price_list = price_list
-			me.filter_items({ 
-				search_term: me.search_field.last_value, 
-				refresh: true 
-			});
-		}
-	}
-
 	check_serial_batch_selection_needed(item_row) {
 		// right now item details is shown for every type of item.
 		// if item details is not shown for every item then this fn will be needed
@@ -759,14 +750,15 @@ erpnext.PointOfOrder.Controller = class {
 			let save_error = false;
 			await this.frm.save(null, null, null, () => (save_error = true));
 			// only move to payment section if save is successful
-			!save_error && this.make_new_invoice(); // this.payment.checkout();
+			// this.make_new_invoice()
+			!save_error && this.open_form_view(); // this.payment.checkout();
 			// show checkout button on error
 			save_error &&
 				setTimeout(() => {
 					this.cart.toggle_checkout_btn(true);
 				}, 300); // wait for save to finish
 		} else {
-			this.make_new_invoice();
+			this.open_form_view();
 			// this.payment.checkout();
 		}
 	}

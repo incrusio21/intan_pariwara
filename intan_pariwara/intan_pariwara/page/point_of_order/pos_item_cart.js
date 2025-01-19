@@ -43,7 +43,7 @@ erpnext.PointOfOrder.ItemCart = class {
 
 		this.$transaction_section.html("");
 
-		this.events.cart_item_price_list()
+		this.events.refresh_item_selector()
 	}
 
 	init_transaction_selector() {
@@ -98,10 +98,11 @@ erpnext.PointOfOrder.ItemCart = class {
 	make_cart_totals_section() {
 		this.$totals_section = this.$component.find(".cart-totals-section");
 
+		// <div class="add-discount-wrapper">
+		// 		${this.get_discount_icon()} ${__("Add Discount")}
+		// 	</div>
 		this.$totals_section.append(
-			`<div class="add-discount-wrapper">
-				${this.get_discount_icon()} ${__("Add Discount")}
-			</div>
+			`
 			<div class="item-qty-total-container">
 				<div class="item-qty-total-label">${__("Total Items")}</div>
 				<div class="item-qty-total-value">0.00</div>
@@ -269,15 +270,15 @@ erpnext.PointOfOrder.ItemCart = class {
 				this.$component.find(".edit-cart-btn").click();
 			}
 		});
-		this.$component.find(".add-discount-wrapper").attr("title", `${ctrl_label}+D`);
-		frappe.ui.keys.add_shortcut({
-			shortcut: "ctrl+d",
-			action: () => this.$component.find(".add-discount-wrapper").click(),
-			condition: () => this.$add_discount_elem.is(":visible"),
-			description: __("Add Order Discount"),
-			ignore_inputs: true,
-			page: cur_page.page.page,
-		});
+		// this.$component.find(".add-discount-wrapper").attr("title", `${ctrl_label}+D`);
+		// frappe.ui.keys.add_shortcut({
+		// 	shortcut: "ctrl+d",
+		// 	action: () => this.$component.find(".add-discount-wrapper").click(),
+		// 	condition: () => this.$add_discount_elem.is(":visible"),
+		// 	description: __("Add Order Discount"),
+		// 	ignore_inputs: true,
+		// 	page: cur_page.page.page,
+		// });
 		frappe.ui.keys.on("escape", () => {
 			const item_cart_visible = this.$component.is(":visible");
 			if (item_cart_visible && this.discount_field && this.discount_field.parent.is(":visible")) {
@@ -333,6 +334,7 @@ erpnext.PointOfOrder.ItemCart = class {
 								() => me.fetch_customer_details(this.value),
 								() => me.events.customer_details_updated(me.customer_info),
 								() => me.update_customer_section(),
+								() => me.events.cart_item_price_list(frm.doc.selling_price_list || null),
 								() => me.update_totals_section(),
 								() => frappe.dom.unfreeze(),
 							]);
@@ -350,7 +352,7 @@ erpnext.PointOfOrder.ItemCart = class {
 		if (customer) {
 			return new Promise((resolve) => {
 				frappe.db
-					.get_value("Customer", customer, ["email_id", "mobile_no", "image", "loyalty_program"])
+					.get_value("Customer", customer, ["customer_name", "email_id", "mobile_no", "image", "loyalty_program"])
 					.then(({ message }) => {
 						const { loyalty_program } = message;
 						// if loyalty program then fetch loyalty points too
@@ -391,6 +393,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			<div class="delivery-date-field"></div>
 			<div class="calon-siplah-field"></div>
 			<div class="relasi-field"></div>
+			<div class="catatan-field"></div>
 		`);
 
 		const me = this;
@@ -472,10 +475,6 @@ erpnext.PointOfOrder.ItemCart = class {
 			render_input: true,
 			value: frm.doc.custom_calon_siplah,
 		});
-
-		this.fund_source_field.toggle_label(false);
-		this.delivery_date_field.toggle_label(false);
-		this.calon_siplah_field.toggle_label(false);
 		
 		if(frm.doc.has_relation){
 			this.relasi_field = frappe.ui.form.make_control({
@@ -504,6 +503,44 @@ erpnext.PointOfOrder.ItemCart = class {
 			});
 			this.relasi_field.toggle_label(false);
 		}
+
+		this.catatan_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Catatan"),
+				fieldtype: "Data",
+				placeholder: __("Fill Catatan"),
+				// get_query: function () {
+				// 	return {
+				// 		filters: filters,
+				// 	};
+				// },
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.dom.freeze();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "catatan", this.value);
+						frm.script_manager.trigger("catatan", frm.doc.doctype, frm.doc.name).then(() => {
+							frappe.run_serially([
+								// () => me.fetch_customer_details(this.value),
+								// () => me.events.customer_details_updated(me.customer_info),
+								// () => me.update_customer_section(),
+								// () => me.update_totals_section(),
+								() => frappe.dom.unfreeze(),
+							]);
+						});
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".catatan-field"),
+			render_input: true,
+			value: frm.doc.catatan,
+		});
+
+		
+		this.fund_source_field.toggle_label(false);
+		this.delivery_date_field.toggle_label(false);
+		this.calon_siplah_field.toggle_label(false);
+		this.catatan_field.toggle_label(false);
 	}
 
 	show_discount_control() {
@@ -560,7 +597,7 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	update_customer_section() {
 		const me = this;
-		const { customer, email_id = "", mobile_no = "", image } = this.customer_info || {};
+		const { customer, customer_name, email_id = "", mobile_no = "", image } = this.customer_info || {};
 		
 		if (customer) {
 			this.$customer_section.html(
@@ -568,7 +605,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					<div class="customer-display">
 						${this.get_customer_image()}
 						<div class="customer-name-desc">
-							<div class="customer-name">${customer}</div>
+							<div class="customer-name">${customer_name}</div>
 							${get_customer_description()}
 						</div>
 						<div class="reset-customer-btn" data-customer="${escape(customer)}">
@@ -580,8 +617,6 @@ erpnext.PointOfOrder.ItemCart = class {
 					
 				</div>`
 			);
-
-			this.events.cart_item_price_list(this.events.get_frm().doc.selling_price_list || null)
 		} else {
 			// reset customer selector
 			this.reset_customer_selector();
@@ -972,9 +1007,10 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	toggle_customer_info(show) {
 		if (show) {
-			const { customer } = this.customer_info || {};
+			const { customer, customer_name } = this.customer_info || {};
 
 			this.$cart_container.css("display", "none");
+			this.$transaction_section.css("display", "none");
 			this.$customer_section.css({
 				height: "100%",
 				"padding-top": "0px",
@@ -991,7 +1027,7 @@ erpnext.PointOfOrder.ItemCart = class {
 				<div class="customer-display">
 					${this.get_customer_image()}
 					<div class="customer-name-desc">
-						<div class="customer-name">${customer}</div>
+						<div class="customer-name">${customer_name}</div>
 						<div class="customer-desc"></div>
 					</div>
 				</div>
@@ -1010,6 +1046,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			this.fetch_customer_transactions();
 		} else {
 			this.$cart_container.css("display", "flex");
+			this.$transaction_section.css("display", "flex");
 			this.$customer_section.css({
 				height: "",
 				"padding-top": "",

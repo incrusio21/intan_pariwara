@@ -19,23 +19,28 @@ def filter_result_items(result, poe_profile):
 		result["items"] = [item for item in result.get("items") if item.get("item_group") in pos_item_groups]
 		
 @frappe.whitelist()
-def get_items(start, page_length, price_list, item_group, poe_profile, search_term=""):
+def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=None, kode_kelas=None, search_term=""):
     warehouse, hide_unavailable_items = frappe.db.get_value(
         "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items"]
     )
 
     result = []
-    if search_term:
-        result = search_by_term(search_term, warehouse, price_list) or []
-        filter_result_items(result, poe_profile)
-        if result:
-            return result
+    # if search_term:
+    #     result = search_by_term(search_term, warehouse, price_list) or []
+    #     filter_result_items(result, poe_profile)
+    #     if result:
+    #         return result
 
     if not frappe.db.exists("Item Group", item_group):
         item_group = get_root_of("Item Group")
 
     condition = get_conditions(search_term)
     condition += get_item_group_condition(poe_profile)
+    if jenjang:
+        condition += """ and custom_kode_jenjang = "{}" """.format(jenjang)
+    
+    if kode_kelas:
+        condition += """ and custom_kode_kelas = "{}" """.format(kode_kelas)
 
     lft, rgt = frappe.db.get_value("Item Group", item_group, ["lft", "rgt"])
 
@@ -78,7 +83,8 @@ def get_items(start, page_length, price_list, item_group, poe_profile, search_te
             bin_join_condition=bin_join_condition,
         ),
         {"warehouse": warehouse},
-        as_dict=1
+        as_dict=1,
+        debug=1
     )
 
     # return (empty) list if there are no results
