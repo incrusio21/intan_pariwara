@@ -46,11 +46,12 @@ class PreOrder(AccountsController, SellingController):
 			from `tabPayment Ledger Entry` ple 
 			where 
 				ple.docstatus < 2 and ple.delinked = 0 and ple.party_type=%(party_type)s and ple.party=%(party)s
-				and ple.posting_date <= %(to_date)s and ple.account_type = "Receivable"
+				and ple.posting_date <= %(to_date)s and ple.account_type = "Receivable" and account = %(account)s
 		""", {
 			"to_date": self.transaction_date,
 			"party_type": "Customer",
 			"party": self.customer,
+			"account": self.debit_to,
 		})
 
 		self.receivable_amount = receivable_amount[0][0] if receivable_amount else 0
