@@ -16,6 +16,7 @@ class PreOrder(AccountsController, SellingController):
 		super().validate()
 		self.validate_expected_date()
 		self.validate_item_tax_type()
+		self.get_receivable_amount()
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
@@ -35,6 +36,24 @@ class PreOrder(AccountsController, SellingController):
 		tax_type = set(d.tax_type for d in self.items)
 		if len(set(tax_type)) > 1:
 			frappe.throw("Multiple Tax Types are present among Items.")
+
+	def get_receivable_amount(self):
+		if not self.get("__is_local"):
+			return
+
+		receivable_amount = frappe.db.sql("""
+			select sum(amount_in_account_currency) as amount
+			from `tabPayment Ledger Entry` ple 
+			where 
+				ple.docstatus < 2 and ple.delinked = 0 and ple.party_type=%(party_type)s and ple.party=%(party)s
+				and ple.posting_date <= %(to_date)s and ple.account_type = "Receivable"
+		""", {
+			"to_date": self.transaction_date,
+			"party_type": "Customer",
+			"party": self.customer,
+		})
+
+		self.receivable_amount = receivable_amount[0][0] if receivable_amount else 0
 
 	def on_submit(self):
 		# Check for Approving Authority
@@ -93,10 +112,15 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 			target.commission_rate = frappe.get_value(
 				"Sales Partner", source.referral_sales_partner, "commission_rate"
 			)
-
-		target.delivery_date = target.transaction_date
+		
+			
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
+		if source.sales_person:
+			target.append("sales_team", {
+				"sales_person": source.sales_person,
+				"allocated_percentage": 100,
+			})
 
 	def update_item(obj, target, source_parent):
 		# balance_qty = obj.qty - ordered_items.get(obj.item_code, 0.0)

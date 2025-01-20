@@ -11,6 +11,7 @@
   "naming_series",
   "customer",
   "customer_name",
+  "receivable_amount",
   "has_relation",
   "relasi_group",
   "relasi",
@@ -44,6 +45,7 @@
   "ignore_pricing_rule",
   "items_section",
   "scan_barcode",
+  "discount_percent",
   "items",
   "sec_break23",
   "total_qty",
@@ -151,6 +153,8 @@
   "opportunity",
   "supplier_quotation",
   "enq_det",
+  "accounting_details_section",
+  "debit_to",
   "connections_tab"
  ],
  "fields": [
@@ -615,6 +619,7 @@
    "collapsible": 1,
    "fieldname": "section_break_44",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Additional Discount"
   },
   {
@@ -1242,12 +1247,37 @@
    "fieldtype": "Data",
    "label": "Relasi Name",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:!(doc.apply_rebate || doc.is_rebate_fixed)",
+   "fieldname": "discount_percent",
+   "fieldtype": "Percent",
+   "label": "Default Dicount %"
+  },
+  {
+   "bold": 1,
+   "fieldname": "receivable_amount",
+   "fieldtype": "Currency",
+   "in_global_search": 1,
+   "label": "Saldo Piutang",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accounting_details_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting Details"
+  },
+  {
+   "fieldname": "debit_to",
+   "fieldtype": "Link",
+   "label": "Debit To",
+   "options": "Account"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-20 15:30:45.114127",
+ "modified": "2025-01-20 16:27:32.531405",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

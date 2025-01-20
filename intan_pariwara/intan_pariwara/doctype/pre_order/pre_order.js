@@ -46,6 +46,12 @@ frappe.ui.form.on("Pre Order", {
     set_label: function (frm) {
 		frm.fields_dict.customer_address.set_label(__(frm.doc.quotation_to + " Address"));
 	},
+
+	discount_percent(frm){
+		frm.doc.items.forEach((item) => {
+			frappe.model.set_value(item.doctype, item.name, "discount_percentage", frm.doc.discount_percent || 0)			
+		});
+	}
 });
 
 intan_pariwara.selling.PreOrderController = class PreOrderController extends intan_pariwara.selling.SellingController {
@@ -89,7 +95,6 @@ intan_pariwara.selling.PreOrderController = class PreOrderController extends int
 			});
 		}
 	}
-	
 }
 
 cur_frm.script_manager.make(intan_pariwara.selling.PreOrderController);
