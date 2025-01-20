@@ -10,7 +10,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.auto_add_item = settings.auto_add_item_to_cart;
 		// memoize
 		this.search_index = {}
-		this.non_search_term = "showallitems";
+		this.non_search_term = settings.cache_non_search_term;
 		this.request_item = null
 
 		this.inti_component();

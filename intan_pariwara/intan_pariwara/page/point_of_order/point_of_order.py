@@ -2,7 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 import frappe
-from frappe.utils import cint
+from frappe.utils import cint, cstr
 from frappe.utils.nestedset import get_root_of
 
 from erpnext.accounts.doctype.pos_invoice.pos_invoice import get_stock_availability
@@ -10,6 +10,8 @@ from erpnext.accounts.doctype.pos_profile.pos_profile import get_child_nodes
 from erpnext.selling.page.point_of_sale.point_of_sale import get_conditions, search_by_term
 
 from intan_pariwara.intan_pariwara.doctype.poe_profile.poe_profile import get_item_groups
+
+ItemsResult = dict[str, str | None]
 
 def filter_result_items(result, poe_profile):
 	if result and result.get("items"):
@@ -20,10 +22,30 @@ def filter_result_items(result, poe_profile):
 		
 @frappe.whitelist()
 def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=None, kode_kelas=None, search_term=""):
-    warehouse, hide_unavailable_items = frappe.db.get_value(
-        "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items"]
+    warehouse, hide_unavailable_items, cache_non_search_term = frappe.db.get_value(
+        "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items", "cache_non_search_term"]
     )
 
+    cache_term = search_term or cache_non_search_term or "showallitems"
+    
+    key_parts = [price_list, item_group]
+    if jenjang:
+        key_parts.append(jenjang)
+    if kode_kelas:
+        key_parts.append(kode_kelas)
+
+    key = ":".join(cstr(key_parts))
+
+    def set_cache(data: ItemsResult):
+        frappe.cache().set_value(f"intan_pariwara:{key}:{cache_term}", data, expires_in_sec=300)
+
+    def get_cache() -> ItemsResult | None:
+        if data := frappe.cache().get_value(f"intan_pariwara:{key}:{cache_term}"):
+            return data
+
+    if scan_data := get_cache():
+        return {"items": scan_data}
+	
     result = []
     # if search_term:
     #     result = search_by_term(search_term, warehouse, price_list) or []
@@ -88,6 +110,7 @@ def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=N
 
     # return (empty) list if there are no results
     if not items_data:
+        set_cache(result)
         return result
 
     current_date = frappe.utils.today()
@@ -130,6 +153,9 @@ def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=N
                     "batch_no": price.batch_no,
                 }
             )
+    
+    set_cache(result)
+
     return {"items": result}
 
 def get_item_group_condition(poe_profile):

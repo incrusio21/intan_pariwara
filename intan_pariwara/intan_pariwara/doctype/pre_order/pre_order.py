@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 from frappe.utils.csvutils import getlink
 
 from erpnext.controllers.selling_controller import SellingController
@@ -14,6 +14,7 @@ class PreOrder(AccountsController, SellingController):
 	
 	def validate(self):
 		super().validate()
+		self.validate_expected_date()
 		self.validate_item_tax_type()
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -24,6 +25,11 @@ class PreOrder(AccountsController, SellingController):
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
 		make_packing_list(self)
+
+	def validate_expected_date(self):
+		date = getdate(self.transaction_date)
+		if date > getdate(self.delivery_date) or date > getdate(self.payment_date):
+			frappe.throw("Transaction date must be on or before Expected Delivery Date and Payment Date.")
 
 	def validate_item_tax_type(self):
 		tax_type = set(d.tax_type for d in self.items)

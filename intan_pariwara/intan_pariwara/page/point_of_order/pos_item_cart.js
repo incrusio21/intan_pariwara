@@ -389,6 +389,7 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.$transaction_section.html(`
 			<div class="fund-source-field"></div>
 			<div class="delivery-date-field"></div>
+			<div class="payment-date-field"></div>
 			<div class="calon-siplah-field"></div>
 			<div class="relasi-field"></div>
 			<div class="catatan-field"></div>
@@ -454,6 +455,23 @@ erpnext.PointOfOrder.ItemCart = class {
 			parent: this.$transaction_section.find(".delivery-date-field"),
 			render_input: true,
 			value: frm.doc.delivery_date,
+		});
+
+		this.payment_date_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Payment Date"),
+				fieldtype: "Date",
+				placeholder: __("Fill Payment Date"),
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "payment_date", this.value);
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".payment-date-field"),
+			render_input: true,
+			value: frm.doc.payment_date,
 		});
 
 		this.calon_siplah_field = frappe.ui.form.make_control({
@@ -537,6 +555,7 @@ erpnext.PointOfOrder.ItemCart = class {
 		
 		this.fund_source_field.toggle_label(false);
 		this.delivery_date_field.toggle_label(false);
+		this.payment_date_field.toggle_label(false);
 		this.calon_siplah_field.toggle_label(false);
 		this.catatan_field.toggle_label(false);
 	}

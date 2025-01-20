@@ -25,6 +25,7 @@
   "ignore_pricing_rule",
   "allow_rate_change",
   "allow_discount_change",
+  "cache_non_search_term",
   "section_break_23",
   "item_groups",
   "column_break_25",
@@ -332,12 +333,19 @@
    "fieldname": "skip_validate_stock_item",
    "fieldtype": "Check",
    "label": "Skip Validate Stock Item"
+  },
+  {
+   "default": "showallitems",
+   "description": "Key identifier. Omitted from search functionality.",
+   "fieldname": "cache_non_search_term",
+   "fieldtype": "Data",
+   "label": "Cache Non Search Term"
   }
  ],
  "icon": "icon-cog",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-04 15:00:41.244150",
+ "modified": "2025-01-20 10:14:25.024817",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "POE Profile",
