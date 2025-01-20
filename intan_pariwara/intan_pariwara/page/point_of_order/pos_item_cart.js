@@ -391,10 +391,12 @@ erpnext.PointOfOrder.ItemCart = class {
 			<div class="delivery-date-field"></div>
 			<div class="payment-date-field"></div>
 			<div class="calon-siplah-field"></div>
+			
 			<div class="relasi-field"></div>
+			<div class="relasi-name-field"></div>
 			<div class="catatan-field"></div>
 		`);
-
+		
 		const me = this;
 		// const allowed_customer_group = this.allowed_customer_groups || [];
 		// let filters = {};
@@ -509,7 +511,11 @@ erpnext.PointOfOrder.ItemCart = class {
 					onchange: function () {
 						if (this.value) {
 							const frm = me.events.get_frm();
-							frappe.model.set_value(frm.doc.doctype, frm.doc.name, "relasi", this.value);
+							frm.script_manager.trigger("customer", frm.doc.doctype, frm.doc.name).then(() => {
+								frappe.run_serially([
+									() => frappe.model.set_value(frm.doc.doctype, frm.doc.name, "relasi", this.value),
+								]);
+							});
 						}
 					},
 				},
@@ -517,6 +523,23 @@ erpnext.PointOfOrder.ItemCart = class {
 				render_input: true,
 				value: frm.doc.relasi,
 			});
+
+			this.relasi_field.toggle_label(false);
+
+			if(frm.doc.relasi_name){
+				this.relasi_name_field = frappe.ui.form.make_control({
+					df: {
+						label: __("Relasi Name"),
+						fieldtype: "Read Only",
+					},
+					parent: this.$transaction_section.find(".relasi-name-field"),
+					render_input: true,
+					value: frm.doc.relasi_name,
+				});
+	
+				this.relasi_name_field.toggle_label(false);
+			}
+			
 			this.relasi_field.toggle_label(false);
 		}
 
@@ -525,11 +548,6 @@ erpnext.PointOfOrder.ItemCart = class {
 				label: __("Catatan"),
 				fieldtype: "Data",
 				placeholder: __("Fill Catatan"),
-				// get_query: function () {
-				// 	return {
-				// 		filters: filters,
-				// 	};
-				// },
 				onchange: function () {
 					if (this.value) {
 						const frm = me.events.get_frm();
@@ -558,6 +576,13 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.payment_date_field.toggle_label(false);
 		this.calon_siplah_field.toggle_label(false);
 		this.catatan_field.toggle_label(false);
+	}
+
+	update_relation_section(frm){
+		if (!frm) frm = this.events.get_frm();
+
+		console.log(this.$relasi_section.find(".relasi-name-field"))
+		
 	}
 
 	show_discount_control() {
@@ -1200,6 +1225,7 @@ erpnext.PointOfOrder.ItemCart = class {
 		$(frm.wrapper).off("refresh-fields");
 		$(frm.wrapper).on("refresh-fields", () => {
 			if(frm.doc.customer){
+				console.log("bbb")
 				this.make_transaction_selector(frm)
 			}
 
