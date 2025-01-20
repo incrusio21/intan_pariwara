@@ -228,7 +228,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			df: {
 				label: __("Kode Kelas"),
 				fieldtype: "Link",
-				options: "K010",
+				options: "Kode Kelas",
 				placeholder: __("Select Kode Kelas"),
 				onchange: function () {
 					me.kode_kelas = this.value;
