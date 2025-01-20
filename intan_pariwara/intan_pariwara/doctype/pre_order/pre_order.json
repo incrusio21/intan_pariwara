@@ -14,16 +14,17 @@
   "has_relation",
   "relasi_group",
   "relasi",
+  "relasi_name",
   "fund_source",
   "apply_rebate",
-  "sales_person",
-  "sales_id",
   "column_break_7",
   "transaction_date",
   "valid_till",
   "transaction_type",
   "branch",
   "set_warehouse",
+  "sales_person",
+  "sales_id",
   "column_break1",
   "order_type",
   "company",
@@ -1214,11 +1215,11 @@
    "options": "Customer Group"
   },
   {
-    "fieldname": "payment_date",
-    "fieldtype": "Date",
-    "label": "Expected Payment Date",
-    "reqd": 1
-   },
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "Expected Payment Date",
+   "reqd": 1
+  },
   {
    "bold": 1,
    "fetch_from": "sales_person.employee",
@@ -1227,12 +1228,26 @@
    "in_global_search": 1,
    "label": "Sales ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Sales Person"
+  },
+  {
+   "depends_on": "eval:doc.has_relation",
+   "fetch_from": "relasi.customer_name",
+   "fieldname": "relasi_name",
+   "fieldtype": "Data",
+   "label": "Relasi Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-18 14:04:22.840200",
+ "modified": "2025-01-20 15:30:45.114127",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
