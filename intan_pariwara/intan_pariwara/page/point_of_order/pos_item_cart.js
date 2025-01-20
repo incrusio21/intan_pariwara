@@ -578,13 +578,6 @@ erpnext.PointOfOrder.ItemCart = class {
 		this.catatan_field.toggle_label(false);
 	}
 
-	update_relation_section(frm){
-		if (!frm) frm = this.events.get_frm();
-
-		console.log(this.$relasi_section.find(".relasi-name-field"))
-		
-	}
-
 	show_discount_control() {
 		this.$add_discount_elem.css({ padding: "0px", border: "none" });
 		this.$add_discount_elem.html(`<div class="add-discount-field"></div>`);
@@ -1225,7 +1218,6 @@ erpnext.PointOfOrder.ItemCart = class {
 		$(frm.wrapper).off("refresh-fields");
 		$(frm.wrapper).on("refresh-fields", () => {
 			if(frm.doc.customer){
-				console.log("bbb")
 				this.make_transaction_selector(frm)
 			}
 
