@@ -199,8 +199,8 @@ intan_pariwara.sales_common = {
                                         () => {
                                             if (me.frm.doc.is_rebate_fixed){
                                                 var field = me.frm.doc.apply_rebate ? "rebate" : "discount_percentage"
-
-                                                frappe.model.set_value(item.doctype, item.name, field, flt(item.rebate_fix) + 0.5);
+                                                var additional = me.frm.doc.additional_rebate_disc || 0
+                                                frappe.model.set_value(item.doctype, item.name, field, flt(item.rebate_fix + additional));
                                             }
                                         }
                                     ]);

@@ -38,6 +38,7 @@
   "conversion_rate",
   "is_max_rebate_applied",
   "is_rebate_fixed",
+  "additional_rebate_disc",
   "column_break2",
   "selling_price_list",
   "price_list_currency",
@@ -1272,12 +1273,18 @@
    "fieldtype": "Link",
    "label": "Debit To",
    "options": "Account"
+  },
+  {
+   "fieldname": "additional_rebate_disc",
+   "fieldtype": "Percent",
+   "label": "Additional Rebate / Discount",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-20 16:27:32.531405",
+ "modified": "2025-01-21 15:40:42.470259",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

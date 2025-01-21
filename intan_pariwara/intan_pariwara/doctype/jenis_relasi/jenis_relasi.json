@@ -9,7 +9,8 @@
   "disabled",
   "cant_have_rebate",
   "has_relation",
-  "customer_group"
+  "customer_group",
+  "additional_rebate_disc"
  ],
  "fields": [
   {
@@ -37,11 +38,16 @@
    "label": "Customer Group",
    "mandatory_depends_on": "eval:doc.has_relation",
    "options": "Customer Group"
+  },
+  {
+   "fieldname": "additional_rebate_disc",
+   "fieldtype": "Percent",
+   "label": "Additional Rebate / Discount"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-09 15:34:05.199562",
+ "modified": "2025-01-21 15:36:46.576195",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Jenis Relasi",
