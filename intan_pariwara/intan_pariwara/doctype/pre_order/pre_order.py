@@ -114,7 +114,9 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 				"Sales Partner", source.referral_sales_partner, "commission_rate"
 			)
 		
-			
+		
+		target.delivery_date = source.deliver_date
+		
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
 		if source.sales_person:
