@@ -3,6 +3,7 @@
 
 import json
 import frappe
+from frappe.utils.data import flt
 
 from erpnext.stock.get_item_details import apply_price_list_on_item, get_price_list_currency_and_exchange_rate, process_args
 
@@ -35,6 +36,12 @@ def get_price_list_fund(
     # cek customer fund source dapat apply rabat
     party_details["apply_rebate"] = c_fund.apply_rebate if c_fund else 0
     
+    # cek jenis relasi
+    if party.custom_jenis_relasi:
+        jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "additional_rebate_disc"], as_dict=1)
+        party_details["apply_rebate"] = 0 if jenis_relasi.cant_have_rebate else party_details["apply_rebate"]
+        party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc or 0
+
     # cant_have_rebate memebuat apply rebate di non aktifkan 
     if party.custom_jenis_relasi and frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, "cant_have_rebate"):
         party_details["apply_rebate"] = 0
@@ -43,16 +50,6 @@ def get_price_list_fund(
         party_details.update(
             frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
         )
-
-    # jika terdapat fund source type cek apakah menggunakan dana 
-    if c_fund.get("fund_source_type"):
-        # ctt: untuk sekarang msih hard code jika terdapat tambahan harus custom lgi agar jadi flexibel
-        if c_fund.fund_source_type == "Reguler - Dana Negara":
-            # Reguler - Dana Negara
-            pass
-        elif c_fund.fund_source_type == "Reguler - Dana Siswa": 
-            # Reguler - Dana Siswa
-            pass
 
     if transaction_type and fund_source:
         r_account = frappe.get_value("Fund Source Accounts", 
@@ -156,7 +153,7 @@ def apply_price_list(args, as_doc=False, doc=None):
 
             item_details.rebate_max, item_details.rebate_fix = frappe.get_cached_value("Item", args_copy.item_code, ["custom_rabat_max","custom_cb"])
             if is_fixed:
-                item_details[field] = item_details.get("rebate_fix")
+                item_details[field] = flt(item_details.get("rebate_fix")  + doc.get("additional_rebate_disc", 0))
             elif is_max_applied and item_details.get("rebate_max") and item_details.get(field, 0) > item_details.rebate_max:
                 item_details.set(field, item_details.get("rebate_max"))
 

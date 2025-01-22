@@ -7,7 +7,7 @@ from frappe.utils import cstr
 from frappe.utils.data import flt
 
 from erpnext import get_default_company
-from erpnext.accounts import party
+from erpnext.accounts import party as party_file
 from erpnext.selling.doctype.quotation import quotation
 from erpnext.stock import get_item_details
 
@@ -347,6 +347,23 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	return out
 
+def set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype):
+	if doctype not in ["Pre Order", "POS Invoice", "Sales Invoice", "Purchase Invoice"]:
+		# not an invoice
+		return {party_type.lower(): party}
+
+	if party:
+		account = party_file.get_party_account(party_type, party, company)
+
+	account_fieldname = "debit_to" if party_type == "Customer" else "credit_to"
+	out = {
+		party_type.lower(): party,
+		account_fieldname: account,
+		"due_date": party_file.get_due_date(posting_date, party_type, party, company, bill_date),
+	}
+
+	return out
+
 # update untuk menambahkan field fund source
 def set_other_values(party_details, party, party_type):
 	# copy
@@ -368,16 +385,19 @@ def set_other_values(party_details, party, party_type):
 			"has_relation": 0,
 			"apply_rebate": frappe.get_cached_value("Customer Fund Source", party.custom_customer_fund_group, "apply_rebate") \
 				if party.get("custom_customer_fund_group") else 0,
+			"additional_rebate_disc": 0
 		})
 		
 		if party.get("custom_jenis_relasi"):
-			jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group"], as_dict=1)
+			jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group", "additional_rebate_disc"], as_dict=1)
 
 			party_details["has_relation"] = jenis_relasi.has_relation
 			party_details["relasi_group"] = jenis_relasi.customer_group
+			party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc
 			if jenis_relasi.cant_have_rebate:
 				party_details["apply_rebate"] = 0 
 
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
-party.set_other_values = set_other_values
+party_file.set_other_values = set_other_values
+party_file.set_account_and_due_date = set_account_and_due_date
