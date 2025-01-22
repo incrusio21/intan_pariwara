@@ -92,6 +92,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             apply_rebate = self.doc.get("apply_rebate")
             is_max_applied = self.doc.get("is_max_rebate_applied")
             is_fixed = self.doc.get("is_rebate_fixed")
+            add_rebate_disc = self.doc.get("additional_rebate_disc") or 0
 
             for item in self.doc.items:
                 self.doc.round_floats_in(item)
@@ -102,7 +103,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
                 # set nilai rebate sesuai dengan rebate max dan fix dari doctype item 
                 item.rebate_max, item.rebate_fix = frappe.get_cached_value("Item", item.item_code, ["custom_rabat_max","custom_cb"])
                 if is_fixed:
-                    item.set(field, item.rebate_fix + 0.5)
+                    item.set(field, item.rebate_fix + add_rebate_disc)
                 elif is_max_applied and item.get("rebate_max") and item.get(field) > item.rebate_max:
                     item.set(field, item.rebate_max)
 
