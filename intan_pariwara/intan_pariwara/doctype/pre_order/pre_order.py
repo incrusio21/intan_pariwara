@@ -115,7 +115,7 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 			)
 		
 		
-		target.delivery_date = source.deliver_date
+		target.delivery_date = source.delivery_date
 		
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
