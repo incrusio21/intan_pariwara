@@ -20,6 +20,8 @@ class PreOrder(AccountsController, SellingController):
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
+		self.set_child_wharehouse()
+
 		if self.items:
 			self.with_items = 1
 
@@ -56,6 +58,14 @@ class PreOrder(AccountsController, SellingController):
 
 		self.receivable_amount = receivable_amount[0][0] if receivable_amount else 0
 
+	def set_child_wharehouse(self):
+		if not self.set_warehouse:
+			return
+		
+		for d in self.items:
+			d.warehouse = self.set_warehouse
+
+			
 	def on_submit(self):
 		# Check for Approving Authority
 		frappe.get_doc("Authorization Control").validate_approving_authority(
