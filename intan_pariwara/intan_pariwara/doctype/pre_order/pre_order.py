@@ -28,7 +28,7 @@ class PreOrder(AccountsController, SellingController):
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
 		make_packing_list(self)
-
+	
 	def validate_expected_date(self):
 		date = getdate(self.transaction_date)
 		if date > getdate(self.delivery_date) or date > getdate(self.payment_date):
@@ -86,7 +86,14 @@ class PreOrder(AccountsController, SellingController):
 		# self.update_opportunity("Open")
 		# self.update_lead()
 
-	
+	@frappe.whitelist()
+	def otp_verification(self, otp):
+		if self.otp_verified:
+			return
+		
+		from intan_pariwara.controllers.otp_notification import get_verification_otp
+		if get_verification_otp(str(otp), self.name):
+			self.db_set("otp_verified", 1)
 
 @frappe.whitelist()
 def make_sales_order(source_name: str, target_doc=None):

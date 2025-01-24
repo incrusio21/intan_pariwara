@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-23 10:27:54.457069",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "document_type",
+  "event",
+  "workflow_state",
+  "column_break_zsyx",
+  "otp_service",
+  "field_otp_secret",
+  "section_break_tcik",
+  "body"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_tcik",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "body",
+   "fieldtype": "JSON",
+   "label": "Body"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zsyx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "otp_service",
+   "fieldtype": "Link",
+   "label": "OTP Service",
+   "options": "OTP Service",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.event == \"Workflow\"",
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "label": "Workflow State",
+   "options": "Workflow State"
+  },
+  {
+   "fieldname": "field_otp_secret",
+   "fieldtype": "Select",
+   "label": "Field for OTP Secret",
+   "reqd": 1
+  },
+  {
+   "fieldname": "event",
+   "fieldtype": "Select",
+   "label": "Event",
+   "options": "\nSave\nNew\nSubmit\nCancel\nWorkflow",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-24 09:34:04.165681",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "OTP Notification",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

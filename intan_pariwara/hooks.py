@@ -74,14 +74,20 @@ doctype_js = {
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
 
+website_route_rules = [
+	{"from_route": "/preview-pre-order/<path:app_path>", "to_route": "preview-pre-order"},
+]
+
 # Jinja
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "intan_pariwara.utils.jinja_methods",
-# 	"filters": "intan_pariwara.utils.jinja_filters"
-# }
+jinja = {
+	# "methods": "intan_pariwara.utils.jinja_methods",
+	"filters": [
+    	"intan_pariwara.utils.jinja_filters.format_nomor_telepon"
+	]
+}
 
 # Installation
 # ------------
@@ -145,11 +151,14 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-	# "*": {
-	# 	"on_update": "method",
-	# 	"on_cancel": "method",
-	# 	"on_trash": "method"
-	# }
+    # doc event untuk nofication otp
+	"*": {
+		"on_insert": "intan_pariwara.controllers.otp_notification.OtpNotification",
+		"on_update": "intan_pariwara.controllers.otp_notification.OtpNotification",
+		"on_submit": "intan_pariwara.controllers.otp_notification.OtpNotification",
+		"on_cancel": "intan_pariwara.controllers.otp_notification.OtpNotification",
+		"on_change": "intan_pariwara.controllers.otp_notification.OtpNotification",
+	},
     "Sales Invoice": {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",

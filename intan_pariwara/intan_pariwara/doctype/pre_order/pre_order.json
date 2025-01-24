@@ -33,6 +33,7 @@
   "payment_date",
   "custom_calon_siplah",
   "amended_from",
+  "otp_verified",
   "currency_and_price_list",
   "currency",
   "conversion_rate",
@@ -1282,6 +1283,13 @@
    "fieldname": "additional_rebate_disc",
    "fieldtype": "Percent",
    "label": "Additional Rebate / Discount",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "otp_verified",
+   "fieldtype": "Check",
+   "label": "OTP Verified",
    "read_only": 1
   }
  ],

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pre Order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link type="text/css" rel="stylesheet" href="{{ boot['assets_json']['print.bundle.css'] }}">
+  <style>
+    @media screen {
+    .print-format-gutter {
+        background-color: #d1d8dd;
+        padding: 30px 0px;
+    }
+    .print-format {
+        background-color: white;
+        border-radius: 8px;
+        min-height: 95vh;
+        padding: 0.75in;
+        margin: auto;
+        color: var(--gray-900);
+    }
+
+    .print-format.landscape {
+        max-width: 11.69in;
+        padding: 0.2in;
+    }
+
+    .page-break {
+        /* padding: 15px 0px; */
+        border-bottom: 1px dashed #888;
+    }
+
+    /* .page-break:first-child {
+        padding-top: 0px;
+    } */
+
+    .page-break:last-child {
+        border-bottom: 0px;
+    }
+
+    /* mozilla hack for images in table */
+    body:last-child .print-format td img {
+        width: 100% !important;
+    }
+
+    @media(max-width: 767px) {
+        .print-format {
+            padding: 0.2in;
+        }
+    }
+    }
+
+    @media print {
+    .print-format p {
+        margin-left: 1px;
+        margin-right: 1px;
+    }
+    }
+
+    .disabled-check {
+        color: #eee;
+    }
+
+    .data-field {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .data-field .value {
+        word-wrap: break-word;
+    }
+
+    .important .value {
+        font-size: 120%;
+        font-weight: bold;
+    }
+
+    .important label {
+        line-height: 1.8;
+        margin: 0px;
+    }
+
+    .table {
+        font-size: inherit;
+        margin: 20px 0px;
+    }
+
+    .checkbox-options {
+        columns: var(--checkbox-options-columns);
+    }
+
+    .square-image {
+        width: 100%;
+        height: 0;
+        padding: 50% 0;
+        background-size: contain;
+        /*background-size: cover;*/
+        background-repeat: no-repeat !important;
+        background-position: center center;
+        border-radius: 4px;
+    }
+
+    .print-item-image {
+        object-fit: contain;
+    }
+
+    .pdf-variables,
+    .pdf-variable,
+    .visible-pdf {
+        display: none !important;
+    }
+
+    .print-format {
+        font-size: 9pt;
+        font-family: Inter, "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif;
+        -webkit-print-color-adjust:exact;
+    }
+
+    .page-break {
+        page-break-after: always;
+    }
+
+    .print-heading {
+        border-bottom: 1px solid #aaa;
+        margin-bottom: 10px;
+    }
+
+    .print-heading h2 {
+        margin: 0px;
+    }
+    .print-heading h4 {
+        margin-top: 5px;
+    }
+
+    table.no-border, table.no-border td {
+        border: 0px;
+    }
+
+    .print-format label {
+        /* wkhtmltopdf breaks label into multiple lines when it is inline-block */
+        display: block;
+        font-weight: 700;
+    }
+
+    .print-format img {
+        max-width: 100%;
+    }
+
+    .print-format table td > .primary:first-child {
+        font-weight: bold;
+    }
+
+    .print-format td, .print-format th {
+        vertical-align: top !important;
+        padding: 6px !important;
+    }
+
+    .print-format p {
+        margin: 3px 0px 3px;
+    }
+
+    .print-format table td pre {
+        white-space: normal;
+        word-break: normal;
+    }
+
+    table td div {
+
+        /* needed to avoid partial cutting of text between page break in wkhtmltopdf */
+        page-break-inside: avoid !important;
+
+    }
+
+    /* hack for webkit specific browser */
+    @media (-webkit-min-device-pixel-ratio:0) {
+        thead, tfoot {
+            display: table-header-group;
+        }
+    }
+
+    [document-status] {
+        margin-bottom: 5mm;
+    }
+
+    .signature-img {
+        background: #fff;
+        border-radius: 3px;
+        margin-top: 5px;
+        max-height: 150px;
+    }
+
+    .print-format-preview [data-fieldtype="Table"] {
+        overflow: auto;
+    }
+    .print-format {
+        font-size: 13px;
+        background: white;
+    }
+
+    .print-heading {
+        border-bottom: 1px solid #f4f5f6;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
+
+    .print-heading h2 {
+        font-size: 24px;
+    }
+
+    .print-heading h2 div {
+        font-weight: 600;
+    }
+
+    .print-heading small {
+        font-size: 13px !important;
+        font-weight: normal;
+        line-height: 2.5;
+        color: #4c5a67;
+    }
+
+    .print-format .letter-head {
+        margin-bottom: 30px;
+    }
+
+    .print-format label {
+        font-weight: normal;
+        font-size: 13px;
+        color: #4C5A67;
+        margin-bottom: 0;
+    }
+
+    .print-format .data-field {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .print-format .value {
+        color: #192734;
+        line-height: 1.8;
+    }
+
+    .print-format .section-break:not(:last-child) {
+        margin-bottom: 0;
+    }
+
+    .print-format .row:not(.section-break) {
+        line-height: 1.6;
+        margin-top: 15px !important;
+    }
+
+    .print-format .important .value {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .print-format th {
+        color: #74808b;
+        font-weight: normal;
+        border-bottom-width: 1px !important;
+    }
+
+    .print-format .table-bordered td, .print-format .table-bordered th {
+        border: 1px solid #f4f5f6;
+    }
+
+    .print-format .table-bordered {
+        border: 1px solid #f4f5f6;
+    }
+
+    .print-format td, .print-format th {
+        padding: 10px !important;
+    }
+
+    .print-format .primary.compact-item {
+        font-weight: normal;
+    }
+
+    .print-format table td .value {
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+
+    .form-container {
+        border: 1px solid black;
+        padding: 10px;
+    }
+
+    .print-format td, .print-format th {
+        vertical-align: top !important;
+        padding: 2px !important;
+    }
+
+    .print-format .table-bordered td, .print-format .table-bordered th {
+        border: 1px solid #000;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="print-format">
+        <div class="form-container">
+
+            <table style="width: 100%;font-size: inherit;">
+                <col style="width: 25%">
+                <col style="width: 3%">
+                <col style="width: 72%">
+                <tr>
+                    <td class="text-center" colspan="3">
+                        <b style="font-size: x-large;">PRE ORDER</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>Customer Name</td>
+                    <td>:</td>
+                    <td>{{ doc.customer_name }}</td>
+                </tr>
+                <tr>
+                    <td>Jabatan</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td>NPSN</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td>e-mail</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td>Address</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td>Mobile No.</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td>Fund Source</td>
+                    <td>:</td>
+                    <td>{{ doc.fund_source }}</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>:</td>
+                    <td>{{ frappe.utils.formatdate(doc.transaction_date, "dd/MM/YYYY") }}</td>
+                </tr>
+                <tr>
+                    <td>Expected Payment Date</td>
+                    <td>:</td>
+                    <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
+                </tr>
+                <tr>
+                    <td>Expected Delivery Date</td>
+                    <td>:</td>
+                    <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
+                </tr>
+                <tr>
+                    <td>Sales Person</td>
+                    <td>:</td>
+                    <td>{{ doc.sales_person or "" }}</td>
+                </tr>
+                <tr>
+                    <td>Catatan</td>
+                    <td>:</td>
+                    <td>{{ "-" }}</td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+            </table>
+            
+            <div style="overflow-x: auto;">
+                <table class="table-bordered" style="width: 100%;font-size: inherit;min-width: 720px;">
+                    <col style="width: 8%">
+                    <col style="width: 22%">
+                    <col style="width: 24%">
+                    <col style="width: 18%">
+                    <col style="width: 10%">
+                    <col style="width: 18%">
+                    <tr>
+                        <td class="text-center">No</td>
+                        <td class="text-center">Kode Barang</td>
+                        <td class="text-center">Nama Barang</td>
+                        <td class="text-center">Harga</td>
+                        <td class="text-center">Jumlah</td>
+                        <td class="text-center">Sub Total</td>
+                    </tr>
+                    {% for d in doc.items %}
+                    <tr>
+                        <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+                        <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+                        <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+                        <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("rate") }}</td>
+                        <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+                        <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("amount") }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td class="text-center" colspan="5">TOTAL</td>
+                        <td class="text-right">{{ doc.get_formatted("rounded_total") }}</td>
+                    </tr>
+                </table>
+                </div>
+            
+            <p>*Harga sudah termasuk pajak, dan biaya angkos kirim.</p>
+            <p>*Barang bisa diterima maksimal 30 hari sejak penerimaan.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -26,6 +26,9 @@ frappe.ui.form.on("Pre Order", {
 				},
 			};
 		});
+
+		
+
     },
 	refresh(frm) {
         frm.trigger("set_label");
@@ -68,6 +71,34 @@ intan_pariwara.selling.PreOrderController = class PreOrderController extends int
 			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
 
 			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
+		}
+
+		if(!doc.otp_verified){
+			me.frm.add_custom_button(
+				__("OTP Verified"), () => {
+					frappe.prompt(
+						{
+							fieldtype: "Data",
+							label: __("One Time Password"),
+							fieldname: "otp",
+							reqd: 1,
+						},
+						(data) => {
+							frappe.call({
+								method: "otp_verification",
+								doc: doc,
+								args: {
+									otp: data.otp
+								}
+							}).then((data) => {
+								me.frm.refresh()
+							})
+						},
+						__("Input One Time Password"),
+						__("Submit")
+					);
+				}
+			)
 		}
 	}
 
