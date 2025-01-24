@@ -17,6 +17,7 @@ excluded_doctypes = [
     "Version",
     "Comment",
     "Property Setter",
+    "Workspace",
     "OTP Setting",
     "OTP Service",
     "OTP Notification",
