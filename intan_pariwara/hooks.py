@@ -153,7 +153,7 @@ override_doctype_class = {
 doc_events = {
     # doc event untuk nofication otp
 	"*": {
-		"on_insert": "intan_pariwara.controllers.otp_notification.OtpNotification",
+		"after_insert": "intan_pariwara.controllers.otp_notification.OtpNotification",
 		"on_update": "intan_pariwara.controllers.otp_notification.OtpNotification",
 		"on_submit": "intan_pariwara.controllers.otp_notification.OtpNotification",
 		"on_cancel": "intan_pariwara.controllers.otp_notification.OtpNotification",
