@@ -1167,6 +1167,7 @@
    "options": "Warehouse"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "delivery_date",
    "fieldtype": "Date",
    "label": "Expected Delivery Date",
@@ -1221,12 +1222,14 @@
    "options": "Customer Group"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_date",
    "fieldtype": "Date",
    "label": "Expected Payment Date",
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "bold": 1,
    "fetch_from": "sales_person.employee",
    "fieldname": "sales_id",
@@ -1236,6 +1239,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_person",
    "fieldtype": "Link",
    "label": "Sales Person",
@@ -1284,7 +1288,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-21 15:40:42.470259",
+ "modified": "2025-01-23 15:05:27.626140",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
