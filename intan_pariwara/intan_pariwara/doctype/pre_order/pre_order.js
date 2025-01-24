@@ -66,14 +66,14 @@ intan_pariwara.selling.PreOrderController = class PreOrderController extends int
 		super.refresh(doc, dt, dn);
 		
 		var me = this;
-
+		
 		if (doc.docstatus == 1 && doc.per_ordered < 100) {
 			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
 
 			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
 		}
 
-		if(!doc.otp_verified){
+		if(!(doc.__islocal || doc.otp_verified)){
 			me.frm.add_custom_button(
 				__("OTP Verified"), () => {
 					frappe.prompt(
