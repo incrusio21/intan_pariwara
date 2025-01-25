@@ -13,7 +13,11 @@
   "rebate_additional_account",
   "column_break_dzrm",
   "rebate_payable_account",
-  "rebate_additional_payable_account"
+  "rebate_additional_payable_account",
+  "invoice_account_section",
+  "incoming_account",
+  "column_break_ojmc",
+  "expense_account"
  ],
  "fields": [
   {
@@ -36,7 +40,8 @@
   },
   {
    "fieldname": "section_break_eywj",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Rebate"
   },
   {
    "fieldname": "rebate_order_account",
@@ -69,12 +74,33 @@
    "in_list_view": 1,
    "label": "Rebate Additional Payable Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "invoice_account_section",
+   "fieldtype": "Section Break",
+   "label": "Invoice Account"
+  },
+  {
+   "fieldname": "incoming_account",
+   "fieldtype": "Link",
+   "label": "Incoming Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_ojmc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expense_account",
+   "fieldtype": "Link",
+   "label": "Expense Account",
+   "options": "Account"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-30 09:01:44.015686",
+ "modified": "2025-01-25 17:10:14.845907",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Fund Source Accounts",

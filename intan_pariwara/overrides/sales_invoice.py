@@ -37,6 +37,9 @@ class SalesInvoice(AccountsController, SalesInvoice):
                     for sle in sle_list:
                         sle_value = flt((item.qty / sle.actual_qty) * sle.stock_value_difference, precision)
 
+                        if not item_row.expense_account:
+                            frappe.throw("Please input Expense Account in Row#{}".format(item_row.idx))
+                            
                         gl_list.append(
                             self.get_gl_dict(
                                 {

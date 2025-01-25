@@ -160,6 +160,7 @@ doc_events = {
 		"on_change": "intan_pariwara.controllers.otp_notification.OtpNotification",
 	},
     "Sales Invoice": {
+        "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.validate_fund_source_account",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"

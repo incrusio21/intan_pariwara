@@ -3,6 +3,27 @@
 
 import frappe
 
+def validate_fund_source_account(self, method):
+    if not self.fund_source:
+        return
+    
+    incoming_account, expense_account = frappe.get_value("Fund Source Accounts", 
+        {
+            "parent": self.fund_source,
+            "company": self.company,
+            "transaction_type": self.transaction_type,
+        }, 
+        ["incoming_account", "expense_account"]) or ["", ""]
+
+    if not (incoming_account or expense_account):
+        frappe.throw("Please insert Incoming and Expense Account in Customer Fund Source first.")
+
+    for d in self.items:
+        d.update({
+            "incoming_account": incoming_account,
+            "expense_account": expense_account,
+        })
+
 def create_and_delete_rebate(self, method):
     if not self.apply_rebate:
         return
