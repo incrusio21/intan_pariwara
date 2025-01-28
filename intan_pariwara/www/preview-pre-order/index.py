@@ -10,3 +10,4 @@ def get_context(context):
         raise frappe.Redirect
 
     context.doc = frappe.get_doc("Pre Order", app_path)
+    context.relasi = frappe.get_value("Customer", context.customer, "custom_jenis_relasi")
