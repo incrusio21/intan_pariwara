@@ -21,6 +21,7 @@ class PreOrder(AccountsController, SellingController):
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
 		self.set_child_wharehouse()
+		self.set_customer_mobile_no()
 
 		if self.items:
 			self.with_items = 1
@@ -29,6 +30,12 @@ class PreOrder(AccountsController, SellingController):
 
 		make_packing_list(self)
 	
+	def set_customer_mobile_no(self):
+		if self.contact_person:
+			return
+		
+		self.contact_mobile = frappe.get_cached_value("Customer", self.customer, "mobile_no")
+
 	def validate_expected_date(self):
 		date = getdate(self.transaction_date)
 		if date > getdate(self.delivery_date) or date > getdate(self.payment_date):
