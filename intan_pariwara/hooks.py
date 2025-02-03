@@ -52,6 +52,11 @@ doctype_js = {
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+fixtures = [
+    {
+		"dt": "Server Script"
+	}
+]
 # Svg Icons
 # ------------------
 # include app icons in desk
