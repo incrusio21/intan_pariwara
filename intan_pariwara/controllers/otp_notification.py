@@ -127,6 +127,7 @@ def get_otp_setting():
     otp_setting = frappe.get_cached_doc("OTP Setting")
     return [otp_setting.validity_period * 60, otp_setting.number_length]
 
+@frappe.whitelist()
 def request_otp_notification(document_type, document_no, method):
     doc = frappe.get_doc(document_type, document_no)
     OtpNotification(doc, method)
