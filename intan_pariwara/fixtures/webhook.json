@@ -1,0 +1,268 @@
+[
+ {
+  "background_jobs_queue": null,
+  "condition": null,
+  "docstatus": 0,
+  "doctype": "Webhook",
+  "enable_security": 0,
+  "enabled": 0,
+  "is_dynamic_url": 0,
+  "meets_condition": "Yes",
+  "modified": "2025-01-24 14:16:38.767709",
+  "name": "Pre Order",
+  "preview_document": null,
+  "preview_request_body": "Select a document to preview request data",
+  "request_method": "POST",
+  "request_structure": "",
+  "request_url": "https://intanonline.com/api/erp/webhook.php",
+  "timeout": 5,
+  "webhook_data": [
+   {
+    "fieldname": "name",
+    "key": "name",
+    "parent": "Pre Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "items",
+    "key": "items",
+    "parent": "Pre Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   }
+  ],
+  "webhook_docevent": "after_insert",
+  "webhook_doctype": "Pre Order",
+  "webhook_headers": [
+   {
+    "key": "Content-Type",
+    "parent": "Pre Order",
+    "parentfield": "webhook_headers",
+    "parenttype": "Webhook",
+    "value": "application/json"
+   }
+  ],
+  "webhook_json": "{ \"id\": \"{{ doc.name }}\" }",
+  "webhook_secret": null
+ },
+ {
+  "background_jobs_queue": null,
+  "condition": "doc.workflow_state==\"Approved\"",
+  "docstatus": 0,
+  "doctype": "Webhook",
+  "enable_security": 0,
+  "enabled": 0,
+  "is_dynamic_url": 0,
+  "meets_condition": "Select a document to check if it meets conditions.",
+  "modified": "2025-01-24 08:50:51.064186",
+  "name": "Usulan Pesanan",
+  "preview_document": null,
+  "preview_request_body": "Select a document to preview request data",
+  "request_method": "POST",
+  "request_structure": "",
+  "request_url": "https://intanonline.com/api/erp/usulan_pesan.php",
+  "timeout": 5,
+  "webhook_data": [
+   {
+    "fieldname": "name",
+    "key": "name",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "workflow_state",
+    "key": "workflow_state",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "branch",
+    "key": "branch",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "sales_id",
+    "key": "sales_id",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "custom_rel_oldist",
+    "key": "custom_rel_oldist",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "custom_kecamatan",
+    "key": "custom_kecamatan",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "fund_source",
+    "key": "fund_source",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "payment_date",
+    "key": "payment_date",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "delivery_date",
+    "key": "delivery_date",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "relasi",
+    "key": "relasi",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "total",
+    "key": "total",
+    "parent": "Usulan Pesanan",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   }
+  ],
+  "webhook_docevent": "on_update",
+  "webhook_doctype": "Pre Order",
+  "webhook_headers": [],
+  "webhook_json": null,
+  "webhook_secret": null
+ },
+ {
+  "background_jobs_queue": null,
+  "condition": null,
+  "docstatus": 0,
+  "doctype": "Webhook",
+  "enable_security": 0,
+  "enabled": 1,
+  "is_dynamic_url": 0,
+  "meets_condition": "Yes",
+  "modified": "2025-01-24 14:18:44.127249",
+  "name": "Sales Order",
+  "preview_document": null,
+  "preview_request_body": "Select a document to preview request data",
+  "request_method": "POST",
+  "request_structure": "",
+  "request_url": "http://wms.intanpariwara.com/sales/sales_order/api/sales_orders/create/",
+  "timeout": 5,
+  "webhook_data": [
+   {
+    "fieldname": "company",
+    "key": "company",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "branch",
+    "key": "branch",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "customer",
+    "key": "customer",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "warehouse",
+    "key": "warehouse",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "name",
+    "key": "order_number",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "status",
+    "key": "status",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "transaction_date",
+    "key": "order_date",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "delivery_date",
+    "key": "expected_delivery_date",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "payment_schedule",
+    "key": "payment_schedule",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "billing_status",
+    "key": "payment_status",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   },
+   {
+    "fieldname": "items",
+    "key": "lines",
+    "parent": "Sales Order",
+    "parentfield": "webhook_data",
+    "parenttype": "Webhook"
+   }
+  ],
+  "webhook_docevent": "on_submit",
+  "webhook_doctype": "Sales Order",
+  "webhook_headers": [
+   {
+    "key": "Authorization",
+    "parent": "Sales Order",
+    "parentfield": "webhook_headers",
+    "parenttype": "Webhook",
+    "value": "Token 0be009723ea3360a5b0875b68ede6a256a8b0ca6"
+   },
+   {
+    "key": "Content-Type",
+    "parent": "Sales Order",
+    "parentfield": "webhook_headers",
+    "parenttype": "Webhook",
+    "value": "application/json"
+   }
+  ],
+  "webhook_json": null,
+  "webhook_secret": null
+ }
+]

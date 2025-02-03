@@ -55,6 +55,9 @@ doctype_js = {
 fixtures = [
     {
 		"dt": "Server Script"
+	},
+	{
+		"dt": "Webhook"
 	}
 ]
 # Svg Icons
