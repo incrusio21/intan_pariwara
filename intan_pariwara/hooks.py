@@ -44,6 +44,7 @@ app_include_js = "intan_pariwara.bundle.js"
 
 # include js in doctype views
 doctype_js = {
+    "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
