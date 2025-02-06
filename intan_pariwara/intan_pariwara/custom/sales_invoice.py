@@ -7,25 +7,19 @@ def validate_fund_source_account(self, method):
     if not self.fund_source:
         return
     
-    discount_account = ""
-    incoming_account, expense_account = frappe.get_value("Fund Source Accounts", 
+    incoming_field, discount_field = "incoming_account", "return_discount_account"
+    # account yang di gunakan untuk return berbeda
+    if self.is_return:
+        incoming_field = "return_incoming_account"
+
+    incoming_account, expense_account, discount_account = frappe.get_value("Fund Source Accounts", 
         {
             "parent": self.fund_source,
             "company": self.company,
             "transaction_type": self.transaction_type,
         }, 
-        ["incoming_account", "expense_account"]) or ["", ""]
-
-    # account yang di gunakan untuk return berbeda
-    if self.is_return:
-        incoming_account, discount_account = frappe.get_value("Fund Source Accounts", 
-            {
-                "parent": self.fund_source,
-                "company": self.company,
-                "transaction_type": self.transaction_type,
-            }, 
-            ["return_incoming_account", "return_discount_account"]) or ["", ""]
-        
+        [incoming_field, "expense_account", discount_field]) or ["", ""]
+    
     if not (incoming_account or expense_account):
         frappe.throw("Please insert Incoming and Expense Account in Customer Fund Source first.")
     
