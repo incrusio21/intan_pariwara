@@ -21,7 +21,7 @@ def filter_result_items(result, poe_profile):
 		result["items"] = [item for item in result.get("items") if item.get("item_group") in pos_item_groups]
 		
 @frappe.whitelist()
-def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=None, kode_kelas=None, search_term=""):
+def get_items(start, page_length, price_list, item_group, poe_profile, mata_pelajaran=None, jenjang=None, kode_kelas=None, search_term=""):
     warehouse, hide_unavailable_items, cache_non_search_term = frappe.db.get_value(
         "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items", "cache_non_search_term"]
     )
@@ -29,6 +29,8 @@ def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=N
     cache_term = search_term or cache_non_search_term or "showallitems"
     
     key_parts = [price_list, item_group]
+    if mata_pelajaran:
+        key_parts.append(mata_pelajaran)
     if jenjang:
         key_parts.append(jenjang)
     if kode_kelas:
@@ -63,6 +65,9 @@ def get_items(start, page_length, price_list, item_group, poe_profile, jenjang=N
     
     if kode_kelas:
         condition += """ and custom_kode_kelas = "{}" """.format(kode_kelas)
+
+    if mata_pelajaran:
+        condition += """ and custom_mata_pelajaran = "{}" """.format(mata_pelajaran)
 
     lft, rgt = frappe.db.get_value("Item Group", item_group, ["lft", "rgt"])
 

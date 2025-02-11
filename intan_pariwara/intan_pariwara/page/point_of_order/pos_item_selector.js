@@ -31,7 +31,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 					<div class="label" style="grid-row: 2 span / span 2;">${__("All Items")}</div>
 					<div class="search-field"></div>
 					<div class="item-group-field"></div>
-					<div style="grid-column: 1 span / span 1;"></div>
+					<div class="mata-pelajaran-field"></div>
 					<div class="jenjang-field"></div>
 					<div class="kode-kelas-field"></div>
 				</div>
@@ -74,7 +74,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const price_list = this.price_list;
-		let { item_group, jenjang, kode_kelas, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas,mata_pelajaran, poe_profile } = this;
 
 		!item_group && (item_group = this.parent_item_group);
 		
@@ -90,7 +90,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		this.request_item = frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
-			args: { start, page_length, price_list, item_group, jenjang, kode_kelas, search_term, poe_profile },
+			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, poe_profile },
 		});
 
 		return this.request_item
@@ -171,6 +171,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		const me = this;
 		this.$component.find(".search-field").html("");
 		this.$component.find(".item-group-field").html("");
+		this.$component.find(".mata-pelajaran-field").html("");
 		this.$component.find(".jenjang-field").html("");
 		this.$component.find(".kode-kelas-field").html("");
 
@@ -209,6 +210,21 @@ erpnext.PointOfOrder.ItemSelector = class {
 			render_input: true,
 		});
 
+		this.mata_pelajaran = frappe.ui.form.make_control({
+			df: {
+				label: __("Mata Pelajaran"),
+				fieldtype: "Link",
+				options: "Mata Pelajaran",
+				placeholder: __("Select Mata Pelajaran"),
+				onchange: function () {
+					me.mata_pelajaran = this.value;
+					me.filter_items({ search_term: me.search_field.last_value });
+				},
+			},
+			parent: this.$component.find(".mata-pelajaran--field"),
+			render_input: true,
+		});
+
 		this.jenjang_field = frappe.ui.form.make_control({
 			df: {
 				label: __("Jejang"),
@@ -234,15 +250,6 @@ erpnext.PointOfOrder.ItemSelector = class {
 					me.kode_kelas = this.value;
 					me.filter_items({ search_term: me.search_field.last_value });
 				},
-				get_query: function () {
-					const doc = me.events.get_frm().doc;
-					return {
-						query: "erpnext.selling.page.point_of_sale.point_of_sale.item_group_query",
-						filters: {
-							pos_profile: doc ? doc.pos_profile : "",
-						},
-					};
-				},
 			},
 			parent: this.$component.find(".kode-kelas-field"),
 			render_input: true,
@@ -250,6 +257,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 		this.search_field.toggle_label(false);
 		this.item_group_field.toggle_label(false);
+		this.mata_pelajaran.toggle_label(false);
 		this.jenjang_field.toggle_label(false);
 		this.kode_kelas_field.toggle_label(false);
 
