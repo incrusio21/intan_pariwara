@@ -347,7 +347,6 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 			const dialog = new frappe.ui.Dialog({
 				title: __("Update Item Quantity"),
-				static: true,
 				fields: [
 					{
 						fieldtype: "Float",
