@@ -23,6 +23,16 @@
 	.items-selector {
 		
 		.filter-section {
+<<<<<<< HEAD
+=======
+			.mata-pelajaran-field {
+				grid-column: span 3 / span 3;
+				display: flex;
+				align-items: center;
+				margin-left: var(--margin-sm);
+			}
+
+>>>>>>> 8be7fac (feat(poo): tambahan dialog ketika pilih item d item selector)
 			.jenjang-field {
 				grid-column: span 4 / span 4;
 				display: flex;

@@ -56,6 +56,10 @@ erpnext.PointOfOrder.ItemSelector = class {
 		let key = [
 			this.price_list, 
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
+<<<<<<< HEAD
+=======
+			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
+>>>>>>> 8be7fac (feat(poo): tambahan dialog ketika pilih item d item selector)
 			...(this.jenjang ? [this.jenjang] : []), 
 			...(this.kode_kelas ? [this.kode_kelas] : [])];
 		
@@ -334,12 +338,31 @@ erpnext.PointOfOrder.ItemSelector = class {
 			uom = uom === "undefined" ? undefined : uom;
 			rate = rate === "undefined" ? undefined : rate;
 
-			me.events.item_selected({
-				field: "qty",
-				value: "+1",
-				item: { item_code, batch_no, serial_no, uom, rate },
+			const dialog = new frappe.ui.Dialog({
+				title: __("Update Item Quantity"),
+				static: true,
+				fields: [
+					{
+						fieldtype: "Float",
+						label: __("Quantity"),
+						default: 1,
+						fieldname: "qty",
+						reqd: 1,
+					},
+				],
+				primary_action: async function ({ qty }) {
+					me.events.item_selected({
+						field: "qty",
+						value: qty,
+						item: { item_code, batch_no, serial_no, uom, rate },
+					});
+					me.search_field.set_focus();
+					dialog.hide();
+				},
+				primary_action_label: __("Submit"),
 			});
-			me.search_field.set_focus();
+
+			dialog.show();
 		});
 
 		this.search_field.$input.on("input", (e) => {
