@@ -13,10 +13,10 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.non_search_term = settings.cache_non_search_term;
 		this.request_item = null
 
-		this.inti_component();
+		this.init_component();
 	}
 
-	inti_component() {
+	init_component() {
 		this.prepare_dom();
 		this.make_search_bar();
 		this.load_items_data();
@@ -58,6 +58,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.jenjang ? [this.jenjang] : []), 
+			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.kode_kelas ? [this.kode_kelas] : [])];
 		
 		this.search_index[key] = this.search_index[key] || {}
@@ -75,7 +76,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const price_list = this.price_list;
-		let { item_group, jenjang, kode_kelas,mata_pelajaran, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas, mata_pelajaran, poe_profile } = this;
 
 		!item_group && (item_group = this.parent_item_group);
 		
@@ -211,7 +212,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			render_input: true,
 		});
 
-		this.mata_pelajaran = frappe.ui.form.make_control({
+		this.mata_pelajaran_field = frappe.ui.form.make_control({
 			df: {
 				label: __("Mata Pelajaran"),
 				fieldtype: "Link",
@@ -222,7 +223,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 					me.filter_items({ search_term: me.search_field.last_value });
 				},
 			},
-			parent: this.$component.find(".mata-pelajaran--field"),
+			parent: this.$component.find(".mata-pelajaran-field"),
 			render_input: true,
 		});
 
@@ -233,6 +234,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				options: "Kode Jenjang",
 				placeholder: __("Select Jenjang"),
 				onchange: function () {
+					console.log(this)
 					me.jenjang = this.value;
 					me.filter_items({ search_term: me.search_field.last_value });
 				},
@@ -258,7 +260,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 		this.search_field.toggle_label(false);
 		this.item_group_field.toggle_label(false);
-		this.mata_pelajaran.toggle_label(false);
+		this.mata_pelajaran_field.toggle_label(false);
 		this.jenjang_field.toggle_label(false);
 		this.kode_kelas_field.toggle_label(false);
 
@@ -435,7 +437,8 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		let key = [
 			this.price_list, 
-			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
+			...(this.item_group ? [this.item_group] : [this.parent_item_group]),
+			...(this.mata_pelajaran ? [this.mata_pelajaran] : []),  
 			...(this.jenjang ? [this.jenjang] : []), 
 			...(this.kode_kelas ? [this.kode_kelas] : [])];
 		
