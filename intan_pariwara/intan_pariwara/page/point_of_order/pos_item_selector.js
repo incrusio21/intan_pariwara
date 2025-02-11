@@ -56,10 +56,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		let key = [
 			this.price_list, 
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
-<<<<<<< HEAD
-=======
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
->>>>>>> 8be7fac (feat(poo): tambahan dialog ketika pilih item d item selector)
 			...(this.jenjang ? [this.jenjang] : []), 
 			...(this.kode_kelas ? [this.kode_kelas] : [])];
 		
