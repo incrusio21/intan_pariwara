@@ -163,6 +163,9 @@ doc_events = {
     ("Sales Order", "Delivery Note", "Sales Invoice"): {
         "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.update_sales_person_commision_rate"
 	},
+    "Customer": {
+		"before_validate": "intan_pariwara.intan_pariwara.custom.customer.disabled_based_account"
+	},
     "Sales Invoice": {
         "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.validate_fund_source_account",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",

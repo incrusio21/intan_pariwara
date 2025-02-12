@@ -11,3 +11,6 @@ def get_price_list(teritory):
     )
 
     return { "custom_details": fsd }
+
+def disabled_based_account(self, method):
+    self.disabled = int(not any(ac.account for ac in self.accounts))
