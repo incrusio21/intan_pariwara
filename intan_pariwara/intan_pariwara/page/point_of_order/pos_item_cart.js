@@ -387,6 +387,7 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	make_transaction_selector(frm) {
 		this.$transaction_section.html(`
+			<div class="kerjasama-field"></div>
 			<div class="fund-source-field"></div>
 			<div class="delivery-date-field"></div>
 			<div class="payment-date-field"></div>
@@ -407,6 +408,25 @@ erpnext.PointOfOrder.ItemCart = class {
 		// }
 		
 		if (!frm) frm = this.events.get_frm();
+		
+		this.kerjasama_field = frappe.ui.form.make_control({
+			df: {
+				label: __("Kerjasama"),
+				fieldtype: "Select",
+				options: ["", "Ya", "Tidak"],
+				placeholder: __("Select Kerjasama"),
+				reqd: 1,
+				onchange: function () {
+					if (this.value) {
+						const frm = me.events.get_frm();
+						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "kerjasama", this.value);
+					}
+				},
+			},
+			parent: this.$transaction_section.find(".kerjasama-field"),
+			render_input: true,
+			value: frm.doc.kerjasama,
+		});
 
 		this.fund_source_field = frappe.ui.form.make_control({
 			df: {
@@ -571,6 +591,7 @@ erpnext.PointOfOrder.ItemCart = class {
 		});
 
 		
+		this.kerjasama_field.toggle_label(false);
 		this.fund_source_field.toggle_label(false);
 		this.delivery_date_field.toggle_label(false);
 		this.payment_date_field.toggle_label(false);

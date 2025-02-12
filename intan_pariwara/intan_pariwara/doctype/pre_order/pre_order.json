@@ -32,6 +32,7 @@
   "delivery_date",
   "payment_date",
   "custom_calon_siplah",
+  "kerjasama",
   "amended_from",
   "otp_verified",
   "currency_and_price_list",
@@ -1291,12 +1292,19 @@
    "fieldtype": "Check",
    "label": "OTP Verified",
    "read_only": 1
+  },
+  {
+   "fieldname": "kerjasama",
+   "fieldtype": "Select",
+   "label": "Kerjasama",
+   "options": "\nYa\nTidak",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-23 15:05:27.626140",
+ "modified": "2025-02-12 16:43:04.973714",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
