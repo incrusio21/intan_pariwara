@@ -21,13 +21,13 @@ def make_sales_invoice(source_name, target_doc=None, args=None):
 	def set_missing_values(source, target):
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
-
+		
 		if len(target.get("items")) == 0:
 			frappe.throw(_("All these items have already been Invoiced/Returned"))
 
 		if args and args.get("merge_taxes"):
 			merge_taxes(source.get("taxes") or [], target)
-
+		
 		target.run_method("calculate_taxes_and_totals")
 
 		# set company address
@@ -74,7 +74,10 @@ def make_sales_invoice(source_name, target_doc=None, args=None):
 		{
 			"Delivery Note": {
 				"doctype": "Sales Invoice",
-				"field_map": {"is_return": "is_return"},
+				"field_map": {
+					"payment_date": "due_date",
+					"is_return": "is_return"
+				},
 				"validation": {"docstatus": ["=", 1]},
 			},
 			"Delivery Note Item": {
