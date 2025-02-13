@@ -138,9 +138,6 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 				"Sales Partner", source.referral_sales_partner, "commission_rate"
 			)
 		
-		target.transaction_date = source.transaction_date
-		target.delivery_date = source.delivery_date
-		
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
 		if source.sales_person:
@@ -191,6 +188,11 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 			"Pre Order": {
 				"doctype": "Sales Order", 
 				"validation": {"docstatus": ["=", 1]},
+				"field_map": { 
+					"transaction_date": "transaction_date",
+					"delivery_date": "delivery_date",
+					"payment_date": "payment_date"
+				}
 			},
 			"Pre Order Item": {
 				"doctype": "Sales Order Item",

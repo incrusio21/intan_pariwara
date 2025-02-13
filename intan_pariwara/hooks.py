@@ -169,13 +169,13 @@ doc_events = {
 		"on_change": "intan_pariwara.controllers.otp_notification.OtpNotification",
 	},
     ("Sales Order", "Delivery Note", "Sales Invoice"): {
-        "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.update_sales_person_commision_rate"
+        "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.SellingEvent"
 	},
     "Customer": {
 		"before_validate": "intan_pariwara.intan_pariwara.custom.customer.disabled_based_account"
 	},
     "Sales Invoice": {
-        "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.validate_fund_source_account",
+        "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
@@ -185,23 +185,23 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"intan_pariwara.tasks.all"
-# 	],
-# 	"daily": [
-# 		"intan_pariwara.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"intan_pariwara.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"intan_pariwara.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"intan_pariwara.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	# "all": [
+	# 	"intan_pariwara.tasks.all"
+	# ],
+	"daily": [
+		"intan_pariwara.intan_pariwara.custom.sales_invoice.update_bad_debt_sales_invoice"
+	],
+	# "hourly": [
+	# 	"intan_pariwara.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"intan_pariwara.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"intan_pariwara.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
@@ -212,6 +212,7 @@ doc_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
+	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
 	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
 }
