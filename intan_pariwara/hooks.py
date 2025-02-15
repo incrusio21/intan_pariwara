@@ -48,6 +48,7 @@ doctype_js = {
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
+    "Workflow" : "intan_pariwara/custom/workflow.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -179,6 +180,9 @@ doc_events = {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
+	},
+    "Workflow": {
+        "validate": "intan_pariwara.intan_pariwara.custom.workflow.create_custom_field_for_reason",
 	}
 }
 
@@ -215,6 +219,8 @@ override_whitelisted_methods = {
 	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
 	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
+	"frappe.model.workflow.apply_workflow": "intan_pariwara.model.workflow.apply_workflow",
+	"frappe.model.workflow.get_transitions": "intan_pariwara.model.workflow.get_transitions",
 }
 #
 # each overriding function accepts a `data` argument;
