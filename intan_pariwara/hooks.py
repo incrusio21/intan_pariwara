@@ -80,6 +80,18 @@ website_route_rules = [
 	{"from_route": "/preview-pre-order/<path:app_path>", "to_route": "preview-pre-order"},
 ]
 
+fixtures = [
+    {
+		"dt": "Stock Entry Type", 
+		"filters": [
+            ["name", "in", [
+				"Transfer of Promotional Goods",
+				]
+            ]
+		]
+	},
+]
+
 # Jinja
 # ----------
 
@@ -172,6 +184,9 @@ doc_events = {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
+	},
+    "Stock Entry": {
+        "on_submit": "intan_pariwara.intan_pariwara.custom.stock_entry.update_plafon_promosi",
 	},
     "Workflow": {
         "validate": "intan_pariwara.intan_pariwara.custom.workflow.create_custom_field_for_reason",

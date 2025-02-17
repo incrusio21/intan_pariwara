@@ -7,8 +7,11 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "fiscal_year",
   "cabang",
-  "plafon_promosi"
+  "column_break_wbmi",
+  "plafon_promosi",
+  "remaining_plafon"
  ],
  "fields": [
   {
@@ -27,11 +30,27 @@
    "fieldname": "plafon_promosi",
    "fieldtype": "Currency",
    "label": "Plafon Promosi"
+  },
+  {
+   "fieldname": "fiscal_year",
+   "fieldtype": "Link",
+   "label": "Fiscal Year",
+   "options": "Fiscal Year"
+  },
+  {
+   "fieldname": "column_break_wbmi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remaining_plafon",
+   "fieldtype": "Currency",
+   "label": "Remaining Plafon",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-21 10:25:39.311440",
+ "modified": "2025-02-17 10:29:31.264094",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Plafon Promosi",
