@@ -19,10 +19,11 @@ class SalesInvoice:
         if not self.doc.fund_source:
             return
         
-        incoming_field, discount_field = "incoming_account", "return_discount_account"
+        incoming_field, discount_field = "incoming_account", "discount_acount"
         # account yang di gunakan untuk return berbeda
         if self.doc.is_return:
             incoming_field = "return_incoming_account"
+            discount_field = "return_discount_account"
 
         incoming_account, expense_account, discount_account = frappe.get_value("Fund Source Accounts", 
             {
@@ -30,19 +31,17 @@ class SalesInvoice:
                 "company": self.doc.company,
                 "transaction_type": self.doc.transaction_type,
             }, 
-            [incoming_field, "expense_account", discount_field]) or ["", ""]
+            [incoming_field, "expense_account", discount_field]) or ["", "", ""]
         
-        if not (incoming_account or expense_account):
-            frappe.throw("Please insert Incoming and Expense Account in Customer Fund Source first.")
+        if not (incoming_account or expense_account or discount_account):
+            frappe.throw("Please insert Incoming, Expense adn Discount Account in Customer Fund Source first.")
         
         for d in self.doc.items:
             d.update({
                 "incoming_account": incoming_account,
                 "expense_account": expense_account,
+                "discount_account": discount_account,
             })
-
-            if self.doc.is_return:
-                d.discount_account = discount_account
 
     def validate_bad_debt(self):
         date_before_bad_debt = date_diff(self.doc.due_date, None)

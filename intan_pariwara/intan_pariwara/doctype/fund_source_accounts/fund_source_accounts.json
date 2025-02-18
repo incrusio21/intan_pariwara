@@ -16,9 +16,12 @@
   "rebate_additional_payable_account",
   "invoice_account_section",
   "incoming_account",
-  "return_incoming_account",
+  "discount_acount",
   "column_break_ojmc",
   "expense_account",
+  "invoice_return_account_section",
+  "return_incoming_account",
+  "column_break_daww",
   "return_discount_account"
  ],
  "fields": [
@@ -109,12 +112,27 @@
    "fieldtype": "Link",
    "label": "Return Discount Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "discount_acount",
+   "fieldtype": "Link",
+   "label": "Discount Acount",
+   "options": "Account"
+  },
+  {
+   "fieldname": "invoice_return_account_section",
+   "fieldtype": "Section Break",
+   "label": "Invoice Return Account"
+  },
+  {
+   "fieldname": "column_break_daww",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-28 10:12:39.310674",
+ "modified": "2025-02-18 14:36:20.594967",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Fund Source Accounts",
