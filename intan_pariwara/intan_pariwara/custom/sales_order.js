@@ -130,4 +130,34 @@ frappe.ui.form.on("Sales Order", {
 	}
 })
 
-cur_frm.script_manager.make(intan_pariwara.selling.SellingController);
+intan_pariwara.selling.SalesOrderController = class SalesOrderController extends intan_pariwara.selling.SellingController {
+	refresh(doc, dt, dn) {
+		var me = this;
+		super.refresh(doc, dt, dn);
+
+		if (doc.docstatus == 1) {
+			if (
+				doc.status !== "Closed" &&
+				flt(doc.per_picked) < 100
+			) {
+				if (frappe.model.can_create("Packing List")) {
+					this.frm.add_custom_button(
+						__("Packing List"),
+						() => {
+							frappe.model.open_mapped_doc({
+								method: "intan_pariwara.intan_pariwara.custom.sales_order.make_packing",
+								frm: me.frm,
+								freeze: true,
+								freeze_message: __("Creating Packing List ..."),
+							});
+						},
+						__("Create")
+					);
+				}
+			}
+		}
+
+	}
+}
+
+cur_frm.script_manager.make(intan_pariwara.selling.SalesOrderController);
