@@ -189,8 +189,25 @@ def item_details(doctype, txt, searchfield, start, page_len, filters):
 def make_delivery_note(source_name, target_doc=None, kwargs=None):
 	from intan_pariwara.intan_pariwara.custom.sales_order import make_delivery_note
 	
-	packing = frappe.get_value("Packing List", source_name, ["sales_order"], as_dict=1)
+	packing = frappe.get_doc("Packing List", source_name)
 	
 	target_doc = make_delivery_note(packing.sales_order)
+	non_packing_item = []
+	for item in target_doc.items:
+		packing_item = packing.get("items", {"so_detail": item.so_detail})
+		if packing_item:
+			remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
+			if item.qty > remaining_qty:
+				item.qty = remaining_qty
+
+			item.against_packing_list = packing.name
+			item.packing_list_detail = packing_item[0].name
+		else:
+			non_packing_item.append(item)
+
+	for r in non_packing_item:
+		target_doc.remove(r)
+
+	target_doc.run_method("calculate_taxes_and_totals")
 
 	return target_doc

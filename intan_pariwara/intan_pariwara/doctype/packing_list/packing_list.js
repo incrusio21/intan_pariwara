@@ -29,18 +29,20 @@ frappe.ui.form.on("Packing List", {
 
 	refresh: (frm) => {
 		if (frm.doc.docstatus == 1) {
-			frm.add_custom_button(
-				__("Delivery Note"),
-				() => {
-					frappe.model.open_mapped_doc({
-						method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_delivery_note",
-						frm: frm,
-						freeze: true,
-						freeze_message: __("Creating Delivery Note ..."),
-					});
-				},
-				__("Create")
-			);
+			if(frm.doc.per_delivered < 100){
+				frm.add_custom_button(
+					__("Delivery Note"),
+					() => {
+						frappe.model.open_mapped_doc({
+							method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_delivery_note",
+							frm: frm,
+							freeze: true,
+							freeze_message: __("Creating Delivery Note ..."),
+						});
+					},
+					__("Create")
+				);
+			}
 		}
 	},
 
