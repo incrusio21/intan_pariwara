@@ -16,6 +16,7 @@
   "quantity_section",
   "qty",
   "net_weight",
+  "delivered_qty",
   "column_break_10",
   "stock_uom",
   "weight_uom",
@@ -124,11 +125,17 @@
    "label": "Sales Order Item",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "delivered_qty",
+   "fieldtype": "Float",
+   "label": "Delivered Qty",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-02-18 11:25:57.099193",
+ "modified": "2025-02-18 14:47:56.900248",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List Item",

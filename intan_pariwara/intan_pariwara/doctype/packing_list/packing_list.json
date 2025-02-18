@@ -29,7 +29,10 @@
   "letter_head_details",
   "letter_head",
   "misc_details",
-  "amended_from"
+  "amended_from",
+  "more_info_tab",
+  "status_section",
+  "per_delivered"
  ],
  "fields": [
   {
@@ -180,12 +183,29 @@
    "label": "Sales Order",
    "options": "Sales Order",
    "reqd": 1
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
+  },
+  {
+   "fieldname": "per_delivered",
+   "fieldtype": "Percent",
+   "label": "% Delivered",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status"
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-18 12:47:57.877049",
+ "modified": "2025-02-18 14:44:10.896833",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",

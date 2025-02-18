@@ -10,6 +10,21 @@ from erpnext.stock.doctype.delivery_note.delivery_note import get_company_addres
 from erpnext.controllers.accounts_controller import merge_taxes
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
 
+def add_picking_list_to_status_updater(self, method):
+	self.status_updater.extend([
+		{
+			"target_dt": "Packing List Item",
+			"join_field": "packing_list_detail",
+			"source_dt": "Delivery Note Item",
+			"target_field": "delivered_qty",
+			"target_parent_dt": "Packing List",
+			"target_ref_field": "qty",
+			"source_field": "qty",
+			"percent_join_field": "against_packing_list",
+			"target_parent_field": "per_delivered",
+		},
+	])
+
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, args=None):
 	doc = frappe.get_doc("Delivery Note", source_name)
