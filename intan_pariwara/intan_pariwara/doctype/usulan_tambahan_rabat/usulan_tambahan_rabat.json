@@ -22,7 +22,8 @@
   "section_break_lzzp",
   "rebate",
   "sales_order_total",
-  "rebate_total"
+  "rebate_total",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -142,12 +143,18 @@
    "label": "Transaction Type",
    "options": "Transaction Type",
    "read_only": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-30 11:54:33.136912",
+ "modified": "2025-02-19 16:11:15.555626",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Usulan Tambahan Rabat",
