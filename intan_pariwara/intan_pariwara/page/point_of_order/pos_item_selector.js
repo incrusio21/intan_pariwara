@@ -58,6 +58,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.jenjang ? [this.jenjang] : []), 
+			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.kode_kelas ? [this.kode_kelas] : [])];
 		
 		this.search_index[key] = this.search_index[key] || {}
@@ -346,7 +347,6 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 			const dialog = new frappe.ui.Dialog({
 				title: __("Update Item Quantity"),
-				static: true,
 				fields: [
 					{
 						fieldtype: "Float",

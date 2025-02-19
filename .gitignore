@@ -6,5 +6,6 @@ tags
 node_modules
 *patch.py
 dist/
+fixtures_old/
 intan_pariwara/public/dist
 __pycache__
