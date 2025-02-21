@@ -21,14 +21,14 @@ def filter_result_items(result, poe_profile):
 		result["items"] = [item for item in result.get("items") if item.get("item_group") in pos_item_groups]
 		
 @frappe.whitelist()
-def get_items(start, page_length, price_list, item_group, poe_profile, mata_pelajaran=None, jenjang=None, kode_kelas=None, search_term=""):
+def get_items(start, page_length, price_list, item_group, poe_profile, company, mata_pelajaran=None, jenjang=None, kode_kelas=None, search_term=""):
     warehouse, hide_unavailable_items, cache_non_search_term = frappe.db.get_value(
         "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items", "cache_non_search_term"]
     )
 
     cache_term = search_term or cache_non_search_term or "showallitems"
     
-    key_parts = [price_list, item_group]
+    key_parts = [company, price_list, item_group]
     if mata_pelajaran:
         key_parts.append(mata_pelajaran)
     if jenjang:
@@ -60,11 +60,15 @@ def get_items(start, page_length, price_list, item_group, poe_profile, mata_pela
 
     condition = get_conditions(search_term)
     condition += get_item_group_condition(poe_profile)
+    condition += """ and (item.group = %(company)s or ifnull(item.group, "") = "") """
     if jenjang:
         condition += """ and custom_kode_jenjang = "{}" """.format(jenjang)
     
     if kode_kelas:
         condition += """ and custom_kode_kelas = "{}" """.format(kode_kelas)
+
+    if mata_pelajaran:
+        condition += """ and custom_mata_pelajaran = "{}" """.format(mata_pelajaran)
 
     if mata_pelajaran:
         condition += """ and custom_mata_pelajaran = "{}" """.format(mata_pelajaran)
@@ -109,7 +113,7 @@ def get_items(start, page_length, price_list, item_group, poe_profile, mata_pela
             bin_join_selection=bin_join_selection,
             bin_join_condition=bin_join_condition,
         ),
-        {"warehouse": warehouse},
+        {"company": company, "warehouse": warehouse},
         as_dict=1
     )
 

@@ -28,10 +28,12 @@ def get_price_list_fund(
         if fund_source else {}
 
     # cek pricelist customer berdasarkan fund source type
-    if fund_source != party.custom_customer_fund_group and c_fund.get("fund_source_type"):
-        party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {
+    if c_fund.get("fund_source_type"):
+        filters = {
             "parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"
-        }, "price_list") or party_details["selling_price_list"]
+        }
+        party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "company": company }, "price_list") \
+            or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
 
     # cek customer fund source dapat apply rabat
     party_details["apply_rebate"] = c_fund.apply_rebate if c_fund else 0

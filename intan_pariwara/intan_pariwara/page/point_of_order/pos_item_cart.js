@@ -38,6 +38,7 @@ erpnext.PointOfOrder.ItemCart = class {
 	reset_customer_selector() {
 		const frm = this.events.get_frm();
 		frm.set_value("customer", "");
+		frm.set_value("relasi", "");
 		this.make_customer_selector();
 		this.customer_field.set_focus();
 
@@ -325,17 +326,12 @@ erpnext.PointOfOrder.ItemCart = class {
 				onchange: function () {
 					if (this.value) {
 						const frm = me.events.get_frm();
-						frappe.dom.freeze();
-						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "customer", this.value);
-						frm.script_manager.trigger("customer", frm.doc.doctype, frm.doc.name).then(() => {
-							frappe.run_serially([
-								() => me.fetch_customer_details(this.value),
-								() => me.events.customer_details_updated(me.customer_info),
-								() => me.update_customer_section(),
-								() => me.events.cart_item_price_list(frm.doc.selling_price_list || null),
-								() => me.update_totals_section(),
-								() => frappe.dom.unfreeze(),
-							]);
+						// frappe.dom.freeze();
+						frm.doc.customer = this.value
+						
+						// // frappe.model.set_value(frm.doc.doctype, frm.doc.name, "customer", this.value);
+						erpnext.utils.get_party_details(frm, null, null, function () {
+							me.make_customer_transaction_dialog(frm);
 						});
 					}
 				},
@@ -344,6 +340,105 @@ erpnext.PointOfOrder.ItemCart = class {
 			render_input: true,
 		});
 		this.customer_field.toggle_label(false);
+	}
+
+	make_customer_transaction_dialog(frm){
+		if(frappe.ui.open_dialogs.length) return
+
+		var me = this
+
+		const dialog = new frappe.ui.Dialog({
+			title: __("Input Pre Order Fields"),
+			static: true,
+			fields: [
+				{
+					label: __("Fund Source"),
+					fieldtype: "Link",
+					options: "Customer Fund Source",
+					reqd: 1,
+					fieldname: "fund_source",
+					default: frm.doc.fund_source,
+				},
+				{
+					label: __("Company"),
+					fieldtype: "Link",
+					options: "Company",
+					placeholder: __("Select Group"),
+					reqd: 1,
+					fieldname: "company",
+					default: frm.doc.company,
+				},
+				{
+					label: __("Kerjasama"),
+					fieldtype: "Select",
+					options: ["", "Ya", "Tidak"],
+					placeholder: __("Select Kerjasama"),
+					reqd: 1,
+					fieldname: "kerjasama",
+					default: frm.doc.kerjasama,
+				},
+				{
+					label: __("Delivery Date"),
+					fieldtype: "Date",
+					placeholder: __("Fill Delivery Date"),
+					default: frm.doc.delivery_date,
+					reqd: 1,
+					fieldname: "delivery_date",
+				},
+				{
+					label: __("Payment Date"),
+					fieldtype: "Date",
+					placeholder: __("Fill Payment Date"),
+					default: frm.doc.payment_date,
+					reqd: 1,
+					fieldname: "payment_date",
+				},
+				{
+					label: __("Relasi"),
+					fieldtype: "Link",
+					options: "Customer",
+					placeholder: __("Select Relasi"),
+					hidden: !frm.doc.has_relation,
+					get_query: function () {
+						return {
+							filters: {
+								customer_group: frm.doc.relasi_group
+							},
+						};
+					},
+					onchange: function () {
+						frappe.db.get_value("Customer", this.value, "customer_name", (data) => {
+							dialog.set_value("relasi_name", data.customer_name);
+						})
+					},
+					default: frm.doc.relasi,
+					fieldname: "relasi",
+				},
+				{
+					label: __("Relasi Name"),
+					fieldtype: "Read Only",
+					default: frm.doc.relasi_name,
+					hidden: !frm.doc.has_relation,
+					fieldname: "relasi_name",
+				}
+			],
+			primary_action: async function (data) {
+				frappe.run_serially([
+					() => frm.set_value(data),
+					() => me.fetch_customer_details(frm.doc.customer),
+					() => me.events.customer_details_updated(me.customer_info),
+					() => me.update_customer_section(),
+					() => me.make_transaction_selector(),
+					() => me.events.cart_item_price_list(frm.doc.selling_price_list || null),
+					() => me.update_totals_section(),
+				]);
+
+				dialog.hide();
+			},
+			primary_action_label: __("Submit"),
+		});
+
+		dialog.show();
 	}
 
 	fetch_customer_details(customer) {
@@ -387,114 +482,13 @@ erpnext.PointOfOrder.ItemCart = class {
 
 	make_transaction_selector(frm) {
 		this.$transaction_section.html(`
-			<div class="kerjasama-field"></div>
-			<div class="fund-source-field"></div>
-			<div class="delivery-date-field"></div>
-			<div class="payment-date-field"></div>
 			<div class="calon-siplah-field"></div>
-			
-			<div class="relasi-field"></div>
-			<div class="relasi-name-field"></div>
 			<div class="catatan-field"></div>
 		`);
 		
 		const me = this;
-		// const allowed_customer_group = this.allowed_customer_groups || [];
-		// let filters = {};
-		// if (allowed_customer_group.length) {
-		// 	filters = {
-		// 		customer_group: ["in", allowed_customer_group],
-		// 	};
-		// }
 		
 		if (!frm) frm = this.events.get_frm();
-		
-		this.kerjasama_field = frappe.ui.form.make_control({
-			df: {
-				label: __("Kerjasama"),
-				fieldtype: "Select",
-				options: ["", "Ya", "Tidak"],
-				placeholder: __("Select Kerjasama"),
-				reqd: 1,
-				onchange: function () {
-					if (this.value) {
-						const frm = me.events.get_frm();
-						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "kerjasama", this.value);
-					}
-				},
-			},
-			parent: this.$transaction_section.find(".kerjasama-field"),
-			render_input: true,
-			value: frm.doc.kerjasama,
-		});
-
-		this.fund_source_field = frappe.ui.form.make_control({
-			df: {
-				label: __("Fund Source"),
-				fieldtype: "Link",
-				options: "Customer Fund Source",
-				
-				placeholder: __("Select Fund Source"),
-				// get_query: function () {
-				// 	return {
-				// 		filters: filters,
-				// 	};
-				// },
-				onchange: function () {
-					if (this.value) {
-						const frm = me.events.get_frm();
-						frappe.dom.freeze();
-						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "fund_source", this.value);
-						frm.script_manager.trigger("fund_source", frm.doc.doctype, frm.doc.name).then(() => {
-							frappe.run_serially([
-								// () => me.fetch_customer_details(this.value),
-								// () => me.events.customer_details_updated(me.customer_info),
-								// () => me.update_customer_section(),
-								// () => me.update_totals_section(),
-								() => frappe.dom.unfreeze(),
-							]);
-						});
-					}
-				},
-			},
-			parent: this.$transaction_section.find(".fund-source-field"),
-			render_input: true,
-			value: frm.doc.fund_source,
-		});
-
-		this.delivery_date_field = frappe.ui.form.make_control({
-			df: {
-				label: __("Delivery Date"),
-				fieldtype: "Date",
-				placeholder: __("Fill Delivery Date"),
-				onchange: function () {
-					if (this.value) {
-						const frm = me.events.get_frm();
-						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "delivery_date", this.value);
-					}
-				},
-			},
-			parent: this.$transaction_section.find(".delivery-date-field"),
-			render_input: true,
-			value: frm.doc.delivery_date,
-		});
-
-		this.payment_date_field = frappe.ui.form.make_control({
-			df: {
-				label: __("Payment Date"),
-				fieldtype: "Date",
-				placeholder: __("Fill Payment Date"),
-				onchange: function () {
-					if (this.value) {
-						const frm = me.events.get_frm();
-						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "payment_date", this.value);
-					}
-				},
-			},
-			parent: this.$transaction_section.find(".payment-date-field"),
-			render_input: true,
-			value: frm.doc.payment_date,
-		});
 
 		this.calon_siplah_field = frappe.ui.form.make_control({
 			df: {
@@ -514,55 +508,6 @@ erpnext.PointOfOrder.ItemCart = class {
 			value: frm.doc.custom_calon_siplah,
 		});
 		
-		if(frm.doc.has_relation){
-			this.relasi_field = frappe.ui.form.make_control({
-				df: {
-					label: __("Relasi"),
-					fieldtype: "Link",
-					options: "Customer",
-					placeholder: __("Select Relasi"),
-					get_query: function () {
-						return {
-							filters: {
-								customer_group: frm.doc.relasi_group
-							},
-						};
-					},
-					onchange: function () {
-						if (this.value) {
-							const frm = me.events.get_frm();
-							frm.script_manager.trigger("customer", frm.doc.doctype, frm.doc.name).then(() => {
-								frappe.run_serially([
-									() => frappe.model.set_value(frm.doc.doctype, frm.doc.name, "relasi", this.value),
-								]);
-							});
-						}
-					},
-				},
-				parent: this.$transaction_section.find(".relasi-field"),
-				render_input: true,
-				value: frm.doc.relasi,
-			});
-
-			this.relasi_field.toggle_label(false);
-
-			if(frm.doc.relasi_name){
-				this.relasi_name_field = frappe.ui.form.make_control({
-					df: {
-						label: __("Relasi Name"),
-						fieldtype: "Read Only",
-					},
-					parent: this.$transaction_section.find(".relasi-name-field"),
-					render_input: true,
-					value: frm.doc.relasi_name,
-				});
-	
-				this.relasi_name_field.toggle_label(false);
-			}
-			
-			this.relasi_field.toggle_label(false);
-		}
-
 		this.catatan_field = frappe.ui.form.make_control({
 			df: {
 				label: __("Catatan"),
@@ -571,17 +516,13 @@ erpnext.PointOfOrder.ItemCart = class {
 				onchange: function () {
 					if (this.value) {
 						const frm = me.events.get_frm();
-						frappe.dom.freeze();
+						// frappe.dom.freeze();
 						frappe.model.set_value(frm.doc.doctype, frm.doc.name, "catatan", this.value);
-						frm.script_manager.trigger("catatan", frm.doc.doctype, frm.doc.name).then(() => {
-							frappe.run_serially([
-								// () => me.fetch_customer_details(this.value),
-								// () => me.events.customer_details_updated(me.customer_info),
-								// () => me.update_customer_section(),
-								// () => me.update_totals_section(),
-								() => frappe.dom.unfreeze(),
-							]);
-						});
+						// frm.script_manager.trigger("catatan", frm.doc.doctype, frm.doc.name).then(() => {
+						// 	frappe.run_serially([
+						// 		() => frappe.dom.unfreeze(),
+						// 	]);
+						// });
 					}
 				},
 			},
@@ -590,11 +531,6 @@ erpnext.PointOfOrder.ItemCart = class {
 			value: frm.doc.catatan,
 		});
 
-		
-		this.kerjasama_field.toggle_label(false);
-		this.fund_source_field.toggle_label(false);
-		this.delivery_date_field.toggle_label(false);
-		this.payment_date_field.toggle_label(false);
 		this.calon_siplah_field.toggle_label(false);
 		this.catatan_field.toggle_label(false);
 	}
@@ -1092,6 +1028,13 @@ erpnext.PointOfOrder.ItemCart = class {
 					<div class="mobile_no-field"></div>
 					<div class="loyalty_program-field"></div>
 					<div class="loyalty_points-field"></div>
+					<div class="fund_source-field"></div>
+					<div class="company-field"></div>
+					<div class="delivery_date-field"></div>
+					<div class="payment_date-field"></div>
+					<div class="relasi-field"></div>
+					<div class="relasi_name-field"></div>
+					<div class="kerjasama-field"></div>
 				</div>
 				<div class="transactions-label">${__("Recent Transactions")}</div>`
 			);
@@ -1179,6 +1122,93 @@ erpnext.PointOfOrder.ItemCart = class {
 				});
 			}
 		}
+
+		const frm = me.events.get_frm();
+
+		const dfp = [
+			{
+				fieldname: "fund_source",
+				label: __("Fund Source"),
+				fieldtype: "Link",
+				options: "Customer Fund Source",
+				placeholder: __("Enter Fund Source"),
+			},
+			{
+				fieldname: "company",
+				label: __("Company"),
+				fieldtype: "Link",
+				options: "Company",
+				placeholder: __("Enter Company"),
+			},
+			{
+				fieldname: "kerjasama",
+				label: __("Kerjasama"),
+				fieldtype: "Select",
+				options: ["", "Ya", "Tidak"],
+				placeholder: __("Select Kerjasama")
+			},
+			{
+				fieldname: "delivery_date",
+				label: __("Delivery Date"),
+				fieldtype: "Date",
+				placeholder: __("Fill Delivery Date"),
+			},
+			{
+				fieldname: "payment_date",
+				label: __("Payment Date"),
+				fieldtype: "Date",
+				placeholder: __("Fill Payment Date"),
+			},
+			{
+				fieldname: "relasi",
+				label: __("Relasi"),
+				fieldtype: "Link",
+				options: "Customer",
+				placeholder: __("Select Relasi"),
+				hidden: !frm.doc.has_relation,
+				get_query: function () {
+					return {
+						filters: {
+							customer_group: frm.doc.relasi_group
+						},
+					};
+				},
+			},
+			{
+				fieldname: "relasi_name",
+				label: __("Relasi Name"),
+				fieldtype: "Read Only",
+				hidden: !frm.doc.has_relation,
+			}
+		];
+
+		dfp.forEach((df) => {
+			this[`po_${df.fieldname}_field`] = frappe.ui.form.make_control({
+				df: { ...df, onchange: handle_poo_field_change },
+				parent: $customer_form.find(`.${df.fieldname}-field`),
+				render_input: true,
+			});
+			this[`po_${df.fieldname}_field`].set_value(frm.doc[df.fieldname]);
+		});
+
+		function handle_poo_field_change() {
+			const current_value = me.customer_info[this.df.fieldname];
+
+			if (this.value && current_value != this.value) {
+				frappe.model.set_value(frm.doc.doctype, frm.doc.name, this.df.fieldname, this.value).then(() => {
+					if(this.df.fieldname == "fund_source"){
+						me.events.cart_item_price_list(frm.doc.selling_price_list || null)
+					}else if(this.df.fieldname == "company"){
+						me.events.cart_item_company(this.value, frm.doc.selling_price_list || null)
+					}else if(this.df.fieldname == "relasi"){
+						frappe.db.get_value("Customer", this.value, "customer_name", (data) => {
+							me[`po_relasi_name_field`].set_value(data.customer_name);
+						})
+					}
+				});
+			}
+			
+		}
 	}
 
 	fetch_customer_transactions() {
@@ -1238,10 +1268,6 @@ erpnext.PointOfOrder.ItemCart = class {
 	attach_refresh_field_event(frm) {
 		$(frm.wrapper).off("refresh-fields");
 		$(frm.wrapper).on("refresh-fields", () => {
-			if(frm.doc.customer){
-				this.make_transaction_selector(frm)
-			}
-
 			if (frm.doc.items.length) {
 				this.$cart_items_wrapper.html("");
 				frm.doc.items.forEach((item) => {
@@ -1257,11 +1283,16 @@ erpnext.PointOfOrder.ItemCart = class {
 
 		this.attach_refresh_field_event(frm);
 
+		if(frm.doc.customer){
+			this.make_transaction_selector(frm)
+		}
+
 		this.fetch_customer_details(frm.doc.customer).then(() => {
 			this.events.customer_details_updated(this.customer_info);
 			this.update_customer_section();
 		});
 
+		this.events.cart_item_price_list(frm.doc.selling_price_list || null)
 		
 		this.$cart_items_wrapper.html("");
 		if (frm.doc.items.length) {
