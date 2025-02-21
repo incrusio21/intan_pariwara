@@ -215,6 +215,7 @@ erpnext.PointOfOrder.Controller = class {
 		this.item_selector = new erpnext.PointOfOrder.ItemSelector({
 			wrapper: this.$components_wrapper,
 			poe_profile: this.poe_profile,
+			company: this.company,
 			settings: this.settings,
 			events: {
 				item_selected: (args) => this.on_cart_update(args),
@@ -250,6 +251,13 @@ erpnext.PointOfOrder.Controller = class {
 
 				cart_item_price_list: (price_list) => {
 					this.item_selector.update_price_list_item(price_list)
+				},
+
+				cart_item_company: (company, price_list) => {
+					if(company){
+						this.company = company
+						this.item_selector.update_item_company(company, price_list)
+					}
 				},
 				
 			},
@@ -516,7 +524,7 @@ erpnext.PointOfOrder.Controller = class {
 			item_row = this.get_item_from_frm(item);
 			const item_row_exists = !$.isEmptyObject(item_row);
 
-			const from_selector = field === "qty" && value === "+1";
+			const from_selector = field === "qty" && value > 0;
 			if (from_selector) value = flt(item_row.qty) + flt(value);
 
 			if (item_row_exists) {

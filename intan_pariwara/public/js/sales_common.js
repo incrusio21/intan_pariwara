@@ -211,6 +211,13 @@ intan_pariwara.sales_common = {
                 }
             }
 
+            company(doc){
+                frappe.run_serially([
+                    () => super.company(doc),
+                    () => this.get_rebate_account(doc)
+                ])
+            }
+
             fund_source(doc){
                 this.get_rebate_account(doc)
             }

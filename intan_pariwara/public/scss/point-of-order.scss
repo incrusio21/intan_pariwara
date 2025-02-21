@@ -48,14 +48,18 @@
         .transaction-section {
             display: flex;
 			flex-direction: column;
-			padding: var(--padding-md) var(--padding-lg);
+			padding: var(--padding-sm) var(--padding-lg);
 			overflow: visible;
 
-            .fund-source-field {
+            .calon-siplah-field {
 				display: flex;
 				align-items: center;
 				padding-top: var(--padding-xs);
 			}
         }
+
+		.cart-container {
+			margin-top: var(--margin-xs);
+		}
     }
 }

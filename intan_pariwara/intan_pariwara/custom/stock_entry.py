@@ -10,5 +10,5 @@ def update_plafon_promosi(self, method=None):
     
     current_fiscal_year = get_fiscal_year(self.posting_date, as_dict=True)
     
-    promosi = frappe.get_doc("Plafon Promosi", {"fiscal_year": current_fiscal_year.name, "cabang": self.branch}, for_update=1)
+    promosi = frappe.get_doc("Plafon Promosi", {"fiscal_year": current_fiscal_year.name, "cabang": self.promosi_branch}, for_update=1)
     promosi.set_remaining_plafon()
