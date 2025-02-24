@@ -395,7 +395,8 @@
                     </tr>
                     {% set total = {"grand_total": 0 } %}
                     {% for d in doc.items %}
-                        {% set sub_total = d.amount if relasi != "Reseller" else (d.price_list_rate * d.qty) %}
+                        {# d.amount if relasi != "Reseller" else  #}
+                        {% set sub_total = (d.price_list_rate * d.qty) %}
                         <tr>
                             <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
                             <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
