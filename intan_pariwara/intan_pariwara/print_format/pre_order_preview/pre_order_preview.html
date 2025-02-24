@@ -93,18 +93,22 @@
             <td class="text-center">Sub Total</td>
         </tr>
         {% for d in doc.items %}
-        <tr>
-            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
-            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
-            <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
-            <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("rate") }}</td>
-            <td class="text-center" style="vertical-align: middle !important;">{{ d.qty }}</td>
-            <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("amount") }}</td>
-        </tr>
+            {# d.amount if relasi != "Reseller" else  #}
+            {% set sub_total = (d.price_list_rate * d.qty) %}
+            <tr>
+                <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+                <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+                <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+                <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("rate") 
+                    if relasi != "Reseller" else d.get_formatted("price_list_rate") }}</td>
+                <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+                <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total, currency=doc.currency) }}</td>
+            </tr>
+            {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
         {% endfor %}
         <tr>
             <td class="text-center" colspan="5">TOTAL</td>
-            <td class="text-right">{{ doc.get_formatted("rounded_total") }}</td>
+            <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
         </tr>
     </table>
     
