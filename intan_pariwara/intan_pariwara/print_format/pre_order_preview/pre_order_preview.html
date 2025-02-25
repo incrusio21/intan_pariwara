@@ -92,6 +92,7 @@
             <td class="text-center">Jumlah</td>
             <td class="text-center">Sub Total</td>
         </tr>
+        {% set total = {"grand_total": 0 } %}
         {% for d in doc.items %}
             {# d.amount if relasi != "Reseller" else  #}
             {% set sub_total = (d.price_list_rate * d.qty) %}
@@ -99,8 +100,7 @@
                 <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
                 <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
                 <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
-                <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("rate") 
-                    if relasi != "Reseller" else d.get_formatted("price_list_rate") }}</td>
+                <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("price_list_rate") }}</td>
                 <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
                 <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total, currency=doc.currency) }}</td>
             </tr>
