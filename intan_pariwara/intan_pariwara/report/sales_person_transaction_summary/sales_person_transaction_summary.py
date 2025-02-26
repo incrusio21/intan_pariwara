@@ -16,31 +16,21 @@ def execute(filters=None):
 	
 	company_currency = get_company_currency(filters.get("company"))
 
-	order_sales = {}
+	sales_person = {}
 	for d in entries:
-		if not (d.against_sales_order and d.sales_person):
-			continue
-		
-		key = (d.against_sales_order, d.sales_person)
-		so_sp = order_sales.setdefault(key, {
-			"customer": d.customer,
-			"qty": 0,
-			"amount": 0,
-			"returned_qty": 0,
-			"returned_amount": 0
+		sp = sales_person.setdefault(d.sales_person, {
+			"amount": 0
 		})
 		
-		qty, amount = ["qty", "amount"] if d.qty > 0 else ["returned_qty", "returned_amount"] 
-		so_sp[qty] += abs(d.qty)
-		so_sp[amount] += abs(d.amount)
+		r_d = d.rebate_rate if d.apply_rebate else d.discount_amount
+		sp["amount"] += flt((d.price_list_rate - d.incoming_rate - r_d) * d.qty)
 	
-	for (sales_order, sales_person), val in order_sales.items():
-		data.append({
-			"sales_order": sales_order,
-			"sales_person": sales_person,
-			"currency": company_currency,
-			**val,
-		})
+	for sp, val in sales_person.items():
+		data.append([
+			sp,
+			val["amount"],
+			company_currency
+		])
 
 	return columns, data
 
@@ -49,14 +39,14 @@ def get_entries(filters):
 	entries = frappe.db.sql(
 		"""
 		select
-			dt.name, dt.customer, dt.territory, dt.posting_date as posting_date,
-			dt_item.qty, dt_item.amount, dt_item.against_sales_order,
-			st.sales_person
+			dt.name, dt.customer, dt.territory, dt.posting_date as posting_date, dt.apply_rebate,
+			dt_item.qty, dt_item.price_list_rate, dt_item.price_list_rate, dt_item.rebate_rate, dt_item.discount_amount, dt_item.incoming_rate,
+			st.commission_rate, st.sales_person, st.allocated_percentage, st.allocated_amount, st.incentives
 		from
 			`tabDelivery Note` dt, `tabDelivery Note Item` dt_item, `tabSales Team` st
 		where
 			st.parent = dt.name and dt.name = dt_item.parent and st.parenttype = "Delivery Note"
-			and dt.docstatus = 1 {} order by st.sales_person, dt.name desc
+			and dt.docstatus = 1 and dt.is_return != 1 {} order by st.sales_person, dt.name desc
 		""".format(conditions),
 		tuple(values),
 		as_dict=1,
@@ -89,20 +79,6 @@ def get_conditions(filters):
 def get_columns(filters):
 	columns = [
 		{
-			"label": _("Sales Order"),
-			"options": "Sales Order",
-			"fieldname": "sales_order",
-			"fieldtype": "Link",
-			"width": 140,
-		},
-		{
-			"label": _("Customer"),
-			"options": "Customer",
-			"fieldname": "customer",
-			"fieldtype": "Link",
-			"width": 140,
-		},
-		{
 			"label": _("Sales Person"),
 			"options": "Sales Person",
 			"fieldname": "sales_person",
@@ -110,27 +86,8 @@ def get_columns(filters):
 			"width": 200,
 		},
 		{
-			"label": _("Selling Qty"), 
-			"fieldname": "qty", 
-			"fieldtype": "Float", 
-			"width": 120
-		},
-		{
 			"label": _("Selling Amount"), 
 			"fieldname": "amount", 
-			"options": "currency",
-			"fieldtype": "Currency", 
-			"width": 120
-		},
-		{
-			"label": _("Returned Qty"), 
-			"fieldname": "returned_qty", 
-			"fieldtype": "Float", 
-			"width": 120
-		},
-		{
-			"label": _("Returned Amount"), 
-			"fieldname": "returned_amount", 
 			"options": "currency",
 			"fieldtype": "Currency", 
 			"width": 120
