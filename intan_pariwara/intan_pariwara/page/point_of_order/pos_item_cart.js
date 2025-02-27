@@ -352,6 +352,22 @@ erpnext.PointOfOrder.ItemCart = class {
 			static: true,
 			fields: [
 				{
+					label: __("Delivery Date"),
+					fieldtype: "Date",
+					placeholder: __("Fill Delivery Date"),
+					default: frm.doc.delivery_date,
+					reqd: 1,
+					fieldname: "delivery_date",
+				},
+				{
+					label: __("Payment Date"),
+					fieldtype: "Date",
+					placeholder: __("Fill Payment Date"),
+					default: frm.doc.payment_date,
+					reqd: 1,
+					fieldname: "payment_date",
+				},
+				{
 					label: __("Fund Source"),
 					fieldtype: "Link",
 					options: "Customer Fund Source",
@@ -376,22 +392,6 @@ erpnext.PointOfOrder.ItemCart = class {
 					reqd: 1,
 					fieldname: "kerjasama",
 					default: frm.doc.kerjasama,
-				},
-				{
-					label: __("Delivery Date"),
-					fieldtype: "Date",
-					placeholder: __("Fill Delivery Date"),
-					default: frm.doc.delivery_date,
-					reqd: 1,
-					fieldname: "delivery_date",
-				},
-				{
-					label: __("Payment Date"),
-					fieldtype: "Date",
-					placeholder: __("Fill Payment Date"),
-					default: frm.doc.payment_date,
-					reqd: 1,
-					fieldname: "payment_date",
 				},
 				{
 					label: __("Relasi"),
