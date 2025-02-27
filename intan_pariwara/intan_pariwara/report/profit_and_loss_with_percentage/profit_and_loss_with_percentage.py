@@ -1,4 +1,4 @@
-# Copyright (c) 2025, DAS and Contributors
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
 
@@ -7,7 +7,6 @@ from frappe import _
 from frappe.utils import flt
 
 from erpnext.accounts.report.financial_statements import (
-	get_columns,
 	get_data,
 	get_filtered_list_for_consolidated_report,
 	get_period_list,
@@ -47,16 +46,17 @@ def execute(filters=None):
 		ignore_accumulated_values_for_fy=True,
 	)
 
-	net_profit_loss, percent_profit_loos = get_net_profit_loss(
+	net_profit_loss = get_net_profit_loss(
 		income, expense, period_list, filters.company, filters.presentation_currency
+	)
+
+	get_expense_percent(
+		income, expense, period_list
 	)
 
 	data = []
 	data.extend(income or [])
 	data.extend(expense or [])
-	if percent_profit_loos:
-		data.append(percent_profit_loos)
-
 	if net_profit_loss:
 		data.append(net_profit_loss)
 
@@ -126,19 +126,25 @@ def get_report_summary(
 		},
 	], net_profit
 
+def get_expense_percent(income, expense, period_list, consolidated=False):
+	for e in expense:
+		if not e.get("account"):
+			continue
 
+		for period in period_list:
+			key = period if consolidated else period.key
+			total_income = flt(income[-2][key], 3) if income else 0
+			if total_income:
+				e[f"per_{key}"] = e[key] / total_income * 100
+
+
+		e["per_total"] = e["total"] / (flt(income[-2]["total"], 3) if income else 0) * 100
+			
 def get_net_profit_loss(income, expense, period_list, company, currency=None, consolidated=False):
 	total = 0
 	net_profit_loss = {
 		"account_name": "'" + _("Profit for the year") + "'",
 		"account": "'" + _("Profit for the year") + "'",
-		"warn_if_negative": True,
-		"currency": currency or frappe.get_cached_value("Company", company, "default_currency"),
-	}
-
-	percetage_profit_loss = {
-		"account_name": "'" + _("Percentage Profit for the year") + "'",
-		"account": "'" + _("Percentage Profit for the year") + "'",
 		"warn_if_negative": True,
 		"currency": currency or frappe.get_cached_value("Company", company, "default_currency"),
 	}
@@ -151,7 +157,6 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		total_expense = flt(expense[-2][key], 3) if expense else 0
 
 		net_profit_loss[key] = total_income - total_expense
-		percetage_profit_loss[key] = total_expense / total_income * 100 
 
 		if net_profit_loss[key]:
 			has_value = True
@@ -159,16 +164,16 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		total += flt(net_profit_loss[key])
 		net_profit_loss["total"] = total
 
-	
-	return [net_profit_loss, percetage_profit_loss] if has_value else [None, None]
+	if has_value:
+		return net_profit_loss
 
 
 def get_chart_data(filters, columns, income, expense, net_profit_loss, currency):
-	labels = [d.get("label") for d in columns[2:]]
+	labels = [d.get("label") for d in columns[2::2]]
 
 	income_data, expense_data, net_profit = [], [], []
 
-	for p in columns[2:]:
+	for p in columns[2::2]:
 		if income:
 			income_data.append(income[-2].get(p.get("fieldname")))
 		if expense:
@@ -196,3 +201,65 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss, currency)
 	chart["currency"] = currency
 
 	return chart
+
+def get_columns(periodicity, period_list, accumulated_values=1, company=None):
+	columns = [
+		{
+			"fieldname": "account",
+			"label": _("Account"),
+			"fieldtype": "Link",
+			"options": "Account",
+			"width": 300,
+		}
+	]
+	if company:
+		columns.append(
+			{
+				"fieldname": "currency",
+				"label": _("Currency"),
+				"fieldtype": "Link",
+				"options": "Currency",
+				"hidden": 1,
+			}
+		)
+	for period in period_list:
+		columns.append(
+			{
+				"fieldname": period.key,
+				"label": period.label,
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 150,
+			}
+		)
+		
+		columns.append(
+			{
+				"fieldname": f"per_{period.key}",
+				"label": f"% {period.label}",
+				"fieldtype": "Percent",
+				"width": 150,
+			}
+		)
+	if periodicity != "Yearly":
+		if not accumulated_values:
+			columns.append(
+				{
+					"fieldname": "total",
+					"label": _("Total"),
+					"fieldtype": "Currency",
+					"width": 150,
+					"options": "currency",
+				}
+			)
+
+			columns.append(
+				{
+					"fieldname": "per_total",
+					"label": _("% Total"),
+					"fieldtype": "Percent",
+					"width": 150,
+				}
+			)
+
+	return columns
