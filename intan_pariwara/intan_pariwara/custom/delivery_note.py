@@ -118,6 +118,8 @@ def make_sales_invoice(source_name, target_doc=None, args=None):
 					"parent": "delivery_note",
 					"so_detail": "so_detail",
 					"against_sales_order": "sales_order",
+					"pre_order": "against_pre_order",
+					"pre_order_detail": "pre_order_detail",
 					"cost_center": "cost_center",
 				},
 				"postprocess": update_item,
