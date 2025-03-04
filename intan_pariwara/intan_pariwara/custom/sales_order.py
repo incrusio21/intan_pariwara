@@ -98,6 +98,8 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 				"rate": "rate",
 				"name": "so_detail",
 				"parent": "against_sales_order",
+				"custom_pre_order": "against_pre_order",
+				"custom_pre_order_item": "pre_order_detail",
 			},
 			"condition": condition,
 			"postprocess": update_item,

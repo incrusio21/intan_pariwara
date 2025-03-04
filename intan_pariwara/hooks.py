@@ -247,7 +247,9 @@ override_whitelisted_methods = {
 # along with any modifications made in other Frappe apps
 
 override_doctype_dashboards = {
-	"Sales Order": "intan_pariwara.dashboards.sales_order.get_data"
+	"Delivery Note": "intan_pariwara.dashboards.delivery_note.get_data",
+	"Sales Order": "intan_pariwara.dashboards.sales_order.get_data",
+	"Sales Invoice": "intan_pariwara.dashboards.sales_invoice.get_data",
 }
 
 # exempt linked doctypes from being automatically cancelled
