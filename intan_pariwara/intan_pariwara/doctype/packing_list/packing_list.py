@@ -93,8 +93,19 @@ class PackingList(StatusUpdater):
 
 			if not item.so_detail:
 				frappe.throw(
-					_("Row {0}: Either Sales Order Item or Packed Item reference is mandatory.").format(
+					_("Row {0}: Either Sales Order Item reference is mandatory.").format(
 						item.idx
+					)
+				)
+
+			item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")			
+			if item.actual_qty < item.qty:
+				frappe.throw(
+					_("Row {0}: {1} units of {2} needed in {3} to complete this transaction..").format(
+						item.idx,
+						flt(item.qty - item.actual_qty),
+						item.item_code,
+						self.warehouse,
 					)
 				)
 
@@ -170,6 +181,25 @@ class PackingList(StatusUpdater):
 		if not flt(self.gross_weight_pkg):
 			self.gross_weight_pkg = self.net_weight_pkg
 
+	@frappe.whitelist()
+	def get_actual_qty(self):
+		for item in self.items:
+			if not (item.so_detail and item.item_code):
+				frappe.throw(
+					_("Row {0}: Please set Item Code and Sales Order Item.").format(
+						item.idx
+					)
+				)
+
+			if not item.warehouse:
+				frappe.throw(
+					_("Row {0}: Please set Warehouse.").format(
+						item.idx
+					)
+				)
+
+			item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
+
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def item_details(doctype, txt, searchfield, start, page_len, filters):
@@ -202,6 +232,7 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 
 			item.against_packing_list = packing.name
 			item.packing_list_detail = packing_item[0].name
+			item.warehouse = packing_item[0].warehouse
 		else:
 			non_packing_item.append(item)
 

@@ -3,6 +3,14 @@
 
 frappe.ui.form.on("Packing List", {
 	setup: (frm) => {
+		frm.set_query("wareshoue", () => {
+			return {
+				filters: {
+					is_group: 0,
+				},
+			};
+		});
+
 		frm.set_query("sales_order", () => {
 			return {
 				filters: {
