@@ -35,7 +35,7 @@ def create_or_update_reason_field(self, meta):
                 "dt": self.document_type,
                 "__islocal": 1,
                 "fieldname": self.workflow_reason_field,
-                "label": f"{self.workflow_action} Reason",
+                "label": "Reason",
                 "insert_after": self.insert_after_field,
                 "read_only": 1,
                 "no_copy": 1,
@@ -56,7 +56,7 @@ def create_or_update_reason_field(self, meta):
         )
         
         data_update = False
-        for field, val in {"label": f"{self.workflow_action} Reason", "insert_after": self.insert_after_field}.items():
+        for field, val in {"label": "Reason", "insert_after": self.insert_after_field}.items():
             if c_field.get(field) != val:
                 c_field.set(field, val)
                 data_update = True
