@@ -53,28 +53,28 @@ intan_pariwara.sales_common = {
                 });
 			}
 
-            relasi() {
-				var me = this;
-                frappe.call({
-                    method: "intan_pariwara.controllers.queries.get_shipping_details",
-                    args: {
-                        relasi: me.frm.doc.relasi,
-                        doctype: me.frm.doc.doctype
-                    },
-                    callback: function (r) {
-                        if (r.message) {
-                            me.frm.updating_party_details = true;
-                            frappe.run_serially([
-                                () => me.frm.set_value(r.message),
-                                () => {
-                                    me.frm.updating_party_details = false;
-                                    me.frm.refresh();
-                                },
-                            ]);
-                        }
-                    },
-                });
-			}
+            // relasi() {
+			// 	var me = this;
+            //     frappe.call({
+            //         method: "intan_pariwara.controllers.queries.get_shipping_details",
+            //         args: {
+            //             relasi: me.frm.doc.relasi,
+            //             doctype: me.frm.doc.doctype
+            //         },
+            //         callback: function (r) {
+            //             if (r.message) {
+            //                 me.frm.updating_party_details = true;
+            //                 frappe.run_serially([
+            //                     () => me.frm.set_value(r.message),
+            //                     () => {
+            //                         me.frm.updating_party_details = false;
+            //                         me.frm.refresh();
+            //                     },
+            //                 ]);
+            //             }
+            //         },
+            //     });
+			// }
 
             item_code(doc, cdt, cdn) {
                 var me = this;
@@ -273,6 +273,10 @@ intan_pariwara.sales_common = {
                 this.get_rebate_account(doc)
             }
             
+            kumer(doc){
+                this.get_rebate_account(doc)
+            }
+
             transaction_type(doc){
                 this.get_rebate_account(doc)
             }
@@ -424,6 +428,7 @@ intan_pariwara.sales_common = {
                             company: doc.company,
                             customer: doc.customer,
                             fund_source: doc.fund_source,
+                            kumer: doc.kumer,
                             transaction_type: doc.transaction_type,
                         },
                         callback: function (r) {

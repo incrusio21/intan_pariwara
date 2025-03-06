@@ -98,16 +98,16 @@ class PackingList(StatusUpdater):
 					)
 				)
 
-			item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")			
-			if item.actual_qty < item.qty:
-				frappe.throw(
-					_("Row {0}: {1} units of {2} needed in {3} to complete this transaction..").format(
-						item.idx,
-						flt(item.qty - item.actual_qty),
-						item.item_code,
-						self.warehouse,
-					)
-				)
+			# item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")			
+			# if item.actual_qty < item.qty:
+			# 	frappe.throw(
+			# 		_("Row {0}: {1} units of {2} needed in {3} to complete this transaction..").format(
+			# 			item.idx,
+			# 			flt(item.qty - item.actual_qty),
+			# 			item.item_code,
+			# 			self.warehouse,
+			# 		)
+			# 	)
 
 			remaining_qty = frappe.db.get_value(
 				"Sales Order Item",
@@ -183,22 +183,23 @@ class PackingList(StatusUpdater):
 
 	@frappe.whitelist()
 	def get_actual_qty(self):
-		for item in self.items:
-			if not (item.so_detail and item.item_code):
-				frappe.throw(
-					_("Row {0}: Please set Item Code and Sales Order Item.").format(
-						item.idx
-					)
-				)
+		pass
+		# for item in self.items:
+		# 	if not (item.so_detail and item.item_code):
+		# 		frappe.throw(
+		# 			_("Row {0}: Please set Item Code and Sales Order Item.").format(
+		# 				item.idx
+		# 			)
+		# 		)
 
-			if not item.warehouse:
-				frappe.throw(
-					_("Row {0}: Please set Warehouse.").format(
-						item.idx
-					)
-				)
+		# 	if not item.warehouse:
+		# 		frappe.throw(
+		# 			_("Row {0}: Please set Warehouse.").format(
+		# 				item.idx
+		# 			)
+		# 		)
 
-			item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
+		# 	item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
