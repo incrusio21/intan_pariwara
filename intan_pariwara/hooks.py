@@ -46,6 +46,7 @@ app_include_js = "intan_pariwara.bundle.js"
 doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
+    "Quotation" : "intan_pariwara/custom/quotation.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
     "Workflow" : "intan_pariwara/custom/workflow.js",
@@ -247,9 +248,9 @@ override_whitelisted_methods = {
 # along with any modifications made in other Frappe apps
 
 override_doctype_dashboards = {
-	"Delivery Note": "intan_pariwara.dashboards.delivery_note.get_data",
+	# "Delivery Note": "intan_pariwara.dashboards.delivery_note.get_data",
 	"Sales Order": "intan_pariwara.dashboards.sales_order.get_data",
-	"Sales Invoice": "intan_pariwara.dashboards.sales_invoice.get_data",
+	# "Sales Invoice": "intan_pariwara.dashboards.sales_invoice.get_data",
 }
 
 # exempt linked doctypes from being automatically cancelled

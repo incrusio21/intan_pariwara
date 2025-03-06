@@ -2,9 +2,12 @@
 # License: GNU General Public License v3. See license.txt
 
 import json
+
 import frappe
 from frappe.utils.data import flt
+from frappe.model.utils import get_fetch_values
 
+from erpnext.accounts.party import get_party_shipping_address, render_address
 from erpnext.stock.get_item_details import apply_price_list_on_item, get_price_list_currency_and_exchange_rate, process_args
 
 @frappe.whitelist()
@@ -174,3 +177,26 @@ def apply_price_list(args, as_doc=False, doc=None):
         return args
     else:
         return {"parent": parent, "children": children}
+
+@frappe.whitelist()
+def get_shipping_details(doctype, relasi=None):
+    party_details = frappe._dict({
+        "shipping_address_name": "",
+        "shipping_address": "",
+    })
+
+    if relasi:
+        party_details.shipping_address_name = get_party_shipping_address(
+            "Customer", relasi
+        )
+        
+    party_details.shipping_address = render_address(
+        party_details["shipping_address_name"], check_permissions=False
+    )
+
+    if doctype:
+        party_details.update(
+            get_fetch_values(doctype, "shipping_address_name", party_details.shipping_address_name)
+        )
+
+    return party_details

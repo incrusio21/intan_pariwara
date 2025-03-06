@@ -376,7 +376,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					default: frm.doc.fund_source,
 				},
 				{
-					label: __("Company"),
+					label: __("Seller"),
 					fieldtype: "Link",
 					options: "Company",
 					placeholder: __("Select Group"),

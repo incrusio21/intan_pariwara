@@ -177,6 +177,7 @@ def make_packing(source_name, target_doc=None):
 				"field_map": {
 					"item_code": "item_code",
 					"item_name": "item_name",
+					"warehouse": "warehouse",
 					"batch_no": "batch_no",
 					"description": "description",
 					"qty": "qty",

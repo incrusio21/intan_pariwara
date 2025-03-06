@@ -48,11 +48,12 @@ def apply_workflow(doc, action, reason=None):
         doc.set(next_state.update_field, next_state.update_value)
 
     if workflow.reason_required and not reason \
-        and action == workflow.workflow_action:
+        and any(a.workflow_action == action for a in workflow.reason_actions):
         frappe.throw(_("A reason is required to {} and Submit.".format(workflow.workflow_action)))
 
     if workflow.reason_required:
         doc.set(workflow.workflow_reason_field, reason)
+        
     new_docstatus = cint(next_state.doc_status)
     if doc.docstatus.is_draft() and new_docstatus == DocStatus.draft():
         doc.save()
@@ -103,7 +104,9 @@ def get_transitions(
                 continue
             
             trn = transition.as_dict()
-            trn.reason = workflow.reason_required and workflow.workflow_action == transition.action
+            trn.reason = workflow.reason_required and \
+                any(action.workflow_action == transition.action for action in workflow.reason_actions)
+            
             transitions.append(trn)
 
     return transitions

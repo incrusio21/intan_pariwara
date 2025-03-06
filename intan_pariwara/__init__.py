@@ -397,6 +397,12 @@ def set_other_values(party_details, party, party_type):
 			if jenis_relasi.cant_have_rebate:
 				party_details["apply_rebate"] = 0 
 
+		if not party_details["has_relation"]:
+			party_details["relasi"] = ""
+		# else:
+		# 	party_details.__delattr__("shipping_address_name")
+		# 	party_details.__delattr__("shipping_address")
+			
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
 party_file.set_other_values = set_other_values

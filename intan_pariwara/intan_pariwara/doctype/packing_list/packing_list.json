@@ -13,12 +13,14 @@
   "sales_order",
   "column_break1",
   "naming_series",
+  "warehouse",
   "section_break0",
   "column_break2",
   "from_case_no",
   "column_break3",
   "to_case_no",
   "package_item_details",
+  "get_actual_qty",
   "items",
   "package_weight_details",
   "net_weight_pkg",
@@ -200,12 +202,24 @@
    "fieldname": "status_section",
    "fieldtype": "Section Break",
    "label": "Status"
+  },
+  {
+   "fieldname": "get_actual_qty",
+   "fieldtype": "Button",
+   "label": "Get Actual Qty",
+   "options": "get_actual_qty"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-18 14:44:10.896833",
+ "modified": "2025-03-06 12:14:20.678447",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",

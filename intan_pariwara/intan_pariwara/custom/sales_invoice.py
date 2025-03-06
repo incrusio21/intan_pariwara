@@ -38,7 +38,7 @@ class SalesInvoice:
         
         for d in self.doc.items:
             d.update({
-                "incoming_account": incoming_account,
+                "income_account": incoming_account,
                 "expense_account": expense_account,
                 "discount_account": discount_account,
             })

@@ -25,6 +25,57 @@ intan_pariwara.sales_common = {
                     }
                 })
             }
+
+            setup_queries() {
+				super.setup_queries();
+                var me = this;
+
+				me.frm.set_query("shipping_address_name", (doc) => {
+                    let field_name = doc.has_relation ? "relasi" : "customer"
+
+                    if (frappe.dynamic_link) {
+                        if (!doc[field_name]) {
+                            frappe.throw(
+                                __("Please set {0}", [
+                                    __(frappe.meta.get_label(doc.doctype, field_name, doc.name)),
+                                ])
+                            );
+                        }
+
+                        return {
+                            query: "frappe.contacts.doctype.address.address.address_query",
+                            filters: {
+                                link_doctype: frappe.dynamic_link.doctype,
+                                link_name: doc[field_name],
+                            },
+                        };
+                    }
+                });
+			}
+
+            // relasi() {
+			// 	var me = this;
+            //     frappe.call({
+            //         method: "intan_pariwara.controllers.queries.get_shipping_details",
+            //         args: {
+            //             relasi: me.frm.doc.relasi,
+            //             doctype: me.frm.doc.doctype
+            //         },
+            //         callback: function (r) {
+            //             if (r.message) {
+            //                 me.frm.updating_party_details = true;
+            //                 frappe.run_serially([
+            //                     () => me.frm.set_value(r.message),
+            //                     () => {
+            //                         me.frm.updating_party_details = false;
+            //                         me.frm.refresh();
+            //                     },
+            //                 ]);
+            //             }
+            //         },
+            //     });
+			// }
+
             item_code(doc, cdt, cdn) {
                 var me = this;
                 var item = frappe.get_doc(cdt, cdn);
@@ -222,6 +273,10 @@ intan_pariwara.sales_common = {
                 this.get_rebate_account(doc)
             }
             
+            kumer(doc){
+                this.get_rebate_account(doc)
+            }
+
             transaction_type(doc){
                 this.get_rebate_account(doc)
             }
@@ -373,6 +428,7 @@ intan_pariwara.sales_common = {
                             company: doc.company,
                             customer: doc.customer,
                             fund_source: doc.fund_source,
+                            kumer: doc.kumer,
                             transaction_type: doc.transaction_type,
                         },
                         callback: function (r) {
