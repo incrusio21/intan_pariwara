@@ -5,7 +5,7 @@ intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.SalesOrderC
 frappe.ui.form.off("Sales Order", "refresh")
 frappe.ui.form.on("Sales Order", {
     refresh: function (frm) {
-		if (frm.doc.docstatus === 1) {
+		if (frm.doc.docstatus === 1 && frm.doc.workflow_state === "Approved") {
 			if (
 				frm.doc.status !== "Closed" &&
 				flt(frm.doc.per_delivered) < 100 &&
@@ -135,7 +135,7 @@ intan_pariwara.selling.SalesOrderController = class SalesOrderController extends
 		var me = this;
 		super.refresh(doc, dt, dn);
 
-		if (doc.docstatus == 1) {
+		if (doc.docstatus == 1 && doc.workflow_state === "Approved") {
 			if (
 				doc.status !== "Closed" &&
 				flt(doc.per_picked) < 100
@@ -156,7 +156,10 @@ intan_pariwara.selling.SalesOrderController = class SalesOrderController extends
 				}
 			}
 		}
-
+		
+		if(doc.docstatus == 1 && doc.workflow_state !== "Approved"){
+			me.frm.clear_custom_buttons()
+		}
 	}
 }
 
