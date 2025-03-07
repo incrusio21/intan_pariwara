@@ -63,3 +63,21 @@ def create_or_update_reason_field(self, meta):
 
         if data_update:
             c_field.save()
+
+    if not meta.get_field("last_action"):
+        # create custom field
+        frappe.get_doc(
+            {
+                "doctype": "Custom Field",
+                "dt": self.document_type,
+                "__islocal": 1,
+                "fieldname": "last_action",
+                "label": "Last Action",
+                "insert_after": self.workflow_reason_field,
+                "read_only": 1,
+                "hidden": 1,
+                "no_copy": 1,
+                "fieldtype": "Data",
+                "owner": "Administrator",
+            }
+        ).save()
