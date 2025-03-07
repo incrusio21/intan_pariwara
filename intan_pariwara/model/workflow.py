@@ -11,6 +11,7 @@ from frappe.model.workflow import (
     WorkflowStateError, WorkflowTransitionError
 )
 from frappe.utils import cint
+from intan_pariwara.model.document import check_if_doc_is_dynamically_linked, check_if_doc_is_linked
 
 if TYPE_CHECKING:
 	from frappe.model.document import Document
@@ -47,8 +48,12 @@ def apply_workflow(doc, action, reason=None):
     if next_state.update_field:
         doc.set(next_state.update_field, next_state.update_value)
 
-    if workflow.reason_required and doc.get("last_action") != action:
-        if not workflow.workflow_reason_field and any(a.workflow_action == action for a in workflow.reason_actions):
+    if next_state.check_link_document:
+        check_if_doc_is_linked(doc, method="Cancel")
+        check_if_doc_is_dynamically_linked(doc, method="Cancel")
+
+    if workflow.reason_required and not same_transaction_action(doc.get("last_action"), action):
+        if not reason and any(a.workflow_action == action for a in workflow.reason_actions):
             frappe.throw(_("A reason is required to {} and Submit.".format(workflow.workflow_action)))
 
         doc.set("last_action", action)
@@ -99,6 +104,8 @@ def get_transitions(
     transitions = []
     roles = frappe.get_roles()
     
+    last_action = doc.get("last_action")
+
     for transition in workflow.transitions:
         if transition.state == current_state and transition.allowed in roles:
             if not is_transition_condition_satisfied(transition, doc):
@@ -107,7 +114,12 @@ def get_transitions(
             trn = transition.as_dict()
             trn.reason = workflow.reason_required and \
                 any(action.workflow_action == transition.action for action in workflow.reason_actions)
-            
+            trn.same_reason = same_transaction_action(last_action, transition.action)
+
             transitions.append(trn)
 
     return transitions
+
+def same_transaction_action(last_action, transaction):
+    doc = frappe.get_cached_doc("Workflow Action Master", transaction)
+    return last_action in  [transaction] + ([doc.alias_action] if doc.alias_action else [])
