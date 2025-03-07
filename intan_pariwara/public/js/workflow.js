@@ -50,7 +50,7 @@ $.extend(frappe.ui.form.States.prototype, {
 				if (frappe.user_roles.includes(d.allowed) && has_approval_access(d)) {
 					added = true;
 					me.frm.page.add_action_item(__(d.action), function () {
-                        if(d.reason && me.frm.doc.last_action != d.action){
+                        if(d.reason && !d.same_reason){
                             var dialog = new frappe.ui.Dialog({
                                 title: __(`${d.action} Reason`),
                                 fields: [
