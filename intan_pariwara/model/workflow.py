@@ -48,11 +48,12 @@ def apply_workflow(doc, action, reason=None):
         doc.set(next_state.update_field, next_state.update_value)
 
     if workflow.reason_required and doc.get("last_action") != action:
-        if any(a.workflow_action == action for a in workflow.reason_actions):
+        if not workflow.workflow_reason_field and any(a.workflow_action == action for a in workflow.reason_actions):
             frappe.throw(_("A reason is required to {} and Submit.".format(workflow.workflow_action)))
 
         doc.set("last_action", action)
         doc.set(workflow.workflow_reason_field, reason)
+
         
     new_docstatus = cint(next_state.doc_status)
     if doc.docstatus.is_draft() and new_docstatus == DocStatus.draft():
