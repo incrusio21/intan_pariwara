@@ -192,6 +192,9 @@ doc_events = {
 		"before_validate": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 		"before_cancel": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 	},
+    "Sales Order": {
+		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_material_request",
+	},
     "Sales Invoice": {
         "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
