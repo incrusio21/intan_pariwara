@@ -2,13 +2,118 @@
 # License: GNU General Public License v3. See license.txt
 
 import frappe
+from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.utils import cstr, flt
 
+from erpnext.selling.doctype.sales_order.sales_order import get_requested_item_qty
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults
+from erpnext.stock.get_item_details import get_bin_details, get_price_list_rate
+
+def create_material_request(self, method):
+	
+	
+	item_bin, need_item = {}, {}
+	precision = frappe.get_precision("Bin", "projected_qty")
+	for d in self.items:
+		bin = item_bin.setdefault((d.item_code, d.warehouse), 
+			get_bin_details(
+				d.item_code, d.warehouse, self.company, True
+			)
+		)
+
+		if bin["projected_qty"] < 0:
+			need_item.setdefault(d.name, min(abs(bin["projected_qty"]), d.stock_qty))
+
+		bin["projected_qty"] = flt(bin["projected_qty"] + d.stock_qty, precision)
+	
+	if need_item:
+		mr = make_material_request(self.name, needed_item=need_item)
+		mr.save()
+
+		frappe.msgprint(_("Material Request {} are Created".format(mr.name)))
+
+@frappe.whitelist()
+def make_material_request(source_name, target_doc=None, needed_item={}):
+	requested_item_qty = get_requested_item_qty(source_name)
+
+	def postprocess(source, target):
+		target.schedule_date = source.delivery_date
+		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
+			target.tc_name = None
+			target.terms = None
+
+	def get_remaining_qty(so_item):
+		if needed_item.get(so_item):
+			return needed_item.get(so_item, 0)
+		
+		return flt(
+			flt(so_item.qty)
+			- flt(requested_item_qty.get(so_item.name, {}).get("qty"))
+			- max(
+				flt(so_item.get("delivered_qty"))
+				- flt(requested_item_qty.get(so_item.name, {}).get("received_qty")),
+				0,
+			)
+		)
+
+	def update_item(source, target, source_parent):
+		# qty is for packed items, because packed items don't have stock_qty field
+		target.project = source_parent.project
+
+		target.qty = flt(needed_item[source.name] / target.conversion_factor, target.precision("qty")) \
+			if needed_item else get_remaining_qty(source)
+		
+		target.stock_qty = flt(target.qty) * flt(target.conversion_factor)
+		target.actual_qty = get_bin_details(
+			target.item_code, target.warehouse, source_parent.company, True
+		).get("actual_qty", 0)
+
+		args = target.as_dict().copy()
+		args.update(
+			{
+				"company": source_parent.get("company"),
+				"price_list": frappe.db.get_single_value("Buying Settings", "buying_price_list"),
+				"currency": source_parent.get("currency"),
+				"conversion_rate": source_parent.get("conversion_rate"),
+			}
+		)
+
+		target.rate = flt(
+			get_price_list_rate(args=args, item_doc=frappe.get_cached_doc("Item", target.item_code)).get(
+				"price_list_rate"
+			)
+		)
+		target.amount = target.qty * target.rate
+
+	doc = get_mapped_doc(
+		"Sales Order",
+		source_name,
+		{
+			"Sales Order": {"doctype": "Material Request", "validation": {"docstatus": ["=", 1]}},
+			"Packed Item": {
+				"doctype": "Material Request Item",
+				"field_map": {"parent": "sales_order", "uom": "stock_uom"},
+				"postprocess": update_item,
+			},
+			"Sales Order Item": {
+				"doctype": "Material Request Item",
+				"field_map": {"name": "sales_order_item", "parent": "sales_order"},
+				"condition": lambda item: not frappe.db.exists(
+					"Product Bundle", {"name": item.item_code, "disabled": 0}
+				)
+				and get_remaining_qty(item) > 0,
+				"postprocess": update_item,
+			},
+		},
+		target_doc,
+		postprocess,
+	)
+
+	return doc
 
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None, kwargs=None):
