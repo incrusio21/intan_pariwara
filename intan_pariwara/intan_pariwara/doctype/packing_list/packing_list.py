@@ -2,8 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe import _
+from frappe import _, scrub
 from frappe.utils import cint, flt
+from frappe.query_builder.functions import Sum
 
 from erpnext.controllers.status_updater import StatusUpdater
 
@@ -11,24 +12,36 @@ class PackingList(StatusUpdater):
 	
 	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
+
+		purpose_dict = {
+			"target_dt": "Sales Order Item",
+			"target_parent_dt": "Sales Order",
+		}
+
+		if self.purpose == "Material Request": 
+			purpose_dict = {
+				"target_dt": "Material Request Item",
+				"target_parent_dt": "Material Request",
+			}
+
 		self.status_updater = [
 			{
-				"target_dt": "Sales Order Item",
-				"join_field": "so_detail",
 				"target_field": "packed_qty",
-				"target_parent_dt": "Sales Order",
 				"target_ref_field": "qty",
 				"source_dt": "Packing List Item",
 				"source_field": "qty",
-				"percent_join_field_parent": "sales_order",
-				"target_parent_field": "per_packing"
+				"target_parent_field": "per_packing",
+				"percent_join_field_parent": "doc_name",
+				"join_field": "document_detail",
+				**purpose_dict,
+				
 			}
 		]
 
 	def validate(self) -> None:
 		from erpnext.utilities.transaction_base import validate_uom_is_integer
 
-		self.validate_sales_order()
+		self.validate_document()
 		self.validate_case_nos()
 		self.validate_items()
 
@@ -44,12 +57,63 @@ class PackingList(StatusUpdater):
 	def on_cancel(self):
 		self.update_prevdoc_status()
 
-	def validate_sales_order(self):
-		"""Raises an exception if the `Sales Order` status is not Submited"""
+	def get_pr_items_delivered_qty(self, pr_items):
+		pr_items_delivered_qty = {}
+		pr_items = [d.name for d in self.get("items") if d.name in pr_items]
 
-		if cint(frappe.db.get_value("Sales Order", self.sales_order, "docstatus")) != 1:
+		doctype = qty_field = None
+
+		doctype = frappe.qb.DocType("Stock Entry Detail")
+		qty_field = doctype.transfer_qty
+
+		if doctype and qty_field:
+			query = (
+				frappe.qb.from_(doctype)
+				.select(doctype.packing_list_item, Sum(qty_field))
+				.where(
+					(doctype.packing_list == self.name)
+					& (doctype.packing_list_item.isin(pr_items))
+					& (doctype.docstatus == 1)
+				)
+				.groupby(doctype.packing_list_item)
+			)
+
+			pr_items_delivered_qty = frappe._dict(query.run())
+
+		return pr_items_delivered_qty
+	
+	def update_completed_qty(self, pr_items=None, update_modified=True):
+		if self.purpose not in ["Material Request"]:
+			return
+
+		if not pr_items:
+			pr_items = [d.name for d in self.get("items")]
+
+		pr_items_delivered_qty = self.get_pr_items_delivered_qty(pr_items)
+		for d in self.get("items"):
+			if d.name in pr_items:
+				d.delivered_qty = flt(pr_items_delivered_qty.get(d.name))
+
+			frappe.db.set_value(d.doctype, d.name, "delivered_qty", d.delivered_qty)
+
+		self._update_percent_field(
+			{
+				"target_dt": "Packing List Item",
+				"target_parent_dt": self.doctype,
+				"target_parent_field": "per_delivered",
+				"target_ref_field": "delivered_qty",
+				"target_field": "qty",
+				"name": self.name,
+			},
+			update_modified,
+		)
+
+	def validate_document(self):
+		"""Raises an exception if the (`Sales Order`, `Material Request`) status is not Submited"""
+		
+		if cint(frappe.db.get_value(self.purpose, self.doc_name, "docstatus")) != 1:
 			frappe.throw(
-				_("A Packing List Slip can only be created for Submited Sales Order.").format(self.sales_order)
+				_("A Packing List Slip can only be created for Submited {}.").format(self.purpose)
 			)
 
 	def validate_case_nos(self):
@@ -69,7 +133,8 @@ class PackingList(StatusUpdater):
 					ps.name,
 				)
 				.where(
-					(ps.sales_order == self.sales_order)
+					(ps.doc_name == self.doc_name)
+					& (ps.purpose == self.purpose)
 					& (ps.docstatus == 1)
 					& (
 						(ps.from_case_no.between(self.from_case_no, self.to_case_no))
@@ -77,9 +142,9 @@ class PackingList(StatusUpdater):
 						| ((ps.from_case_no <= self.from_case_no) & (ps.to_case_no >= self.from_case_no))
 					)
 				)
-			).run()
+			)
 
-			if res:
+			if res.run():
 				frappe.throw(
 					_("""Package No(s) already in use. Try from Package No {0}""").format(
 						self.get_recommended_case_no()
@@ -91,10 +156,10 @@ class PackingList(StatusUpdater):
 			if item.qty <= 0:
 				frappe.throw(_("Row {0}: Qty must be greater than 0.").format(item.idx))
 
-			if not item.so_detail:
+			if not item.document_detail:
 				frappe.throw(
-					_("Row {0}: Either Sales Order Item reference is mandatory.").format(
-						item.idx
+					_("Row {0}: Either {1} Item reference is mandatory.").format(
+						item.idx, self.purpose
 					)
 				)
 
@@ -110,15 +175,16 @@ class PackingList(StatusUpdater):
 			# 	)
 
 			remaining_qty = frappe.db.get_value(
-				"Sales Order Item",
-				{"name": item.so_detail, "docstatus": 1},
+				f"{self.purpose} Item",
+				{"name": item.document_detail, "docstatus": 1},
 				["sum(qty - packed_qty)"],
 			)
 
 			if remaining_qty is None:
 				frappe.throw(
-					_("Row {0}: Please provide a valid Sales Order Item reference.").format(
-						item.idx
+					_("Row {0}: Please provide a valid {1} Item reference.").format(
+						item.idx,
+						self.purpose
 					)
 				)
 			elif remaining_qty <= 0:
@@ -155,7 +221,7 @@ class PackingList(StatusUpdater):
 		return (
 			cint(
 				frappe.db.get_value(
-					"Packing List", {"sales_order": self.sales_order, "docstatus": 1}, ["max(to_case_no)"]
+					"Packing List", {"doc_name": self.doc_name, "docstatus": 1}, ["max(to_case_no)"]
 				)
 			)
 			+ 1
@@ -222,10 +288,10 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 	
 	packing = frappe.get_doc("Packing List", source_name)
 	
-	target_doc = make_delivery_note(packing.sales_order)
+	target_doc = make_delivery_note(packing.doc_name)
 	non_packing_item = []
 	for item in target_doc.items:
-		packing_item = packing.get("items", {"so_detail": item.so_detail})
+		packing_item = packing.get("items", {"document_detail": item.so_detail})
 		if packing_item:
 			remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
 			if item.qty > remaining_qty:
@@ -242,4 +308,32 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 
 	target_doc.run_method("calculate_taxes_and_totals")
 
+	return target_doc
+
+@frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None, kwargs=None):
+	from erpnext.stock.doctype.material_request.material_request import make_stock_entry
+	
+	
+	packing = frappe.get_doc("Packing List", source_name)
+	
+	target_doc = make_stock_entry(packing.doc_name)
+	non_packing_item = []
+	for item in target_doc.items:
+		packing_item = packing.get("items", {"document_detail": item.material_request_item})
+		if packing_item:
+			remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
+			if item.qty > remaining_qty:
+				item.qty = remaining_qty
+
+			item.packing_list = packing.name
+			item.packing_list_item = packing_item[0].name
+			item.s_warehouse = packing_item[0].from_warehouse
+			item.t_warehouse = packing_item[0].warehouse
+		else:
+			non_packing_item.append(item)
+
+	for r in non_packing_item:
+		target_doc.remove(r)
+		
 	return target_doc

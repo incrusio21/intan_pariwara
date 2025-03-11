@@ -46,6 +46,7 @@ app_include_js = "intan_pariwara.bundle.js"
 doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
+    "Material Request" : "intan_pariwara/custom/material_request.js",
     "Quotation" : "intan_pariwara/custom/quotation.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
@@ -202,7 +203,7 @@ doc_events = {
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
 	},
     "Stock Entry": {
-        "on_submit": "intan_pariwara.intan_pariwara.custom.stock_entry.update_plafon_promosi",
+        "on_submit": "intan_pariwara.intan_pariwara.custom.stock_entry.StockEntry",
 	},
     "Workflow": {
         "validate": "intan_pariwara.intan_pariwara.custom.workflow.create_custom_field_for_reason",

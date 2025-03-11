@@ -261,8 +261,10 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 	return target_doc
 
 @frappe.whitelist()
-def make_packing(source_name, target_doc=None):
+def make_packing_list(source_name, target_doc=None):
 	def set_missing_values(source, target):
+		target.purpose = "Sales Order"
+
 		target.run_method("set_missing_values")
 
 	def update_item(obj, target, source_parent):
@@ -274,7 +276,9 @@ def make_packing(source_name, target_doc=None):
 		{
 			"Sales Order": {
 				"doctype": "Packing List",
-				"field_map": {"name": "delivery_note", "letter_head": "letter_head"},
+				"field_map": {
+					"name": "doc_name",
+					"letter_head": "letter_head"},
 				"validation": {"docstatus": ["=", 1]},
 			},
 			"Sales Order Item": {
@@ -287,7 +291,7 @@ def make_packing(source_name, target_doc=None):
 					"description": "description",
 					"qty": "qty",
 					"stock_uom": "stock_uom",
-					"name": "so_detail",
+					"name": "document_detail",
 				},
 				"postprocess": update_item,
 				"condition": lambda item: (

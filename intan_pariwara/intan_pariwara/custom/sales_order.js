@@ -145,7 +145,7 @@ intan_pariwara.selling.SalesOrderController = class SalesOrderController extends
 						__("Packing List"),
 						() => {
 							frappe.model.open_mapped_doc({
-								method: "intan_pariwara.intan_pariwara.custom.sales_order.make_packing",
+								method: "intan_pariwara.intan_pariwara.custom.sales_order.make_packing_list",
 								frm: me.frm,
 								freeze: true,
 								freeze_message: __("Creating Packing List ..."),

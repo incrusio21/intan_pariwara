@@ -10,10 +10,12 @@
  "field_order": [
   "packing_slip_details",
   "column_break0",
-  "sales_order",
+  "purpose",
+  "doc_name",
   "column_break1",
   "naming_series",
   "warehouse",
+  "amended_from",
   "section_break0",
   "column_break2",
   "from_case_no",
@@ -30,8 +32,6 @@
   "gross_weight_uom",
   "letter_head_details",
   "letter_head",
-  "misc_details",
-  "amended_from",
   "more_info_tab",
   "status_section",
   "per_delivered"
@@ -153,10 +153,6 @@
    "print_hide": 1
   },
   {
-   "fieldname": "misc_details",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
@@ -175,16 +171,6 @@
    "options": "Packing List",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "description": "Indicates that the package is a part of this order",
-   "fieldname": "sales_order",
-   "fieldtype": "Link",
-   "in_global_search": 1,
-   "in_list_view": 1,
-   "label": "Sales Order",
-   "options": "Sales Order",
-   "reqd": 1
   },
   {
    "fieldname": "more_info_tab",
@@ -214,12 +200,29 @@
    "fieldtype": "Link",
    "label": "Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "default": "Sales Order",
+   "fieldname": "purpose",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Purpose",
+   "options": "Sales Order\nMaterial Request"
+  },
+  {
+   "description": "Indicates that the package is a part of this order",
+   "fieldname": "doc_name",
+   "fieldtype": "Dynamic Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Document",
+   "options": "purpose"
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 12:14:20.678447",
+ "modified": "2025-03-11 10:03:22.512655",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",
@@ -297,7 +300,7 @@
    "write": 1
   }
  ],
- "search_fields": "sales_order",
+ "search_fields": "doc_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
