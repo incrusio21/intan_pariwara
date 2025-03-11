@@ -25,6 +25,64 @@ def add_picking_list_to_status_updater(self, method):
 		},
 	])
 
+	if cint(self.is_return):
+		self.status_updater.extend([
+		{
+			"source_dt": "Delivery Note Item",
+			"target_dt": "Sales Return Request Item",
+			"join_field": "srr_detail",
+			"target_field": "received_qty",
+			"target_parent_dt": "Sales Return Request",
+			"target_ref_field": "qty",
+			"source_field": "-1 * qty",
+			"percent_join_field": "against_srr",
+			"target_parent_field": "per_returned",
+		},
+	])
+
+@frappe.whitelist()
+def make_sales_return_req(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		target.total_qty = 0
+		target.run_method("set_missing_values")
+
+	def update_item(obj, target, source_parent):
+		target.qty = flt(obj.stock_qty) - flt(obj.return_request_qty)
+
+	doclist = get_mapped_doc(
+		"Delivery Note",
+		source_name,
+		{
+			"Delivery Note": {
+				"doctype": "Sales Return Request",
+				"field_map": {
+					"name": "delivery_note",
+					"letter_head": "letter_head"},
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Delivery Note Item": {
+				"doctype": "Sales Return Request Item",
+				"field_map": {
+					"item_code": "item_code",
+					"item_name": "item_name",
+					"warehouse": "warehouse",
+					"batch_no": "batch_no",
+					"description": "description",
+					"stock_uom": "stock_uom",
+					"name": "dn_detail",
+				},
+				"postprocess": update_item,
+				"condition": lambda item: (
+					flt(item.returned_qty) < flt(item.stock_qty)
+				),
+			}
+		},
+		target_doc,
+		set_missing_values,
+	)
+
+	return doclist
+
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, args=None):
 	doc = frappe.get_doc("Delivery Note", source_name)

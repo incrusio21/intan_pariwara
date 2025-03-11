@@ -47,7 +47,7 @@ class OtpNotification:
 
             return frappe.get_all(
                 "OTP Notification",
-                fields=["name", "event", "otp_service", "workflow_state", "field_otp_secret", "body"],
+                fields=["name", "event", "otp_service", "workflow_state", "field_otp_secret", "body", "condition"],
                 filters={"enabled": 1, "document_type": self.doc.doctype},
             )
 
@@ -64,9 +64,16 @@ class OtpNotification:
         for alert in self.otp_notification:
             event = event_map.get(self.method, None)
             if event and alert.event == event:
-                self.send_otp(alert)
+                self.evaluate_alert(alert)
             elif alert.event == "Workflow" and self.method == "on_change":
                 self.get_doctype_workflow(alert)
+
+    def evaluate_alert(self, alert):
+        if alert.condition:
+            if not frappe.safe_eval(alert.condition, None, get_context(self.doc)):
+                return
+            
+        self.send_otp(alert)
 
     def get_doctype_workflow(self, alert):
         from frappe.model.workflow import get_workflow
@@ -83,7 +90,7 @@ class OtpNotification:
             # value not changed
             return
 
-        self.send_otp(alert)
+        self.evaluate_alert(alert)
         
     def set_otp_secret(self, tmp_id):
         otp_secret = b32encode(os.urandom(10)).decode("utf-8")
