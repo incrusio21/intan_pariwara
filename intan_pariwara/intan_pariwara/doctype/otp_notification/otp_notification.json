@@ -12,6 +12,10 @@
   "column_break_zsyx",
   "otp_service",
   "field_otp_secret",
+  "section_break_gmiq",
+  "condition",
+  "column_break_bpmf",
+  "html_7",
   "section_break_tcik",
   "body"
  ],
@@ -70,11 +74,31 @@
    "label": "Event",
    "options": "\nSave\nNew\nSubmit\nCancel\nWorkflow",
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_gmiq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Optional: The alert will be sent if this expression is true",
+   "fieldname": "condition",
+   "fieldtype": "Code",
+   "ignore_xss_filter": 1,
+   "label": "Condition"
+  },
+  {
+   "fieldname": "column_break_bpmf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "html_7",
+   "fieldtype": "HTML",
+   "options": "<p><strong>Condition Examples:</strong></p>\n<pre>doc.status==\"Open\"<br>doc.due_date==nowdate()<br>doc.total &gt; 40000\n</pre>"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-24 09:34:04.165681",
+ "modified": "2025-03-11 21:02:45.133039",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "OTP Notification",

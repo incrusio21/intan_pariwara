@@ -18,7 +18,7 @@ frappe.ui.form.on("Material Request", {
                 );
         }
 
-        frm.remove_custom_button("Material Transfer", "Create")
-        frm.remove_custom_button("Material Transfer (In Transit)", "Create")
+        frm.remove_custom_button(__("Material Transfer"), __("Create"))
+        frm.remove_custom_button(__("Material Transfer (In Transit)"), __("Create"))
     }
 })
