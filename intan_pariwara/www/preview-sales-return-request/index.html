@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pre Order</title>
+  <title>Sales Return Request</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link type="text/css" rel="stylesheet" href="{{ boot['assets_json']['print.bundle.css'] }}">
   <style>
@@ -306,7 +306,7 @@
                 <col style="width: 72%">
                 <tr>
                     <td class="text-center" colspan="3">
-                        <b style="font-size: x-large;">PRE ORDER</b>
+                        <b style="font-size: x-large;">Sales Return Request</b>
                     </td>
                 </tr>
                 <tr>
@@ -343,29 +343,9 @@
                     <td>{{ "-" }}</td>
                 </tr>
                 <tr>
-                    <td>Fund Source</td>
-                    <td>:</td>
-                    <td>{{ doc.fund_source }}</td>
-                </tr>
-                <tr>
                     <td>Date</td>
                     <td>:</td>
-                    <td>{{ frappe.utils.formatdate(doc.transaction_date, "dd/MM/YYYY") }}</td>
-                </tr>
-                <tr>
-                    <td>Expected Payment Date</td>
-                    <td>:</td>
-                    <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
-                </tr>
-                <tr>
-                    <td>Expected Delivery Date</td>
-                    <td>:</td>
-                    <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
-                </tr>
-                <tr>
-                    <td>Sales Person</td>
-                    <td>:</td>
-                    <td>{{ doc.sales_person or "" }}</td>
+                    <td>{{ frappe.utils.formatdate(doc.posting_date, "dd/MM/YYYY") }}</td>
                 </tr>
                 <tr>
                     <td>Catatan</td>
@@ -380,36 +360,26 @@
             <div style="overflow-x: auto;">
                 <table class="table-bordered" style="width: 100%;font-size: inherit;min-width: 720px;">
                     <col style="width: 8%">
-                    <col style="width: 22%">
-                    <col style="width: 24%">
-                    <col style="width: 18%">
-                    <col style="width: 10%">
+                    <col style="width: 32%">
+                    <col style="width: 42%">
                     <col style="width: 18%">
                     <tr>
                         <td class="text-center">No</td>
                         <td class="text-center">Kode Barang</td>
                         <td class="text-center">Nama Barang</td>
-                        <td class="text-center">Harga</td>
-                        <td class="text-center">Jumlah</td>
-                        <td class="text-center">Sub Total</td>
+                        <td class="text-center">Qty</td>
                     </tr>
-                    {% set total = {"grand_total": 0 } %}
                     {% for d in doc.items %}
-                        {# d.amount if relasi != "Reseller" else  #}
-                        {% set sub_total = (d.price_list_rate * d.qty) %}
                         <tr>
                             <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
                             <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
                             <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
-                            <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("price_list_rate") }}</td>
                             <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
-                            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total, currency=doc.currency) }}</td>
                         </tr>
-                        {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
                     {% endfor %}
                     <tr>
-                        <td class="text-center" colspan="5">TOTAL</td>
-                        <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
+                        <td class="text-center" colspan="3">TOTAL QTY</td>
+                        <td class="text-center">{{ doc.get_formatted("total_qty") }}</td>
                     </tr>
                 </table>
                 </div>

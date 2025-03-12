@@ -88,6 +88,7 @@ fixtures = [
 
 website_route_rules = [
 	{"from_route": "/preview-pre-order/<path:app_path>", "to_route": "preview-pre-order"},
+	{"from_route": "/preview-sales-return-request/<path:app_path>", "to_route": "preview-sales-return-request"},
 ]
 
 fixtures = [
