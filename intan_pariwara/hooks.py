@@ -110,7 +110,8 @@ fixtures = [
 jinja = {
 	# "methods": "intan_pariwara.utils.jinja_methods",
 	"filters": [
-    	"intan_pariwara.utils.jinja_filters.format_nomor_telepon"
+    	"intan_pariwara.utils.jinja_filters.format_nomor_telepon",
+    	"intan_pariwara.utils.jinja_filters.get_qr_svg",
 	]
 }
 
