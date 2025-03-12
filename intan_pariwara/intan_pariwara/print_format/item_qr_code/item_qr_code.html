@@ -1,0 +1,24 @@
+<style>
+    @page
+    {
+        size: 4cm 4cm;
+        margin: 1mm 1mm 1mm 1mm;
+    }
+</style>
+
+{% for d in doc.items %}
+<div style="page-break-inside: avoid;">
+    <table style="height: 3.8cm;width:100%;font-size: 8px;border: 1px solid #000">
+        <tr>
+            <td class="text-center">
+                <img style="max-height: 3cm;" src="data:image/svg+xml;base64,{{ d.item_code|get_qr_svg }}">
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center">
+                {{ doc.supplier_name }}
+            </td>
+        </tr>
+    </table>
+</div>
+{% endfor %}
