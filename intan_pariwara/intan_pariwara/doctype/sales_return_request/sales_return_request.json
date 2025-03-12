@@ -9,6 +9,7 @@
   "section_break_ytu6",
   "naming_series",
   "customer",
+  "customer_name",
   "delivery_note",
   "column_break_lxtm",
   "posting_date",
@@ -159,12 +160,18 @@
    "label": "% Returned",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-11 20:26:34.117680",
+ "modified": "2025-03-12 10:11:21.192341",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Sales Return Request",
