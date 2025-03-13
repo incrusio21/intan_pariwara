@@ -155,8 +155,9 @@ def apply_price_list(args, as_doc=False, doc=None):
                 item_details.discount_percentage = 0.0
             else:
                 item_details.rebate = 0.0
-                item_details.__delattr__("discount_percentage")
-                item_details.__delattr__("discount_amount")
+                if item_details.get("discount_percentage"):
+                    item_details.__delattr__("discount_percentage")
+                    item_details.__delattr__("discount_amount")
 
             item_details.rebate_max, item_details.rebate_fix = frappe.get_cached_value("Item", args_copy.item_code, ["custom_rabat_max","custom_cb"])
             if is_fixed:
