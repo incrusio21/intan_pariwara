@@ -71,14 +71,16 @@ class PreOrder(AccountsController, SellingController):
 		
 		for d in self.items:
 			d.warehouse = self.set_warehouse
-
-			
+		
 	def on_submit(self):
 		# Check for Approving Authority
 		frappe.get_doc("Authorization Control").validate_approving_authority(
 			self.doctype, self.company, self.base_grand_total, self
 		)
 
+		if self.fund_source == "Dana Siswa":
+			make_sales_order(self.name)
+			
 		# update enquiry status
 		# self.update_opportunity("Quotation")
 		# self.update_lead()
