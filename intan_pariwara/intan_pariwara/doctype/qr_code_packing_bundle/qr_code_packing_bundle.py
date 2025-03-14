@@ -73,7 +73,7 @@ class QrCodePackingBundle(Document):
 
 	def generate_data_qr(self):
 		self.data_qr = ",".join(
-			f"{self.packing_docname}:{d.document_detail}:{d.item_code}:{d.qty}"
+			f"{self.packing_docname}:{d.document_detail}:{d.item_code}:{d.get_formatted('qty')}"
 			for d in self.items
 		)
 			

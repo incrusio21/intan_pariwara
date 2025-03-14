@@ -1037,7 +1037,7 @@
    "columns": 0,
    "creation": "2025-01-09 16:02:32.885143",
    "default": null,
-   "depends_on": null,
+   "depends_on": "eval:doc.has_relation",
    "description": null,
    "docstatus": 0,
    "dt": "Sales Invoice",

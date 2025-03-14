@@ -14,6 +14,7 @@ from erpnext.stock import get_item_details
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
+from intan_pariwara.controllers.queries import get_price_list_fund
 
 def is_delivery_account_enabled(company):
 	if not company:
@@ -347,63 +348,114 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	return out
 
-def set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype):
-	if doctype not in ["Pre Order", "POS Invoice", "Sales Invoice", "Purchase Invoice"]:
-		# not an invoice
-		return {party_type.lower(): party}
-
-	if party:
-		account = party_file.get_party_account(party_type, party, company)
-
-	account_fieldname = "debit_to" if party_type == "Customer" else "credit_to"
-	out = {
-		party_type.lower(): party,
-		account_fieldname: account,
-		"due_date": party_file.get_due_date(posting_date, party_type, party, company, bill_date),
-	}
-
-	return out
-
 # update untuk menambahkan field fund source
-def set_other_values(party_details, party, party_type):
-	# copy
+def _get_party_details(
+	party=None,
+	account=None,
+	party_type="Customer",
+	company=None,
+	posting_date=None,
+	bill_date=None,
+	price_list=None,
+	currency=None,
+	doctype=None,
+	ignore_permissions=False,
+	fetch_payment_terms_template=True,
+	party_address=None,
+	company_address=None,
+	shipping_address=None,
+	pos_profile=None,
+):
+	from erpnext import get_company_currency
+
+	def set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype):
+		if doctype not in ["Pre Order", "POS Invoice", "Sales Invoice", "Purchase Invoice"]:
+			# not an invoice
+			return {party_type.lower(): party}
+
+		if party:
+			account = party_file.get_party_account(party_type, party, company)
+
+		account_fieldname = "debit_to" if party_type == "Customer" else "credit_to"
+		out = {
+			party_type.lower(): party,
+			account_fieldname: account,
+			"due_date": party_file.get_due_date(posting_date, party_type, party, company, bill_date),
+		}
+
+		return out
+	
+	party_details = frappe._dict(
+		set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype)
+	)
+	party = party_details[party_type.lower()]
+	party = frappe.get_doc(party_type, party)
+
+	if not ignore_permissions:
+		ptype = "select" if frappe.only_has_select_perm(party_type) else "read"
+		frappe.has_permission(party_type, ptype, party, throw=True)
+
+	currency = party.get("default_currency") or currency or get_company_currency(company)
+
+	party_address, shipping_address = party_file.set_address_details(
+		party_details,
+		party,
+		party_type,
+		doctype,
+		company,
+		party_address,
+		company_address,
+		shipping_address,
+		ignore_permissions=ignore_permissions,
+	)
+	party_file.set_contact_details(party_details, party, party_type)
+	party_file.set_other_values(party_details, party, party_type)
+	party_file.set_price_list(party_details, party, party_type, price_list, pos_profile)
 	if party_type == "Customer":
-		to_copy = ["customer_name", "customer_group", "territory", "language"]
-	else:
-		to_copy = ["supplier_name", "supplier_group", "language"]
-	for f in to_copy:
-		party_details[f] = party.get(f)
+		party_details.update(get_price_list_fund(company, party.name, party.get("custom_customer_fund_group")))
 
-	# fields prepended with default in Customer doctype
-	for f in ["currency"] + (["sales_partner", "commission_rate"] if party_type == "Customer" else []):
-		if party.get("default_" + f):
-			party_details[f] = party.get("default_" + f)
+	tax_template = party_file.set_taxes(
+		party.name,
+		party_type,
+		posting_date,
+		company,
+		customer_group=party_details.customer_group,
+		supplier_group=party_details.supplier_group,
+		tax_category=party_details.tax_category,
+		billing_address=party_address,
+		shipping_address=shipping_address,
+	)
 
+	if tax_template:
+		party_details["taxes_and_charges"] = tax_template
+
+	if frappe.cint(fetch_payment_terms_template):
+		party_details["payment_terms_template"] = party_file.get_payment_terms_template(party.name, party_type, company)
+
+	if not party_details.get("currency"):
+		party_details["currency"] = currency
+
+	# sales team
 	if party_type == "Customer":
-		party_details.update({
-			"fund_source": party.get("custom_customer_fund_group"),
-			"has_relation": 0,
-			"apply_rebate": frappe.get_cached_value("Customer Fund Source", party.custom_customer_fund_group, "apply_rebate") \
-				if party.get("custom_customer_fund_group") else 0,
-			"additional_rebate_disc": 0
-		})
-		
-		if party.get("custom_jenis_relasi"):
-			jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group", "additional_rebate_disc"], as_dict=1)
+		party_details["sales_team"] = [
+			{
+				"sales_person": d.sales_person,
+				"allocated_percentage": d.allocated_percentage or None,
+				"commission_rate": d.commission_rate,
+			}
+			for d in party.get("sales_team")
+		]
 
-			party_details["has_relation"] = jenis_relasi.has_relation
-			party_details["relasi_group"] = jenis_relasi.customer_group
-			party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc
-			if jenis_relasi.cant_have_rebate:
-				party_details["apply_rebate"] = 0 
+	# supplier tax withholding category
+	if party_type == "Supplier" and party:
+		party_details["supplier_tds"] = frappe.get_value(party_type, party.name, "tax_withholding_category")
 
-		if not party_details["has_relation"]:
-			party_details["relasi"] = ""
-		# else:
-		# 	party_details.__delattr__("shipping_address_name")
-		# 	party_details.__delattr__("shipping_address")
-			
+	if not party_details.get("tax_category") and pos_profile:
+		party_details["tax_category"] = frappe.get_value("POS Profile", pos_profile, "tax_category")
+
+	return party_details
+
+
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
-party_file.set_other_values = set_other_values
-party_file.set_account_and_due_date = set_account_and_due_date
+party_file._get_party_details = _get_party_details

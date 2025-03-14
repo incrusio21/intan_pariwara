@@ -35,6 +35,12 @@ intan_pariwara.stock.DeliveryNoteController = class DeliveryNoteController exten
             );
         }
     }
+
+    scan_barcode() {
+		frappe.flags.dialog_set = false;
+		const barcode_scanner = new intan_pariwara.utils.BarcodeScanner({frm:this.frm});
+		barcode_scanner.process_scan();
+	}
 }
 
 cur_frm.script_manager.make(intan_pariwara.stock.DeliveryNoteController);

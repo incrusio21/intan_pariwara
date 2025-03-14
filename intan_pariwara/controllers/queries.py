@@ -9,7 +9,7 @@ from frappe.model.utils import get_fetch_values
 
 from erpnext.accounts.party import get_party_shipping_address, render_address
 from erpnext.stock.get_item_details import apply_price_list_on_item, get_price_list_currency_and_exchange_rate, process_args
-
+		
 @frappe.whitelist()
 def get_price_list_fund(
     company,
@@ -19,14 +19,17 @@ def get_price_list_fund(
 ):
     # get data customer
     party = frappe.get_doc("Customer", customer)
+    fund_source = fund_source or party.get("custom_customer_fund_group")
     party_details = {
+        "fund_source": fund_source,
         "selling_price_list": party.default_price_list or frappe.db.get_value("Selling Settings", None, "selling_price_list"),
         "is_max_rebate_applied": 0,
         "is_rebate_fixed": 0,
+        "has_relation": 0,
+        "additional_rebate_disc": 0
     }
 
     # simpan data fund source dan 
-    fund_source = fund_source or party.get("custom_customer_fund_group")
     c_fund = frappe.get_cached_value("Customer Fund Source", fund_source, ["fund_source_type", "apply_rebate"], as_dict=1) \
         if fund_source else {}
 
@@ -43,14 +46,18 @@ def get_price_list_fund(
     
     # cek jenis relasi
     if party.custom_jenis_relasi:
-        jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "additional_rebate_disc"], as_dict=1)
+        jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "additional_rebate_disc", "has_relation", "customer_group"], as_dict=1)
         party_details["apply_rebate"] = 0 if jenis_relasi.cant_have_rebate else party_details["apply_rebate"]
         party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc or 0
-
-    # cant_have_rebate memebuat apply rebate di non aktifkan 
-    if party.custom_jenis_relasi and frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, "cant_have_rebate"):
-        party_details["apply_rebate"] = 0
+        party_details["has_relation"] = jenis_relasi.has_relation
+        party_details["relasi_group"] = jenis_relasi.customer_group
     
+    if not party_details["has_relation"]:
+        party_details["relasi"] = ""
+    # else:
+    # 	party_details.__delattr__("shipping_address_name")
+    # 	party_details.__delattr__("shipping_address")
+
     if c_fund and c_fund.fund_source_type and transaction_type == "Reguler":
         party_details.update(
             frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
