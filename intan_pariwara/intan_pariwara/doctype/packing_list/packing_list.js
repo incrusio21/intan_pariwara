@@ -3,6 +3,9 @@
 
 frappe.ui.form.on("Packing List", {
 	setup: (frm) => {
+		frm.set_df_property("items", "cannot_add_rows", true);
+		frm.set_df_property("items_retail", "cannot_add_rows", true);
+
 		frm.set_query("warehouse", () => {
 			return {
 				filters: {
@@ -82,23 +85,151 @@ frappe.ui.form.on("Packing List", {
 	doc_name: (frm) => {
 		frm.set_value("items", null);
 		
-		var purpose_method = {
-			"Material Request": "intan_pariwara.intan_pariwara.custom.material_request.make_packing_list",
-			"Sales Order": "intan_pariwara.intan_pariwara.custom.sales_order.make_packing_list",
-		}
+		// var purpose_method = {
+		// 	"Material Request": "intan_pariwara.intan_pariwara.custom.material_request.make_packing_list",
+		// 	"Sales Order": "intan_pariwara.intan_pariwara.custom.sales_order.make_packing_list",
+		// }
 
-		if (frm.doc.doc_name) {
-			frm.events.get_items(frm, purpose_method[frm.doc.purpose])
-		}
+		// if (frm.doc.doc_name) {
+		// 	frm.events.get_items(frm, purpose_method[frm.doc.purpose])
+		// }
 	},
 
 	get_items: (frm, method) => {
-		erpnext.utils.map_current_doc({
-			method: method,
-			source_name: frm.doc.doc_name,
-			target_doc: frm,
+		const fields = [
+			{
+				fieldtype: "Data",
+				fieldname: "document_detail",
+				read_only: 1,
+				hidden: 1,
+			},
+			{
+				fieldtype: "Link",
+				fieldname: "item_code",
+				options: "Item",
+				in_list_view: 1,
+				read_only: 1,
+				disabled: 0,
+				label: __("Item Code")
+			},
+			{
+				fieldtype: "Link",
+				fieldname: "stock_uom",
+				options: "UOM",
+				in_list_view: 1,
+				read_only: 1,
+				disabled: 0,
+				label: __("UOM")
+			},
+			{
+				fieldtype: "Float",
+				fieldname: "remaining_qty",
+				default: 0,
+				read_only: 1,
+				in_list_view: 1,
+				label: __("Remaining Qty"),
+			},
+			{
+				fieldtype: "Float",
+				fieldname: "qty",
+				default: 0,
+				read_only: 0,
+				in_list_view: 1,
+				label: __("Qty"),
+			},
+			{
+				fieldtype: "Float",
+				fieldname: "qty_per_koli",
+				default: 0,
+				read_only: 0,
+				in_list_view: 1,
+				label: __("Qty/Koli"),
+			},
+		]
+
+		frappe.call({
+			method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.get_items",
+			args: {
+				doctype: frm.doc.purpose,
+				docname: frm.doc.doc_name,
+				used_item: [...(frm.doc.items || []), ...(frm.doc.items_retail || [])]
+			},
 			freeze: true,
-			freeze_message: __("Creating Packing List ..."),
-		});
+			callback: function(data){
+				if(data.message.length == 0){
+					frappe.throw(__("All items have been included in the packaging."))
+				}
+
+				let dialog = new frappe.ui.Dialog({
+					title: __("Get Packing Items"),
+					size: "extra-large",
+					fields: [
+						{
+							fieldname: "is_retail",
+							fieldtype: "Check",
+							label: "Is Retail",
+						},
+						{
+							fieldname: "trans_items",
+							fieldtype: "Table",
+							label: "Items",
+							cannot_add_rows: 1,
+							cannot_delete_rows: 1,
+							in_place_edit: false,
+							reqd: 1,
+							data: data.message,
+							get_data: () => {
+								return data.message;
+							},
+							fields: fields,
+						}
+					],
+					primary_action: function () {
+						const trans_items = this.get_values()["trans_items"].filter((item) => !!item.qty);
+						
+						if(trans_items.length == 0){
+							frappe.throw("Please fill in the quantity on one of the rows")
+						}
+
+						frappe.call({
+							method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.update_items",
+							freeze: true,
+							args: {
+								is_retail: this.get_values()["is_retail"],
+								trans_items: trans_items,
+							},
+							callback: function (data) {
+								if(data.message){
+									data.message.package.forEach(value => {
+										var p = frm.add_child("items");
+										frappe.model.set_value(p.doctype, p.name, value)
+									});
+
+									data.message.retail.forEach(value => {
+										var r = frm.add_child("items_retail");
+										r.retail_key = data.message.retail_key
+										frappe.model.set_value(r.doctype, r.name, value)
+									});
+
+									dialog.hide();
+									refresh_field("items");
+									refresh_field("items_retail");
+								}
+							},
+						});
+					},
+					primary_action_label: __("Set Koli"),
+				})
+
+				dialog.show();
+			}
+		})
+		// erpnext.utils.map_current_doc({
+		// 	method: method,
+		// 	source_name: frm.doc.doc_name,
+		// 	target_doc: frm,
+		// 	freeze: true,
+		// 	freeze_message: __("Creating Packing List ..."),
+		// });
 	},
 });

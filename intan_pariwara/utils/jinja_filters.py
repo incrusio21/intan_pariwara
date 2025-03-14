@@ -23,7 +23,7 @@ def get_qr_svg(data):
     svg = ""
     stream = BytesIO()
     try:
-        url.svg(stream, scale=4, module_color="#222")
+        url.svg(stream, scale=4, quiet_zone=2, module_color="#222")
         svg = stream.getvalue().decode().replace("\n", "")
         svg = b64encode(svg.encode())
     finally:

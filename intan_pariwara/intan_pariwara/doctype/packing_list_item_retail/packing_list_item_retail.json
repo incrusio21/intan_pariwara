@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "hash",
- "creation": "2025-02-17 15:43:46.176963",
+ "creation": "2025-03-13 13:41:07.554090",
  "doctype": "DocType",
  "document_type": "Document",
  "editable_grid": 1,
@@ -24,7 +24,8 @@
   "stock_uom",
   "weight_uom",
   "page_break",
-  "document_detail"
+  "document_detail",
+  "retail_key"
  ],
  "fields": [
   {
@@ -38,6 +39,13 @@
    "read_only": 1,
    "reqd": 1,
    "width": "100px"
+  },
+  {
+   "depends_on": "eval:parent.purpose == \"Material Request\"",
+   "fieldname": "from_warehouse",
+   "fieldtype": "Link",
+   "label": "From Warehouse",
+   "options": "Warehouse"
   },
   {
    "fieldname": "column_break_2",
@@ -58,6 +66,12 @@
    "fieldtype": "Link",
    "label": "Batch No",
    "options": "Batch"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
   },
   {
    "collapsible": 1,
@@ -85,12 +99,27 @@
    "width": "100px"
   },
   {
+   "fieldname": "actual_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Actual Qty",
+   "print_width": "100px",
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
    "fieldname": "net_weight",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Net Weight",
    "print_width": "100px",
    "width": "100px"
+  },
+  {
+   "fieldname": "delivered_qty",
+   "fieldtype": "Float",
+   "label": "Delivered Qty",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_10",
@@ -122,34 +151,6 @@
    "label": "Page Break"
   },
   {
-   "fieldname": "delivered_qty",
-   "fieldtype": "Float",
-   "label": "Delivered Qty",
-   "read_only": 1
-  },
-  {
-   "fieldname": "actual_qty",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Actual Qty",
-   "print_width": "100px",
-   "read_only": 1,
-   "width": "100px"
-  },
-  {
-   "fieldname": "warehouse",
-   "fieldtype": "Link",
-   "label": "Warehouse",
-   "options": "Warehouse"
-  },
-  {
-   "depends_on": "eval:parent.purpose == \"Material Request\"",
-   "fieldname": "from_warehouse",
-   "fieldtype": "Link",
-   "label": "From Warehouse",
-   "options": "Warehouse"
-  },
-  {
    "fieldname": "document_detail",
    "fieldtype": "Data",
    "hidden": 1,
@@ -157,14 +158,22 @@
    "label": "Document Item",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "retail_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Retail Key",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-03-14 18:11:25.822105",
+ "modified": "2025-03-14 18:11:34.403777",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
- "name": "Packing List Item",
+ "name": "Packing List Item Retail",
  "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],

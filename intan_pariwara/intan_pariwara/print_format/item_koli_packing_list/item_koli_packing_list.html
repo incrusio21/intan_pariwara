@@ -1,0 +1,63 @@
+<style>
+    @page
+    {
+        size: 100mm 75mm;
+        margin: 1mm 1mm 1mm 1mm;
+    }
+</style>
+
+{% for d in frappe.db.get_all("Qr Code Packing Bundle", filters={"packing_list": doc.name}, 
+    fields=["kode_koli", "data_qr", "total_qty", "packing_docname", "destination", "destination_code"]) %}
+<div style="page-break-inside: avoid;">
+    <div style="display: flex;flex-direction: column;justify-content: space-between;height:73mm;width:98mm;border: 1px solid #000">
+        <table style="width:100%;font-size: 10px;">
+            <col style="width: 40%">
+            <col style="width: 5%">
+            <col style="width: 55%">
+            <tr>
+                <td rowspan="6" class="text-center">
+                    <img src="data:image/svg+xml;base64,{{ d.data_qr|get_qr_svg }}">
+                    <p style="font-weight: bold;text-decoration: underline;">
+                        {{ doc.doc_name }}
+                    </p>
+                </td>
+                <td rowspan="6">&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Nama Koli : {{ d.kode_koli or "Koli Utuh" }}</td>
+            </tr>
+            <tr>
+                <td>
+                    Isi koli:
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Koli Utuh (isi : {{ frappe.format_value(d.total_qty) }})
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-center" style="font-size: 18px;">{{ d.destination }}</td>
+            </tr>
+        </table>
+        {% if d.destination_code %}
+        <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-top: auto;">
+            <div>&nbsp;</div>
+            <div style="padding: 2px;border-top: 1px solid #000;border-left: 1px solid #000">
+                {{ d.destination_code }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
