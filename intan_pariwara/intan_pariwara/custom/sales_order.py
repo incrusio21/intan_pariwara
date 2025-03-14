@@ -15,7 +15,6 @@ from erpnext.stock.get_item_details import get_bin_details, get_price_list_rate
 
 def create_material_request(self, method):
 	
-	
 	item_bin, need_item = {}, {}
 	precision = frappe.get_precision("Bin", "projected_qty")
 	for d in self.items:
@@ -267,9 +266,6 @@ def make_packing_list(source_name, target_doc=None):
 
 		target.run_method("set_missing_values")
 
-	def update_item(obj, target, source_parent):
-		target.qty = flt(obj.qty) - flt(obj.packed_qty)
-
 	doclist = get_mapped_doc(
 		"Sales Order",
 		source_name,
@@ -280,23 +276,6 @@ def make_packing_list(source_name, target_doc=None):
 					"name": "doc_name",
 					"letter_head": "letter_head"},
 				"validation": {"docstatus": ["=", 1]},
-			},
-			"Sales Order Item": {
-				"doctype": "Packing List Item",
-				"field_map": {
-					"item_code": "item_code",
-					"item_name": "item_name",
-					"warehouse": "warehouse",
-					"batch_no": "batch_no",
-					"description": "description",
-					"qty": "qty",
-					"stock_uom": "stock_uom",
-					"name": "document_detail",
-				},
-				"postprocess": update_item,
-				"condition": lambda item: (
-					flt(item.packed_qty) < flt(item.qty)
-				),
 			}
 		},
 		target_doc,

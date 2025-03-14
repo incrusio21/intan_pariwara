@@ -1,0 +1,153 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-03-13 13:44:11.930418",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "packing_list",
+  "kode_koli",
+  "column_break_inct",
+  "is_retail",
+  "packing_detail",
+  "data_qr",
+  "section_break_jzje",
+  "items",
+  "section_break_ixah",
+  "total_qty",
+  "more_info_tab",
+  "packing_purpose",
+  "packing_docname",
+  "column_break_ytoe",
+  "destination",
+  "destination_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "packing_list",
+   "fieldtype": "Link",
+   "label": "Packing List",
+   "no_copy": 1,
+   "options": "Packing List",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_inct",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_jzje",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "no_copy": 1,
+   "options": "Qr Code Bundle Item",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_retail",
+   "fieldtype": "Check",
+   "label": "Is Retail",
+   "read_only": 1
+  },
+  {
+   "fieldname": "packing_detail",
+   "fieldtype": "Data",
+   "label": "Packing Detail",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "kode_koli",
+   "fieldtype": "Data",
+   "label": "Kode Koli",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ixah",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
+  },
+  {
+   "fieldname": "packing_purpose",
+   "fieldtype": "Select",
+   "label": "Packing Purpose",
+   "no_copy": 1,
+   "options": "Sales Order\nMaterial Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "packing_docname",
+   "fieldtype": "Dynamic Link",
+   "label": "Packing Docname",
+   "no_copy": 1,
+   "options": "packing_purpose",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ytoe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination_code",
+   "fieldtype": "Data",
+   "label": "Destination Code",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_qr",
+   "fieldtype": "Text",
+   "label": "Data QR",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-14 22:44:00.927034",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Qr Code Packing Bundle",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

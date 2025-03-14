@@ -25,24 +25,7 @@ def make_packing_list(source_name, target_doc=None):
                     "letter_head": "letter_head"
                 },
                 "validation": {"docstatus": ["=", 1]},
-            },
-            "Material Request Item": {
-                "doctype": "Packing List Item",
-                "field_map": {
-                    "item_code": "item_code",
-                    "item_name": "item_name",
-                    "warehouse": "warehouse",
-                    "batch_no": "batch_no",
-                    "description": "description",
-                    "qty": "qty",
-                    "stock_uom": "stock_uom",
-                    "name": "document_detail",
-                },
-                "postprocess": update_item,
-                "condition": lambda item: (
-                    flt(item.packed_qty) < flt(item.qty)
-                ),
-            },
+            }
         },
         target_doc,
         set_missing_values,

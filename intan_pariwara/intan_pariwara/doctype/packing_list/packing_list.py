@@ -1,8 +1,12 @@
 # Copyright (c) 2025, DAS and contributors
 # For license information, please see license.txt
 
+import json
+from collections import defaultdict
+
 import frappe
-from frappe import _, scrub
+from frappe import _, _dict
+from frappe.model.naming import _generate_random_string
 from frappe.utils import cint, flt
 from frappe.query_builder.functions import Sum
 
@@ -33,6 +37,9 @@ class PackingList(StatusUpdater):
 				"target_parent_field": "per_packing",
 				"percent_join_field_parent": "doc_name",
 				"join_field": "document_detail",
+				"second_source_field": "qty",
+				"second_source_dt": "Packing List Item Retail",
+				"second_join_field": "document_detail",
 				**purpose_dict,
 				
 			}
@@ -51,12 +58,8 @@ class PackingList(StatusUpdater):
 		self.set_missing_values()
 		self.calculate_net_total_pkg()
 
-	def on_submit(self):
-		self.update_prevdoc_status()
-
-	def on_cancel(self):
-		self.update_prevdoc_status()
-
+		self.validate_item_not_empty()
+		
 	def get_pr_items_delivered_qty(self, pr_items):
 		pr_items_delivered_qty = {}
 		pr_items = [d.name for d in self.get("items") if d.name in pr_items]
@@ -152,17 +155,19 @@ class PackingList(StatusUpdater):
 				)
 
 	def validate_items(self):
-		for item in self.items:
-			if item.qty <= 0:
-				frappe.throw(_("Row {0}: Qty must be greater than 0.").format(item.idx))
+		items_list = {}
 
-			if not item.document_detail:
-				frappe.throw(
-					_("Row {0}: Either {1} Item reference is mandatory.").format(
-						item.idx, self.purpose
-					)
-				)
+		self.validasi_items_table("items", items_list)
+		self.validasi_items_table("items_retail", items_list)
 
+		for ref, item in items_list.items():
+			remaining_qty = frappe.db.get_value(
+				f"{self.purpose} Item",
+				{"name": ref, "docstatus": 1},
+				["sum(qty - packed_qty)"],
+			)
+
+			
 			# item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")			
 			# if item.actual_qty < item.qty:
 			# 	frappe.throw(
@@ -173,32 +178,52 @@ class PackingList(StatusUpdater):
 			# 			self.warehouse,
 			# 		)
 			# 	)
-
-			remaining_qty = frappe.db.get_value(
-				f"{self.purpose} Item",
-				{"name": item.document_detail, "docstatus": 1},
-				["sum(qty - packed_qty)"],
-			)
-
 			if remaining_qty is None:
 				frappe.throw(
-					_("Row {0}: Please provide a valid {1} Item reference.").format(
-						item.idx,
-						self.purpose
+					_("Please provide a valid {0} Item reference for Item {1}.").format(
+						self.purpose,
+						item.item_code
 					)
 				)
 			elif remaining_qty <= 0:
 				frappe.throw(
-					_("Row {0}: Packing List is already created for Item {1}.").format(
-						item.idx, frappe.bold(item.item_code)
+					_("Packing List is already created for Item {0}.").format(
+						frappe.bold(item.item_code)
 					)
 				)
 			elif item.qty > remaining_qty:
 				frappe.throw(
-					_("Row {0}: Qty cannot be greater than {1} for the Item {2}.").format(
-						item.idx, frappe.bold(remaining_qty), frappe.bold(item.item_code)
+					_("Qty cannot be greater than {0} for the Item {1}.").format(
+						frappe.bold(remaining_qty), frappe.bold(item.item_code)
 					)
 				)
+
+	def validasi_items_table(self, table_name, items_list: dict):
+		label = self.get_label_from_fieldname(table_name)
+		for item in self.get(table_name):
+			if item.qty <= 0:
+				frappe.throw(_("Row {0} in {1}: Qty must be greater than 0.").format(item.idx, label))
+
+			if not item.document_detail:
+				frappe.throw(
+					_("Row {0} in {1}: Either {2} Item reference is mandatory.").format(
+						item.idx, label, self.purpose
+					)
+				)
+
+			if item.meta.get_field("retail_key") and not item.get("retail_key"):
+				frappe.throw(
+					_("Row {0} Retail: Either Retail Key is mandatory.").format(
+						item.idx
+					)
+				)
+
+			items_list.setdefault(item.document_detail, _dict({"item_code": item.item_code , "qty": 0}))
+			items_list[item.document_detail].qty += item.qty
+
+	def validate_item_not_empty(self):
+		if self.docstatus == 1 and not (self.get("items") or self.get("items_retail")):
+			frappe.throw("Please select the item before submit")
 
 	def set_missing_values(self):
 		if not self.from_case_no:
@@ -247,6 +272,49 @@ class PackingList(StatusUpdater):
 		if not flt(self.gross_weight_pkg):
 			self.gross_weight_pkg = self.net_weight_pkg
 
+	def on_submit(self):
+		self.update_prevdoc_status()
+
+		self.create_qr_code_items()
+		self.create_qr_code_items_retail()
+		
+	def create_qr_code_items(self):
+		for d in self.items:
+			qr_code = frappe.new_doc("Qr Code Packing Bundle")
+			qr_code.kode_koli = frappe.get_cached_value("Item", d.item_code, "custom_kode_koli")
+			qr_code.packing_list = self.name
+			qr_code.packing_detail= d.name
+			qr_code.packing_purpose = self.purpose
+			qr_code.packing_docname = self.doc_name
+			qr_code.destination = self.doc_name
+			qr_code.save()
+
+	def create_qr_code_items_retail(self):
+		retail_key = []
+		for d in self.items_retail:
+			if d.retail_key in retail_key:
+				continue
+
+			qr_code = frappe.new_doc("Qr Code Packing Bundle")
+			qr_code.is_retail = 1
+			qr_code.packing_list = self.name
+			qr_code.packing_detail= d.retail_key
+			qr_code.packing_docname = self.doc_name
+			qr_code.destination = self.doc_name
+			qr_code.save()
+			
+			retail_key.append(d.retail_key)
+
+	def on_cancel(self):
+		self.update_prevdoc_status()
+		self.remove_qr_code()
+	
+	def remove_qr_code(self):
+		from frappe.model.delete_doc import delete_doc 
+
+		for row in frappe.get_list("Qr Code Packing Bundle", filters={"packing_list": self.name}, pluck="name"):
+			delete_doc("Qr Code Packing Bundle", row)
+
 	@frappe.whitelist()
 	def get_actual_qty(self):
 		pass
@@ -267,6 +335,86 @@ class PackingList(StatusUpdater):
 
 		# 	item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
 
+@frappe.whitelist()
+def get_items(doctype, docname=None, used_item=[]):
+
+	if not docname:
+		frappe.throw("Please Select {} first".format(doctype))
+
+	data = json.loads(used_item)
+	total_qty = defaultdict(float)
+	for item in data:
+		total_qty.setdefault(item['document_detail'], 0)
+		total_qty[item['document_detail']] += item['qty']
+
+	doctype = frappe.qb.DocType(f"{doctype} Item")
+	item = frappe.qb.DocType("Item")
+	
+	query = (
+		frappe.qb.from_(doctype)
+		.inner_join(item)
+		.on(doctype.item_code == item.name)
+		.select(
+			doctype.name.as_("document_detail"),
+			doctype.item_code,
+			doctype.item_name,
+			doctype.stock_uom,
+			item.qty_per_koli,
+			(doctype.qty - doctype.packed_qty).as_("remaining_qty")
+		).where(
+			(doctype.docstatus == 1)
+			& (doctype.parent == docname)
+			& (doctype.packed_qty < doctype.qty)
+		)
+	)
+
+	remaining_item = query.run(as_dict=1)
+	new_remaining = []
+	for d in remaining_item:
+		d.remaining_qty -= total_qty.get(d.document_detail, 0)
+		if d.remaining_qty > 0:
+			new_remaining.append(d)
+
+	return new_remaining
+
+@frappe.whitelist()
+def update_items(trans_items, is_retail=False):
+	data = json.loads(trans_items)
+	
+	ress = frappe._dict({
+		"package": [],
+		"retail_key": "",
+		"retail": [],
+	})
+	
+	for d in data:
+		# Hapus key yang tidak diperlukan sekaligus
+		del d["name"], d["idx"]
+		
+		quantity = d["qty"]
+		if d["remaining_qty"] < quantity:
+			frappe.throw("Packing quantity exceeds remaining quantity.")
+		
+		if not cint(is_retail):
+			qty_per_koli = d.get("qty_per_koli")
+			if qty_per_koli:  # Jika bisa dikemas per koli
+				# Hitung kemasan utuh dan sisa
+				full_packs, quantity = divmod(quantity, qty_per_koli)
+				# Tambahkan kemasan utuh ke package
+				ress.package.extend([{**d, "qty": qty_per_koli} for _ in range(full_packs)])
+			else:  # Jika tidak ada qty_per_koli
+				ress.package.append(d)
+				quantity = 0
+
+		# Tambahkan sisa ke retail
+		if quantity > 0:
+			ress.retail.append({**d, "qty": quantity})
+
+	if ress.retail:
+		ress.retail_key = _generate_random_string(10)
+	
+	return ress
+	
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def item_details(doctype, txt, searchfield, start, page_len, filters):
