@@ -7,7 +7,7 @@
 </style>
 
 {% for d in frappe.db.get_all("Qr Code Packing Bundle", filters={"packing_list": doc.name}, 
-    fields=["kode_koli", "data_qr", "total_qty", "packing_docname", "destination", "destination_code"]) %}
+    fields=["kode_koli", "is_retail", "data_qr", "total_qty", "packing_docname", "destination", "destination_code"]) %}
 <div style="page-break-inside: avoid;">
     <div style="display: flex;flex-direction: column;justify-content: space-between;height:73mm;width:98mm;border: 1px solid #000">
         <table style="width:100%;font-size: 10px;">
@@ -34,7 +34,7 @@
             </tr>
             <tr>
                 <td>
-                    Koli Utuh (isi : {{ frappe.format_value(d.total_qty) }})
+                    Koli {{ "Utuh" if not d.is_retail else "Campur" }} (isi : {{ frappe.format_value(d.total_qty) }})
                 </td>
             </tr>
             <tr>

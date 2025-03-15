@@ -38,7 +38,7 @@ class QrCodePackingBundle(Document):
 		query = (
 			frappe.qb.from_(doctype)
 			.select(
-				doctype.name.as_("document_detail"),
+				doctype.document_detail,
 				doctype.item_code,
 				doctype.item_name,
 				doctype.batch_no,

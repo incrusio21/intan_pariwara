@@ -14,6 +14,8 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		this.batch_no_field = opts.batch_no_field || "batch_no";
 		this.uom_field = opts.uom_field || "uom";
 		this.qty_field = opts.qty_field || "qty";
+		this.document_name_field = opts.document_name_field || "against_sales_order";
+		this.document_detail_field = opts.document_detail_field || "so_detail";
 		// field name on row which defines max quantity to be scanned e.g. picklist
 		this.max_qty_field = opts.max_qty_field;
 		// scanner won't add a new row if this flag is set.
@@ -95,10 +97,11 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 				data = [data]
 			}
 
-			data.forEach(value => {
-				const { item_code, barcode, batch_no, serial_no, uom, qty } = value;
+			let row_list = []
+			data.forEach(async value => {
+				const { item_code, barcode, batch_no, serial_no, uom, document_detail } = value;
 				
-				let row = this.get_row_to_modify_on_scan(item_code, batch_no, uom, barcode);
+				let row = this.get_row_to_modify_on_scan(item_code, batch_no, uom, barcode, document_detail);
 				
 				this.is_new_row = false;
 				if (!row) {
@@ -122,22 +125,25 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 					reject();
 					return;
 				}
-	
+				
+				this.set_selector_trigger_flag(data),
+
+				await this.set_item(row, value).then((qty) => {
+					this.show_scan_message(row.idx, row.item_code, qty);
+				})
+
 				frappe.run_serially([
-					() => this.set_selector_trigger_flag(data),
-					() =>
-						this.set_item(row, item_code, barcode, batch_no, serial_no, qty).then((qty) => {
-							this.show_scan_message(row.idx, row.item_code, qty);
-						}),
 					() => this.set_barcode_uom(row, uom),
 					() => this.set_serial_no(row, serial_no),
 					() => this.set_batch_no(row, batch_no),
 					() => this.set_barcode(row, barcode),
 					() => this.clean_up(),
 					() => this.revert_selector_flag(),
-					() => resolve(row),
+					() => row_list.push(row)
 				]);
 			});
+
+			resolve(row_list)
 		});
 	}
 
@@ -159,12 +165,16 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		frappe.flags.trigger_from_barcode_scanner = false;
 	}
 
-	set_item(row, item_code, barcode, batch_no, serial_no, qty=1) {
+	set_item(row, data) {
+		const { item_code, barcode, batch_no, serial_no, qty, document_name, document_detail } = data;
+
 		return new Promise((resolve) => {
 			const increment = async (value = 1) => {
 				const item_data = { item_code: item_code, use_serial_batch_fields: 1.0 };
 				frappe.flags.trigger_from_barcode_scanner = true;
 				item_data[this.qty_field] = Number(row[this.qty_field] || 0) + Number(value);
+				item_data[this.document_name_field] = document_name
+				item_data[this.document_detail_field] = document_detail
 				await frappe.model.set_value(row.doctype, row.name, item_data);
 				return value;
 			};
@@ -412,7 +422,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		return is_duplicate;
 	}
 
-	get_row_to_modify_on_scan(item_code, batch_no, uom, barcode) {
+	get_row_to_modify_on_scan(item_code, batch_no, uom, barcode, document_detail) {
 		let cur_grid = this.frm.fields_dict[this.items_table_name].grid;
 
 		// Check if batch is scanned and table has batch no field
@@ -425,17 +435,19 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 			const uom_match = !uom || row[this.uom_field] == uom;
 			const qty_in_limit = flt(row[this.qty_field]) < flt(row[this.max_qty_field]);
 			const item_scanned = row.has_item_scanned;
+			const document_detail_match = !row[this.document_detail_field] || row[this.document_detail_field] == document_detail;
 
 			return (
 				item_match &&
 				uom_match &&
+				document_detail_match &&
 				!item_scanned &&
 				(!is_batch_no_scan || batch_match) &&
 				(!check_max_qty || qty_in_limit)
 			);
 		};
 
-		return this.items_table.find(matching_row) //|| this.get_existing_blank_row();
+		return this.items_table.find(matching_row) || this.get_existing_blank_row();
 	}
 
 	get_existing_blank_row() {

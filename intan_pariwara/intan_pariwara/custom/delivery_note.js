@@ -7,7 +7,29 @@ intan_pariwara.sales_common.setup_selling_controller(erpnext.stock.DeliveryNoteC
 frappe.ui.form.on("Delivery Note", {
     refresh: function (frm) {
         // new intan_pariwara.utils.OtpVerified({frm});
-    }
+    },
+})
+
+frappe.ui.form.on("Delivery Note Item", {
+    so_detail: function (frm, cdt, cdn) {
+        var item = locals[cdt][cdn]
+        
+        frappe.call({
+            method: "intan_pariwara.intan_pariwara.custom.delivery_note.detail_item_order",
+            args:{
+                set_warehouse: frm.doc.set_warehouse,
+                item: item.so_detail
+            },
+            callback: function (r) {
+                if (r.message) {
+                    frappe.run_serially([
+                        () => frappe.model.set_value(item.doctype, item.name, r.message),
+                        () => refresh_fields("items")
+                    ]);
+                }
+            }
+        })
+    },
 })
 
 intan_pariwara.stock.DeliveryNoteController = class DeliveryNoteController extends intan_pariwara.selling.SellingController {

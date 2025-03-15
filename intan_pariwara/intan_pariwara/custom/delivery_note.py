@@ -1,6 +1,7 @@
 # Copyright (c) 2025, DAS and Contributors
 # License: GNU General Public License v3. See license.txt
 
+import json
 import frappe
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
@@ -40,6 +41,18 @@ def add_picking_list_to_status_updater(self, method):
 		},
 	])
 
+@frappe.whitelist()
+def detail_item_order(item, set_warehouse=None):
+	ress = {}
+	fields = ["discount_percentage", "rebate"]
+	if not set_warehouse:
+		fields.append("warehouse")
+
+	ress.update(
+		frappe.get_value("Sales Order Item", {"name": item}, fields, as_dict=1)
+	)
+	return ress
+	
 @frappe.whitelist()
 def make_sales_return_req(source_name, target_doc=None):
 	def set_missing_values(source, target):

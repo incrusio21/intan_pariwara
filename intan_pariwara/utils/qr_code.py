@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from erpnext.stock.utils import _update_item_info
+from frappe.query_builder.custom import ConstantColumn
 
 BarcodeScanResult = dict[str, str | None]
 
@@ -26,11 +27,21 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         as_dict=True,
     )
     if qr_bundle:
-        item_qr_list = frappe.get_all(
-            "Qr Code Bundle Item", 
-            filters={"parent": qr_bundle.name}, 
-            fields=["item_code", "qty", "document_detail", "stock_uom as uom"]
-        )
+        qr_item = frappe.qb.DocType("Qr Code Bundle Item")
+        item_qr_list = (
+            frappe.qb.from_(qr_item)
+            .select(
+                ConstantColumn(qr_bundle.packing_docname).as_("document_name"),
+                qr_item.item_code,
+                qr_item.qty,
+                qr_item.document_detail,
+                qr_item.stock_uom.as_("uom"),
+            )
+            .where(
+                qr_item.parent == qr_bundle.name
+            )
+        ).run(as_dict=True)
+            
         set_cache(item_qr_list)
         return item_qr_list
 
