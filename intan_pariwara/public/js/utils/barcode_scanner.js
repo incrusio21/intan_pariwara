@@ -97,9 +97,9 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 
 			data.forEach(value => {
 				const { item_code, barcode, batch_no, serial_no, uom, qty } = value;
-	
+				
 				let row = this.get_row_to_modify_on_scan(item_code, batch_no, uom, barcode);
-	
+				
 				this.is_new_row = false;
 				if (!row) {
 					if (this.dont_allow_new_row) {
@@ -435,7 +435,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 			);
 		};
 
-		return this.items_table.find(matching_row) || this.get_existing_blank_row();
+		return this.items_table.find(matching_row) //|| this.get_existing_blank_row();
 	}
 
 	get_existing_blank_row() {
