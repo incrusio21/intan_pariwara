@@ -17,11 +17,29 @@ def create_material_request(self, method):
 	
 	item_bin, need_item = {}, {}
 	precision = frappe.get_precision("Bin", "projected_qty")
+
+	include_w = frappe.get_all("Warehouse", filters={"include_projected_qty": 1, "is_group": 0}, pluck="name")
+	
+	def get_bin_item(item_code, warehouse):
+		bin = get_bin_details(
+			item_code, warehouse, self.company, True
+		)
+
+		for w in include_w:
+			if w == warehouse:
+				continue
+			
+			bin_w = get_bin_details(
+				item_code, w, self.company, True
+			)
+			if bin_w["projected_qty"] > 0:
+				bin["projected_qty"] = flt(bin["projected_qty"] + bin_w["projected_qty"], precision)
+
+		return bin
+	
 	for d in self.items:
 		bin = item_bin.setdefault((d.item_code, d.warehouse), 
-			get_bin_details(
-				d.item_code, d.warehouse, self.company, True
-			)
+			get_bin_item(d.item_code, d.warehouse)
 		)
 
 		if bin["projected_qty"] < 0:
