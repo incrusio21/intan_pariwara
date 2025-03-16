@@ -78,7 +78,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const price_list = this.price_list;
-		let { item_group, jenjang, kode_kelas, mata_pelajaran, company, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas, mata_pelajaran, seller, poe_profile } = this;
 
 		!item_group && (item_group = this.parent_item_group);
 		
@@ -94,7 +94,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		this.request_item = frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
-			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, poe_profile, company },
+			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, poe_profile, seller },
 		});
 
 		return this.request_item
@@ -438,7 +438,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		let key = [
 			this.price_list,
-			this.company,
+			...(this.seller ? [this.seller] : []),
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]),
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []),  
 			...(this.jenjang ? [this.jenjang] : []), 
@@ -500,29 +500,16 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.$component.css("display", show ? "flex" : "none");
 	}
 
-	async update_price_list_item(price_list=null) {
-		if (!price_list) {
-			const res = await frappe.db.get_value("POE Profile", this.poe_profile, "selling_price_list");
-			price_list = res.message.selling_price_list;
-		}
+	async update_filtered_item({ seller=null, price_list=null }) {
 
-		if(price_list != this.price_list){
+		if(price_list){
 			this.price_list = price_list
-			this.filter_items({ 
-				search_term: this.search_field.get_value()
-			});
-		}
-	}
-
-	async update_item_company(company, price_list=null) {
-		if (!price_list) {
-			const res = await frappe.db.get_value("POE Profile", this.poe_profile, "selling_price_list");
-			price_list = res.message.selling_price_list;
 		}
 
-		this.company = company
-		this.price_list = price_list
-		
+		if(seller){
+			this.seller = seller
+		}
+
 		this.filter_items({ 
 			search_term: this.search_field.get_value()
 		});

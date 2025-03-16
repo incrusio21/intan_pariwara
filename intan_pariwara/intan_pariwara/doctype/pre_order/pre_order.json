@@ -29,6 +29,7 @@
   "column_break1",
   "order_type",
   "company",
+  "seller",
   "delivery_date",
   "payment_date",
   "custom_calon_siplah",
@@ -307,7 +308,6 @@
    "width": "50%"
   },
   {
-   "fetch_from": "customer.default_price_list",
    "fieldname": "selling_price_list",
    "fieldtype": "Link",
    "label": "Price List",
@@ -1086,7 +1086,8 @@
    "fieldname": "fund_source",
    "fieldtype": "Link",
    "label": "Fund Source",
-   "options": "Customer Fund Source"
+   "options": "Customer Fund Source",
+   "reqd": 1
   },
   {
    "fieldname": "per_ordered",
@@ -1299,12 +1300,24 @@
    "label": "Kerjasama",
    "options": "\nYa\nTidak",
    "reqd": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "oldfieldname": "company",
+   "oldfieldtype": "Link",
+   "options": "Seller",
+   "print_hide": 1,
+   "remember_last_selected_value": 1,
+   "reqd": 1,
+   "width": "150px"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-12 16:43:04.973714",
+ "modified": "2025-03-15 23:45:15.573382",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

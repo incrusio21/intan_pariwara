@@ -412,7 +412,28 @@ def _get_party_details(
 	party_file.set_other_values(party_details, party, party_type)
 	party_file.set_price_list(party_details, party, party_type, price_list, pos_profile)
 	if party_type == "Customer":
-		party_details.update(get_price_list_fund(company, party.name, party.get("custom_customer_fund_group")))
+		party_details["fund_source"] = party.get("custom_customer_fund_group")
+		# party_details.update({
+		# 	"fund_source": ,
+		# 	"has_relation": 0,
+		# 	"apply_rebate": frappe.get_cached_value("Customer Fund Source", party.custom_customer_fund_group, "apply_rebate") \
+		# 		if party.get("custom_customer_fund_group") else 0,
+		# 	"additional_rebate_disc": 0
+		# })
+
+		# if party.get("custom_jenis_relasi"):
+		# 	jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group", "additional_rebate_disc"], as_dict=1)
+
+		# 	party_details["has_relation"] = jenis_relasi.has_relation
+		# 	party_details["relasi_group"] = jenis_relasi.customer_group
+		# 	party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc
+		# 	if jenis_relasi.cant_have_rebate:
+		# 		party_details["apply_rebate"] = 0 
+
+		# if not party_details["has_relation"]:
+		# 	party_details["relasi"] = ""
+
+		# party_details.update(get_price_list_fund(company, party.name, party.get("custom_customer_fund_group")))
 
 	tax_template = party_file.set_taxes(
 		party.name,

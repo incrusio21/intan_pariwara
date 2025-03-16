@@ -249,17 +249,9 @@ erpnext.PointOfOrder.Controller = class {
 					this.payment.render_loyalty_points_payment_mode();
 				},
 
-				cart_item_price_list: (price_list) => {
-					this.item_selector.update_price_list_item(price_list)
+				item_selector_updated: (data) => {
+					this.item_selector.update_filtered_item(data)
 				},
-
-				cart_item_company: (company, price_list) => {
-					if(company){
-						this.company = company
-						this.item_selector.update_item_company(company, price_list)
-					}
-				},
-				
 			},
 		});
 	}

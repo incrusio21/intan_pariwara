@@ -21,14 +21,27 @@ def filter_result_items(result, poe_profile):
 		result["items"] = [item for item in result.get("items") if item.get("item_group") in pos_item_groups]
 		
 @frappe.whitelist()
-def get_items(start, page_length, price_list, item_group, poe_profile, company, mata_pelajaran=None, jenjang=None, kode_kelas=None, search_term=""):
+def get_items(
+    start, 
+    page_length, 
+    price_list, 
+    item_group, 
+    poe_profile, 
+    seller=None, 
+    mata_pelajaran=None, 
+    jenjang=None, 
+    kode_kelas=None, 
+    search_term=""
+):
     warehouse, hide_unavailable_items, cache_non_search_term = frappe.db.get_value(
         "POE Profile", poe_profile, ["warehouse", "hide_unavailable_items", "cache_non_search_term"]
     )
 
     cache_term = search_term or cache_non_search_term or "showallitems"
     
-    key_parts = [company, price_list, item_group]
+    key_parts = [price_list, item_group]
+    if seller:
+        key_parts.append(seller)
     if mata_pelajaran:
         key_parts.append(mata_pelajaran)
     if jenjang:
@@ -60,7 +73,14 @@ def get_items(start, page_length, price_list, item_group, poe_profile, company, 
 
     condition = get_conditions(search_term)
     condition += get_item_group_condition(poe_profile)
-    condition += """ and (item.group = %(company)s or ifnull(item.group, "") = "") """
+
+    if seller: 
+        seller_dict = frappe.get_cached_doc("Seller", seller)
+        if seller_dict.only_buku:
+            condition += """ and custom_buku = 1 """
+        elif seller_dict.exclude_buku:
+            condition += """ and custom_buku = 0 """
+
     if jenjang:
         condition += """ and custom_kode_jenjang = "{}" """.format(jenjang)
     
@@ -113,7 +133,7 @@ def get_items(start, page_length, price_list, item_group, poe_profile, company, 
             bin_join_selection=bin_join_selection,
             bin_join_condition=bin_join_condition,
         ),
-        {"company": company, "warehouse": warehouse},
+        { "warehouse": warehouse},
         as_dict=1
     )
 

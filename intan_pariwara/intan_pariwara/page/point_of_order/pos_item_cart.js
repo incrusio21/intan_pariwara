@@ -378,11 +378,19 @@ erpnext.PointOfOrder.ItemCart = class {
 				{
 					label: __("Seller"),
 					fieldtype: "Link",
-					options: "Company",
-					placeholder: __("Select Group"),
+					options: "Seller",
+					placeholder: __("Select Selller"),
 					reqd: 1,
-					fieldname: "company",
-					default: frm.doc.company,
+					fieldname: "seller",
+					default: frm.doc.seller,
+				},
+				{
+					label: __("Produk Inti"),
+					fieldtype: "Link",
+					options: "Produk Inti",
+					placeholder: __("Select Produk Inti"),
+					fieldname: "produk_inti",
+					default: frm.doc.produk_inti,
 				},
 				{
 					label: __("Kerjasama"),
@@ -429,7 +437,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					() => me.events.customer_details_updated(me.customer_info),
 					() => me.update_customer_section(),
 					() => me.make_transaction_selector(),
-					() => me.events.cart_item_price_list(frm.doc.selling_price_list || null),
+					() => me.events.item_selector_updated({price_list : frm.doc.selling_price_list}),
 					() => me.update_totals_section(),
 				]);
 
@@ -1029,7 +1037,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					<div class="loyalty_program-field"></div>
 					<div class="loyalty_points-field"></div>
 					<div class="fund_source-field"></div>
-					<div class="company-field"></div>
+					<div class="seller-field"></div>
 					<div class="delivery_date-field"></div>
 					<div class="payment_date-field"></div>
 					<div class="relasi-field"></div>
@@ -1134,11 +1142,11 @@ erpnext.PointOfOrder.ItemCart = class {
 				placeholder: __("Enter Fund Source"),
 			},
 			{
-				fieldname: "company",
-				label: __("Company"),
+				fieldname: "seller",
+				label: __("Seller"),
 				fieldtype: "Link",
-				options: "Company",
-				placeholder: __("Enter Company"),
+				options: "Seller",
+				placeholder: __("Enter Seller"),
 			},
 			{
 				fieldname: "kerjasama",
@@ -1161,7 +1169,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			},
 			{
 				fieldname: "relasi",
-				label: __("Relasi"),
+				label: __("Dropship To"),
 				fieldtype: "Link",
 				options: "Customer",
 				placeholder: __("Select Relasi"),
@@ -1176,7 +1184,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			},
 			{
 				fieldname: "relasi_name",
-				label: __("Relasi Name"),
+				label: __("Dropship Name"),
 				fieldtype: "Read Only",
 				hidden: !frm.doc.has_relation,
 			}
@@ -1197,9 +1205,9 @@ erpnext.PointOfOrder.ItemCart = class {
 			if (this.value && current_value != this.value) {
 				frappe.model.set_value(frm.doc.doctype, frm.doc.name, this.df.fieldname, this.value).then(() => {
 					if(this.df.fieldname == "fund_source"){
-						me.events.cart_item_price_list(frm.doc.selling_price_list || null)
-					}else if(this.df.fieldname == "company"){
-						me.events.cart_item_company(this.value, frm.doc.selling_price_list || null)
+						me.events.item_selector_updated({ price_list: frm.doc.selling_price_list })
+					}else if(this.df.fieldname == "seller"){
+						me.events.item_selector_updated({ seller: this.value })
 					}else if(this.df.fieldname == "relasi"){
 						frappe.db.get_value("Customer", this.value, "customer_name", (data) => {
 							me[`po_relasi_name_field`].set_value(data.customer_name);
@@ -1292,7 +1300,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			this.update_customer_section();
 		});
 
-		this.events.cart_item_price_list(frm.doc.selling_price_list || null)
+		this.events.item_selector_updated({price_list: frm.doc.selling_price_list})
 		
 		this.$cart_items_wrapper.html("");
 		if (frm.doc.items.length) {

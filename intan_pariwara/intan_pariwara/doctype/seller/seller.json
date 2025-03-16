@@ -1,45 +1,42 @@
 {
  "actions": [],
- "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:produk_inti",
- "creation": "2024-12-03 09:09:40.435766",
+ "autoname": "prompt",
+ "creation": "2025-03-15 21:10:42.603846",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "produk_inti",
-  "max_rebate_disable",
-  "fixed_rabate_disable"
+  "section_break_ldeo",
+  "only_buku",
+  "exclude_buku"
  ],
  "fields": [
   {
-   "fieldname": "produk_inti",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Produk Inti",
-   "reqd": 1,
-   "unique": 1
+   "depends_on": "eval:!doc.show_all",
+   "fieldname": "section_break_ldeo",
+   "fieldtype": "Section Break",
+   "label": "Buku"
   },
   {
    "default": "0",
-   "fieldname": "max_rebate_disable",
+   "fieldname": "only_buku",
    "fieldtype": "Check",
-   "label": "Don't Allow Max Rebate"
+   "label": "Only Book"
   },
   {
    "default": "0",
-   "fieldname": "fixed_rabate_disable",
+   "fieldname": "exclude_buku",
    "fieldtype": "Check",
-   "label": "Don't Allow Fixed Rebate"
+   "label": "Exclude Book"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-15 22:17:11.011297",
+ "modified": "2025-03-16 13:24:59.221004",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
- "name": "Produk Inti",
- "naming_rule": "By fieldname",
+ "name": "Seller",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {

@@ -15,69 +15,78 @@ def get_price_list_fund(
     company,
     customer,
     fund_source=None,
+    seller=None,
     transaction_type=None,
+    produk_inti=None,
 ):
     # get data customer
     party = frappe.get_doc("Customer", customer)
     fund_source = fund_source or party.get("custom_customer_fund_group")
+
+    # Get fund source details
+    c_fund = frappe.get_cached_value("Customer Fund Source", fund_source, ["fund_source_type", "apply_rebate"], as_dict=1)
+
+    # Initialize base details
     party_details = {
         "fund_source": fund_source,
         "selling_price_list": party.default_price_list or frappe.db.get_value("Selling Settings", None, "selling_price_list"),
         "is_max_rebate_applied": 0,
         "is_rebate_fixed": 0,
         "has_relation": 0,
-        "additional_rebate_disc": 0
+        "additional_rebate_disc": 0,
+        "apply_rebate": c_fund.apply_rebate
     }
 
-    # simpan data fund source dan 
-    c_fund = frappe.get_cached_value("Customer Fund Source", fund_source, ["fund_source_type", "apply_rebate"], as_dict=1) \
-        if fund_source else {}
+    if c_fund.fund_source_type:
+        if transaction_type == "Reguler":
+            party_details.update(
+                frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, 
+                ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
+            )
 
-    # cek pricelist customer berdasarkan fund source type
-    if c_fund.get("fund_source_type"):
-        filters = {
-            "parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"
-        }
-        party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "company": company }, "price_list") \
-            or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
+        # Get price list
+        filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"}
+        party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "seller": seller }, "price_list") \
+                or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
 
-    # cek customer fund source dapat apply rabat
-    party_details["apply_rebate"] = c_fund.apply_rebate if c_fund else 0
-    
-    # cek jenis relasi
+    # Produk inti overrides
+    if produk_inti:
+        disable_flags = frappe.get_cached_value("Produk Inti", produk_inti, ["max_rebate_disable", "fixed_rabate_disable"]) or {}
+        party_details.update({
+            "is_max_rebate_applied": 0 if disable_flags.get("max_rebate_disable") else party_details["is_max_rebate_applied"],
+            "is_rebate_fixed": 0 if disable_flags.get("fixed_rabate_disable") else party_details["is_rebate_fixed"]
+        })
+            
+    # Check jenis relasi
     if party.custom_jenis_relasi:
-        jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "additional_rebate_disc", "has_relation", "customer_group"], as_dict=1)
-        party_details["apply_rebate"] = 0 if jenis_relasi.cant_have_rebate else party_details["apply_rebate"]
-        party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc or 0
-        party_details["has_relation"] = jenis_relasi.has_relation
-        party_details["relasi_group"] = jenis_relasi.customer_group
+        jr = frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, ["cant_have_rebate", "additional_rebate_disc", "has_relation", "customer_group"], as_dict=1)
+        party_details.update({
+            "apply_rebate": 0 if jr.cant_have_rebate else party_details["apply_rebate"],
+            "additional_rebate_disc": jr.additional_rebate_disc or 0,
+            "has_relation": jr.has_relation,
+            "relasi_group": jr.customer_group
+        })
     
+    # menghapus isi relasi
     if not party_details["has_relation"]:
         party_details["relasi"] = ""
     # else:
     # 	party_details.__delattr__("shipping_address_name")
     # 	party_details.__delattr__("shipping_address")
 
-    if c_fund and c_fund.fund_source_type and transaction_type == "Reguler":
-        party_details.update(
-            frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
-        )
+    # Handle rebate accounts
+    rebate_accounts = (frappe.get_value("Fund Source Accounts", {
+        "company": company, 
+        "transaction_type": transaction_type, 
+        "parent": fund_source
+    }, ["rebate_order_account", "rebate_payable_account"], as_dict=1) or {}) if transaction_type else {}
 
-    if transaction_type and fund_source:
-        r_account = frappe.get_value("Fund Source Accounts", 
-            {"company": company, "transaction_type": transaction_type, "parent": fund_source}, ["rebate_order_account", "rebate_payable_account"], as_dict=1)
-        
-        if r_account:
-            party_details.update({
-                "rebate_account_from": r_account.rebate_order_account,
-                "rebate_account_to": r_account.rebate_payable_account,
-            })
-
-    if not party_details.get("rebate_account_from"):
-        party_details["rebate_account_from"] = frappe.get_cached_value("Company", company, "custom_rebate_order_account")
-
-    if not party_details.get("rebate_account_to"):
-        party_details["rebate_account_to"] = frappe.get_cached_value("Company", company, "custom_rebate_payable_account")
+    party_details.update({
+        "rebate_account_from": rebate_accounts.get("rebate_order_account") or \
+            frappe.get_cached_value("Company", company, "custom_rebate_order_account"),
+        "rebate_account_to": rebate_accounts.get("rebate_payable_account") or \
+            frappe.get_cached_value("Company", company, "custom_rebate_payable_account"),
+    })
 
     return party_details
 
