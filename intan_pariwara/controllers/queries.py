@@ -44,10 +44,10 @@ def get_price_list_fund(
                 ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
             )
 
-        # Get price list
-        filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"}
-        party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "seller": seller }, "price_list") \
-                or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
+            # Get price list
+            filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"}
+            party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "seller": seller }, "price_list") \
+                    or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
 
     # Produk inti overrides
     if produk_inti:
