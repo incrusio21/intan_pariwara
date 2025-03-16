@@ -10,13 +10,12 @@
  "field_order": [
   "packing_slip_details",
   "column_break0",
+  "naming_series",
+  "pick_list",
   "purpose",
-  "doc_name",
-  "sales_order",
+  "column_break1",
   "petugas_packing",
   "nama_petugas",
-  "column_break1",
-  "naming_series",
   "warehouse",
   "amended_from",
   "section_break0",
@@ -40,8 +39,7 @@
   "letter_head",
   "more_info_tab",
   "status_section",
-  "per_delivered",
-  "amended_from"
+  "per_delivered"
  ],
  "fields": [
   {
@@ -57,6 +55,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "PAC-.YYYY.-",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -208,21 +207,13 @@
    "options": "Warehouse"
   },
   {
-   "default": "Sales Order",
+   "default": "Delivery",
+   "fetch_from": "pick_list.purpose",
    "fieldname": "purpose",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Purpose",
-   "options": "Sales Order\nMaterial Request"
-  },
-  {
-   "description": "Indicates that the package is a part of this order",
-   "fieldname": "doc_name",
-   "fieldtype": "Dynamic Link",
-   "in_global_search": 1,
-   "in_list_view": 1,
-   "label": "Document",
-   "options": "purpose"
+   "options": "Material Transfer\nDelivery"
   },
   {
    "fieldname": "section_break_oazc",
@@ -240,6 +231,7 @@
    "options": "Packing List Item Retail"
   },
   {
+   "fetch_if_empty": 1,
    "fieldname": "petugas_packing",
    "fieldtype": "Link",
    "label": "Petugas Packing",
@@ -250,12 +242,20 @@
    "fieldname": "nama_petugas",
    "fieldtype": "Data",
    "label": "Nama Petugas"
+  },
+  {
+   "fieldname": "pick_list",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pick List",
+   "options": "Pick List",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-14 13:25:35.958984",
+ "modified": "2025-03-16 21:27:10.871675",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",
@@ -333,7 +333,7 @@
    "write": 1
   }
  ],
- "search_fields": "doc_name",
+ "search_fields": "pick_list",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -31,10 +31,10 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         item_qr_list = (
             frappe.qb.from_(qr_item)
             .select(
-                ConstantColumn(qr_bundle.packing_docname).as_("document_name"),
                 qr_item.item_code,
                 qr_item.qty,
                 qr_item.document_detail,
+                qr_item.document_name,
                 qr_item.stock_uom.as_("uom"),
             )
             .where(

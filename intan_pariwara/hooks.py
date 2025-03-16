@@ -48,6 +48,7 @@ doctype_js = {
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
     "Material Request" : "intan_pariwara/custom/material_request.js",
     "Pick List" : "intan_pariwara/custom/pick_list.js",
+    "Purchase Receipt" : "intan_pariwara/custom/purchase_receipt.js",
     "Quotation" : "intan_pariwara/custom/quotation.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",

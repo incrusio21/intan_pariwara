@@ -17,7 +17,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             "Accounts Settings", "round_row_wise_tax"
         )
 
-        fund_source = get_price_list_fund(self.doc.company, self.doc.customer, self.doc.fund_source, self.doc.transaction_type)
+        fund_source = get_price_list_fund(self.doc.company, self.doc.customer, self.doc.fund_source, self.doc.transaction_type, self.doc.seller)
         for key, value in fund_source.items():
             if not self.doc.get(key):
                 self.doc.set(key, value)

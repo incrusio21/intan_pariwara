@@ -150,8 +150,7 @@ frappe.ui.form.on("Packing List", {
 		frappe.call({
 			method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.get_items",
 			args: {
-				doctype: frm.doc.purpose,
-				docname: frm.doc.doc_name,
+				docname: frm.doc.pick_list,
 				used_item: [...(frm.doc.items || []), ...(frm.doc.items_retail || [])]
 			},
 			freeze: true,

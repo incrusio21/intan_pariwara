@@ -22,23 +22,29 @@ class QrCodePackingBundle(Document):
 		self.generate_data_qr()
 
 	def get_prev_doc_detail(self):
-		if self.packing_purpose == "Sales Order":
+		if self.packing_purpose == "Delivery":
 			fields = ["customer_name", "customer"]
-		elif self.packing_purpose == "Material Request":
-			fields = ["custom_branch"]
+		elif self.packing_purpose == "Material Transfer":
+			fields = ["branch"]
 		
-		detail_doc = frappe.get_value(self.packing_purpose, self.packing_docname, fields)
+		detail_doc = frappe.get_value("Pick List", self.pick_list, fields)
 		self.destination, self.destination_code = detail_doc if isinstance(detail_doc, (tuple, list)) else (detail_doc, "")
 	
 	def get_item_detail(self):
 		self.items = []
 
 		doctype = frappe.qb.DocType(PACKING_TABLE[self.is_retail])
+		pick_list = frappe.qb.DocType("Pick List Item")
+
+		document_name, document_detail = "sales_order", "sales_order_item"
+		if self.packing_purpose == "Material Transfer":
+			document_name, document_detail = "material_request", "material_request_item"
 
 		query = (
 			frappe.qb.from_(doctype)
+			.inner_join(pick_list)
+			.on(doctype.document_detail == pick_list.name)
 			.select(
-				doctype.document_detail,
 				doctype.item_code,
 				doctype.item_name,
 				doctype.batch_no,
@@ -47,6 +53,8 @@ class QrCodePackingBundle(Document):
 				doctype.net_weight,
 				doctype.stock_uom,
 				doctype.weight_uom,
+				pick_list[document_name].as_("document_name"),
+				pick_list[document_detail].as_("document_detail")
 			).where(
 				(doctype.docstatus == 1)
 				& (doctype.parent == self.packing_list)
@@ -73,7 +81,7 @@ class QrCodePackingBundle(Document):
 
 	def generate_data_qr(self):
 		self.data_qr = ",".join(
-			f"{self.packing_docname}:{d.document_detail}:{d.item_code}:{d.get_formatted('qty')}"
+			f"{d.document_name}:{d.document_detail}:{d.item_code}:{d.get_formatted('qty')}"
 			for d in self.items
 		)
 			

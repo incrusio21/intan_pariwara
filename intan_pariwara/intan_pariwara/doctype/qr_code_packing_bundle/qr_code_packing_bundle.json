@@ -17,7 +17,7 @@
   "total_qty",
   "more_info_tab",
   "packing_purpose",
-  "packing_docname",
+  "pick_list",
   "column_break_ytoe",
   "destination",
   "destination_code"
@@ -90,15 +90,7 @@
    "fieldtype": "Select",
    "label": "Packing Purpose",
    "no_copy": 1,
-   "options": "Sales Order\nMaterial Request",
-   "read_only": 1
-  },
-  {
-   "fieldname": "packing_docname",
-   "fieldtype": "Dynamic Link",
-   "label": "Packing Docname",
-   "no_copy": 1,
-   "options": "packing_purpose",
+   "options": "Material Transfer\nDelivery",
    "read_only": 1
   },
   {
@@ -124,11 +116,19 @@
    "label": "Data QR",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "pick_list",
+   "fieldtype": "Link",
+   "label": "Pick List",
+   "no_copy": 1,
+   "options": "Pick List",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-14 22:44:00.927034",
+ "modified": "2025-03-16 22:12:32.794641",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Qr Code Packing Bundle",

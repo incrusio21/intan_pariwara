@@ -135,27 +135,27 @@ intan_pariwara.selling.SalesOrderController = class SalesOrderController extends
 		var me = this;
 		super.refresh(doc, dt, dn);
 
-		if (doc.docstatus == 1 && doc.workflow_state === "Approved") {
-			if (
-				doc.status !== "Closed" &&
-				flt(doc.per_picked) < 100
-			) {
-				if (frappe.model.can_create("Packing List")) {
-					this.frm.add_custom_button(
-						__("Packing List"),
-						() => {
-							frappe.model.open_mapped_doc({
-								method: "intan_pariwara.intan_pariwara.custom.sales_order.make_packing_list",
-								frm: me.frm,
-								freeze: true,
-								freeze_message: __("Creating Packing List ..."),
-							});
-						},
-						__("Create")
-					);
-				}
-			}
-		}
+		// if (doc.docstatus == 1 && doc.workflow_state === "Approved") {
+		// 	if (
+		// 		doc.status !== "Closed" &&
+		// 		flt(doc.per_picked) < 100
+		// 	) {
+		// 		if (frappe.model.can_create("Packing List")) {
+		// 			this.frm.add_custom_button(
+		// 				__("Packing List"),
+		// 				() => {
+		// 					frappe.model.open_mapped_doc({
+		// 						method: "intan_pariwara.intan_pariwara.custom.sales_order.make_packing_list",
+		// 						frm: me.frm,
+		// 						freeze: true,
+		// 						freeze_message: __("Creating Packing List ..."),
+		// 					});
+		// 				},
+		// 				__("Create")
+		// 			);
+		// 		}
+		// 	}
+		// }
 		
 		if(doc.docstatus == 1 && doc.workflow_state !== "Approved"){
 			me.frm.clear_custom_buttons()

@@ -17,31 +17,20 @@ class PackingList(StatusUpdater):
 	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
 
-		purpose_dict = {
-			"target_dt": "Sales Order Item",
-			"target_parent_dt": "Sales Order",
-		}
-
-		if self.purpose == "Material Request": 
-			purpose_dict = {
-				"target_dt": "Material Request Item",
-				"target_parent_dt": "Material Request",
-			}
-
 		self.status_updater = [
 			{
+				"target_dt": "Pick List Item",
+				"target_parent_dt": "Pick List",
 				"target_field": "packed_qty",
 				"target_ref_field": "qty",
 				"source_dt": "Packing List Item",
 				"source_field": "qty",
 				"target_parent_field": "per_packing",
-				"percent_join_field_parent": "doc_name",
+				"percent_join_field_parent": "pick_list",
 				"join_field": "document_detail",
 				"second_source_field": "qty",
 				"second_source_dt": "Packing List Item Retail",
 				"second_join_field": "document_detail",
-				**purpose_dict,
-				
 			}
 		]
 
@@ -112,11 +101,11 @@ class PackingList(StatusUpdater):
 		)
 
 	def validate_document(self):
-		"""Raises an exception if the (`Sales Order`, `Material Request`) status is not Submited"""
+		"""Raises an exception if the (`Pick List`) status is not Submited"""
 		
-		if cint(frappe.db.get_value(self.purpose, self.doc_name, "docstatus")) != 1:
+		if cint(frappe.db.get_value("Pick List", self.pick_list, "docstatus")) != 1:
 			frappe.throw(
-				_("A Packing List Slip can only be created for Submited {}.").format(self.purpose)
+				_("A Packing List Slip can only be created for Submited Pick List.")
 			)
 
 	def validate_case_nos(self):
@@ -136,7 +125,7 @@ class PackingList(StatusUpdater):
 					ps.name,
 				)
 				.where(
-					(ps.doc_name == self.doc_name)
+					(ps.pick_list == self.pick_list)
 					& (ps.purpose == self.purpose)
 					& (ps.docstatus == 1)
 					& (
@@ -162,7 +151,7 @@ class PackingList(StatusUpdater):
 
 		for ref, item in items_list.items():
 			remaining_qty = frappe.db.get_value(
-				f"{self.purpose} Item",
+				"Pick List Item",
 				{"name": ref, "docstatus": 1},
 				["sum(qty - packed_qty)"],
 			)
@@ -180,8 +169,7 @@ class PackingList(StatusUpdater):
 			# 	)
 			if remaining_qty is None:
 				frappe.throw(
-					_("Please provide a valid {0} Item reference for Item {1}.").format(
-						self.purpose,
+					_("Please provide a valid Pick List Item reference for Item {0}.").format(
 						item.item_code
 					)
 				)
@@ -246,7 +234,7 @@ class PackingList(StatusUpdater):
 		return (
 			cint(
 				frappe.db.get_value(
-					"Packing List", {"doc_name": self.doc_name, "docstatus": 1}, ["max(to_case_no)"]
+					"Packing List", {"pick_list": self.pick_list, "docstatus": 1}, ["max(to_case_no)"]
 				)
 			)
 			+ 1
@@ -273,7 +261,8 @@ class PackingList(StatusUpdater):
 			self.gross_weight_pkg = self.net_weight_pkg
 
 	def on_submit(self):
-		self.update_prevdoc_status()
+		self.update_qty(update_modified=False)
+		self.validate_qty()
 
 		self.create_qr_code_items()
 		self.create_qr_code_items_retail()
@@ -285,8 +274,7 @@ class PackingList(StatusUpdater):
 			qr_code.packing_list = self.name
 			qr_code.packing_detail= d.name
 			qr_code.packing_purpose = self.purpose
-			qr_code.packing_docname = self.doc_name
-			qr_code.destination = self.doc_name
+			qr_code.pick_list = self.pick_list
 			qr_code.save()
 
 	def create_qr_code_items_retail(self):
@@ -300,14 +288,14 @@ class PackingList(StatusUpdater):
 			qr_code.packing_list = self.name
 			qr_code.packing_detail= d.retail_key
 			qr_code.packing_purpose = self.purpose
-			qr_code.packing_docname = self.doc_name
-			qr_code.destination = self.doc_name
+			qr_code.pick_list = self.pick_list
 			qr_code.save()
 			
 			retail_key.append(d.retail_key)
 
 	def on_cancel(self):
-		self.update_prevdoc_status()
+		self.update_qty(update_modified=False)
+		self.validate_qty()
 		self.remove_qr_code()
 	
 	def remove_qr_code(self):
@@ -337,10 +325,10 @@ class PackingList(StatusUpdater):
 		# 	item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
 
 @frappe.whitelist()
-def get_items(doctype, docname=None, used_item=[]):
+def get_items(docname=None, used_item=[]):
 
 	if not docname:
-		frappe.throw("Please Select {} first".format(doctype))
+		frappe.throw("Please Select Pick List first")
 
 	data = json.loads(used_item)
 	total_qty = defaultdict(float)
@@ -348,7 +336,7 @@ def get_items(doctype, docname=None, used_item=[]):
 		total_qty.setdefault(item['document_detail'], 0)
 		total_qty[item['document_detail']] += item['qty']
 
-	doctype = frappe.qb.DocType(f"{doctype} Item")
+	doctype = frappe.qb.DocType("Pick List Item")
 	item = frappe.qb.DocType("Item")
 	
 	query = (
@@ -360,6 +348,7 @@ def get_items(doctype, docname=None, used_item=[]):
 			doctype.item_code,
 			doctype.item_name,
 			doctype.stock_uom,
+			doctype.warehouse,
 			item.qty_per_koli,
 			(doctype.qty - doctype.packed_qty).as_("remaining_qty")
 		).where(
