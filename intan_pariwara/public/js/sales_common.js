@@ -437,7 +437,12 @@ intan_pariwara.sales_common = {
                     return
                 }
 
-                if(!doc.customer){
+                if(doc.doctype == "Quotation" && doc.quotation_to != "Customer"){
+                    return
+                }
+
+                let customer = doc.customer || doc.party_name
+                if(!customer){
                     frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
                     this.frm.set_value("fund_source", "")
                 }else{
@@ -445,7 +450,7 @@ intan_pariwara.sales_common = {
                         method: "intan_pariwara.controllers.queries.get_price_list_fund",
                         args: {
                             company: doc.company,
-                            customer: doc.customer,
+                            customer: customer,
                             fund_source: doc.fund_source,
                             kumer: doc.kumer,
                             transaction_type: doc.transaction_type,

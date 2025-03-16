@@ -47,6 +47,7 @@ doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
     "Material Request" : "intan_pariwara/custom/material_request.js",
+    "Pick List" : "intan_pariwara/custom/pick_list.js",
     "Quotation" : "intan_pariwara/custom/quotation.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
@@ -167,6 +168,7 @@ jinja = {
 
 override_doctype_class = {
 	"Delivery Note": "intan_pariwara.overrides.delivery_note.DeliveryNote",
+	"Quotation": "intan_pariwara.overrides.quotation.Quotation",
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
 	# "Selling Setting": "intan_pariwara.overrides.selling_settings.SellingSettings",

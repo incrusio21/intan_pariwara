@@ -1,4 +1,4 @@
-// Copyright (c) 2024, DAS and contributors
+// Copyright (c) 2025, DAS and contributors
 // For license information, please see license.txt
 intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.SalesOrderController)
 
