@@ -24,7 +24,7 @@ class QrCodePackingBundle(Document):
 	def get_prev_doc_detail(self):
 		if self.packing_purpose == "Sales Order":
 			fields = ["customer_name", "customer"]
-		elif self.packing_purpose == "Sales Order":
+		elif self.packing_purpose == "Material Request":
 			fields = ["custom_branch"]
 		
 		detail_doc = frappe.get_value(self.packing_purpose, self.packing_docname, fields)

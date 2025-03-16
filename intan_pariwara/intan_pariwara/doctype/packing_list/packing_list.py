@@ -299,6 +299,7 @@ class PackingList(StatusUpdater):
 			qr_code.is_retail = 1
 			qr_code.packing_list = self.name
 			qr_code.packing_detail= d.retail_key
+			qr_code.packing_purpose = self.purpose
 			qr_code.packing_docname = self.doc_name
 			qr_code.destination = self.doc_name
 			qr_code.save()

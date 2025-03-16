@@ -57,9 +57,6 @@ class PreOrder(AccountsController, SellingController):
 			frappe.throw("Multiple Tax Types are present among Items.")
 
 	def get_receivable_amount(self):
-		if not self.get("__is_local"):
-			return
-
 		receivable_amount = frappe.db.sql("""
 			select sum(amount_in_account_currency) as amount
 			from `tabPayment Ledger Entry` ple 
@@ -71,7 +68,7 @@ class PreOrder(AccountsController, SellingController):
 			"party_type": "Customer",
 			"party": self.customer,
 			"account": self.debit_to,
-		})
+		}, debug=1)
 
 		self.receivable_amount = receivable_amount[0][0] if receivable_amount else 0
 

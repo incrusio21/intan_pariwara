@@ -10,7 +10,7 @@
  "is_standard": "Yes",
  "json": "{\"filters\":[[\"Pre Order\",\"workflow_state\",\"not like\",\"%Cancel%\",false],[\"Pre Order\",\"workflow_state\",\"not like\",\"%reject%\",false],[\"Pre Order\",\"workflow_state\",\"not in\",[\"Pending\"],false]],\"fields\":[[\"customer\",\"Pre Order\"],[\"_aggregate_column\",\"Pre Order\"]],\"order_by\":\"`tabPre Order`.`modified` desc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"customer\":204,\"_aggregate_column\":200},\"group_by\":{\"group_by\":\"`tabPre Order`.`customer`\",\"aggregate_function\":\"sum\",\"aggregate_on\":\"`tabPre Order`.`grand_total`\"}}",
  "letterhead": null,
- "modified": "2025-01-20 14:19:24.871354",
+ "modified": "2025-03-14 11:08:05.401048",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order By Customer",
@@ -37,6 +37,19 @@
   },
   {
    "role": "Collection"
+  },
+  {
+   "role": "AM"
+  },
+  {
+   "role": "Wadirjul"
+  },
+  {
+   "role": "Dirjul"
+  },
+  {
+   "role": "BOD"
   }
- ]
+ ],
+ "timeout": 0
 }

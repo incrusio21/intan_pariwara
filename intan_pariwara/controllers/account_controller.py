@@ -8,6 +8,24 @@ from erpnext.accounts.party import get_party_account_currency
 from erpnext.controllers.accounts_controller import get_payment_terms
 
 class AccountsController:
+    def onload(self):
+        self.set_onload(
+            "make_payment_via_journal_entry",
+            frappe.db.get_single_value("Accounts Settings", "make_payment_via_journal_entry"),
+        )
+
+        if self.is_new():
+            relevant_docs = (
+                "Pre Order",
+                "Quotation",
+                "Purchase Order",
+                "Sales Order",
+                "Purchase Invoice",
+                "Sales Invoice",
+            )
+            if self.doctype in relevant_docs:
+                self.set_payment_schedule()
+                    
     def validate_all_documents_schedule(self):
         if self.doctype in ("Sales Invoice", "Purchase Invoice"):
             self.validate_invoice_documents_schedule()

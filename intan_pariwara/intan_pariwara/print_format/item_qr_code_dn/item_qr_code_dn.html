@@ -1,0 +1,62 @@
+<style>
+    @page
+    {
+        size: 100mm 75mm;
+        margin: 1mm 1mm 1mm 1mm;
+    }
+</style>
+
+{% for d in doc.items %}
+{% set qr = d.against_sales_order +':'+ d.so_detail+':'+d.item_code %}
+
+<div style="page-break-inside: avoid;">
+    <div style="display: flex;flex-direction: column;justify-content: space-between;height:73mm;width:98mm;border: 1px solid #000">
+        <table style="width:100%;font-size: 10px;">
+            <col style="width: 40%">
+            <col style="width: 5%">
+            <col style="width: 55%">
+            <tr>
+                <td rowspan="6" class="text-center">
+                    <img src="data:image/svg+xml;base64,{{ qr|get_qr_svg }}">
+                    <p style="font-weight: bold;text-decoration: underline;">
+                        {{ d.against_sales_order }}
+                    </p>
+                </td>
+                <td rowspan="6">&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Nama Barang : {{ d.item_name }}</td>
+            </tr>
+            <tr>
+                <td>
+                    Isi Barang:
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    (isi : {{ frappe.format_value(d.qty|abs) }})
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-center" style="font-size: 18px;">{{ doc.customer }}</td>
+            </tr>
+        </table>
+        <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-top: auto;">
+            <div>&nbsp;</div>
+            <div style="padding: 2px;border-top: 1px solid #000;border-left: 1px solid #000">
+                {{ doc.customer_name }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

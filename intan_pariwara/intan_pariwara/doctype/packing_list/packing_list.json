@@ -12,6 +12,9 @@
   "column_break0",
   "purpose",
   "doc_name",
+  "sales_order",
+  "petugas_packing",
+  "nama_petugas",
   "column_break1",
   "naming_series",
   "warehouse",
@@ -37,7 +40,8 @@
   "letter_head",
   "more_info_tab",
   "status_section",
-  "per_delivered"
+  "per_delivered",
+  "amended_from"
  ],
  "fields": [
   {
@@ -234,6 +238,18 @@
    "fieldtype": "Table",
    "label": "items Retail",
    "options": "Packing List Item Retail"
+  },
+  {
+   "fieldname": "petugas_packing",
+   "fieldtype": "Link",
+   "label": "Petugas Packing",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "petugas_packing.employee_name",
+   "fieldname": "nama_petugas",
+   "fieldtype": "Data",
+   "label": "Nama Petugas"
   }
  ],
  "icon": "fa fa-suitcase",

@@ -17,9 +17,11 @@ def get_result(filters):
 	unit_sold = frappe.db.sql(
 		f"""
 		select
-			item_code, item_name, item_group, qty, stock_qty, price_list_rate, amount
+			dni.item_code, dni.item_name, dni.item_group, dni.qty, dni.stock_qty, dni.price_list_rate, dni.amount,
+			i.group
 		from `tabDelivery Note Item` dni
-		join `tabDelivery Note` dn
+		join `tabItem` i on i.name = dni.item_code
+		join `tabDelivery Note` dn on dni.parent = dn.name
 		where dn.docstatus = 1 and company=%(company)s {get_conditions(filters)}
 	""",
 		filters,
@@ -32,6 +34,7 @@ def get_result(filters):
 			"item_code": d.item_code, 
 			"item_name": d.item_name, 
 			"item_group": d.item_group, 
+			"principal": d.group, 
 			"qty": 0, 
 			"bruto": 0.0, 
 			"netto": 0.0, 
@@ -71,6 +74,13 @@ def get_columns(filters):
 			"fieldtype": "Link",
 			"options": "Item Group",
 			"hidden": filters.get("item_group"),
+			"width": 100,
+		},
+		{
+			"label": _("Principal"),
+			"fieldname": "principal",
+			"fieldtype": "Link",
+			"options": "Company",
 			"width": 100,
 		},
 		{

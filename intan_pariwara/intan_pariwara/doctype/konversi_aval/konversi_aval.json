@@ -45,6 +45,7 @@
    "options": "Item"
   },
   {
+   "fetch_from": "item_code_aval.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
    "label": "Item Name"
@@ -69,6 +70,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "details",
    "fieldtype": "Table",
    "label": "Details",
@@ -78,7 +80,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-20 08:38:58.849085",
+ "modified": "2025-03-13 14:07:07.253418",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Konversi Aval",

@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "produk_inti",
+  "kumer",
   "max_rebate_disable",
   "fixed_rabate_disable"
  ],
@@ -19,6 +20,12 @@
    "label": "Produk Inti",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "kumer",
+   "fieldtype": "Check",
+   "label": "Kumer"
   },
   {
    "default": "0",
