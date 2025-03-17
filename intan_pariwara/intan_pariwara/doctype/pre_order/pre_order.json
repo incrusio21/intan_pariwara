@@ -27,6 +27,8 @@
   "sales_person",
   "sales_id",
   "negotiations",
+  "produk_inti",
+  "kumer",
   "column_break1",
   "order_type",
   "company",
@@ -1338,12 +1340,26 @@
    "remember_last_selected_value": 1,
    "reqd": 1,
    "width": "150px"
+  },
+  {
+   "fieldname": "produk_inti",
+   "fieldtype": "Link",
+   "label": "Produk Inti",
+   "options": "Produk Inti"
+  },
+  {
+   "default": "0",
+   "fetch_from": "produk_inti.kumer",
+   "fieldname": "kumer",
+   "fieldtype": "Check",
+   "label": "Kumer",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-15 23:45:15.573382",
+ "modified": "2025-03-17 14:07:51.312653",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
