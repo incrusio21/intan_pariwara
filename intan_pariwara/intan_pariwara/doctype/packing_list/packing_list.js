@@ -45,8 +45,8 @@ frappe.ui.form.on("Packing List", {
 	},
 
 	refresh: (frm) => {
-		if (frm.doc.docstatus == 1) {
-			if(frm.doc.purpose == "Sales Order" && frm.doc.per_delivered < 100){
+		if (frm.doc.docstatus == 1 && frm.doc.per_delivered < 100) {
+			if(frm.doc.purpose == "Delivery" ){
 				frm.add_custom_button(
 					__("Delivery Note"),
 					() => {
@@ -61,7 +61,7 @@ frappe.ui.form.on("Packing List", {
 				);
 			}
 
-			if(frm.doc.purpose == "Material Request" && frm.doc.per_delivered < 100){
+			if(frm.doc.purpose == "Material Transfer"){
 				frm.add_custom_button(
 					__("Material Transfer"),
 					() => {

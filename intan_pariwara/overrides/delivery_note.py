@@ -13,7 +13,58 @@ from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
 import intan_pariwara
 from intan_pariwara.controllers.account_controller import AccountsController
 
-class DeliveryNote(AccountsController, DeliveryNote):
+class IPDeliveryNote(AccountsController, DeliveryNote):
+    def validate_with_previous_doc(self):
+        super(DeliveryNote).validate_with_previous_doc(
+            {
+                "Sales Order": {
+                    "ref_dn_field": "against_sales_order",
+                    "compare_fields": [
+                        ["customer", "="],
+                        ["seller", "="],
+                        ["transaction_type", "="],
+                        ["fund_source", "="],
+                        ["company", "="],
+                        ["project", "="],
+                        ["currency", "="],
+                    ],
+                },
+                "Sales Order Item": {
+                    "ref_dn_field": "so_detail",
+                    "compare_fields": [["item_code", "="], ["uom", "="], ["conversion_factor", "="]],
+                    "is_child_table": True,
+                    "allow_duplicate_prev_row_id": True,
+                },
+                "Sales Invoice": {
+                    "ref_dn_field": "against_sales_invoice",
+                    "compare_fields": [
+                        ["customer", "="],
+                        ["company", "="],
+                        ["project", "="],
+                        ["currency", "="],
+                    ],
+                },
+                "Sales Invoice Item": {
+                    "ref_dn_field": "si_detail",
+                    "compare_fields": [["item_code", "="], ["uom", "="], ["conversion_factor", "="]],
+                    "is_child_table": True,
+                    "allow_duplicate_prev_row_id": True,
+                },
+            }
+        )
+
+        if (
+            cint(frappe.db.get_single_value("Selling Settings", "maintain_same_sales_rate"))
+            and not self.is_return
+            and not self.is_internal_customer
+        ):
+            self.validate_rate_with_reference_doc(
+                [
+                    ["Sales Order", "against_sales_order", "so_detail"],
+                    ["Sales Invoice", "against_sales_invoice", "si_detail"],
+                ]
+            )
+
     def make_gl_entries(self, gl_entries=None, from_repost=False, via_landed_cost_voucher=False):
         # ctt: jgn d push krn hanya masalah beda vesrion
         super().make_gl_entries(gl_entries, from_repost)
