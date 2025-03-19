@@ -212,6 +212,7 @@ doc_events = {
 	},
     "Stock Entry": {
         "on_submit": "intan_pariwara.intan_pariwara.custom.stock_entry.StockEntry",
+        "on_cancel": "intan_pariwara.intan_pariwara.custom.stock_entry.StockEntry",
 	},
     "Workflow": {
         "validate": "intan_pariwara.intan_pariwara.custom.workflow.create_custom_field_for_reason",

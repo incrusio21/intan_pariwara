@@ -18,7 +18,7 @@ class StockEntry:
             self.update_packing_qty()
 
     def update_plafon_promosi(self):
-        if self.doc.stock_entry_type != "Transfer of Promotional Goods":
+        if self.doc.stock_entry_type not in ["Issue of Promotional Goods", "Receipt of Promotional Goods"]:
             return
         
         current_fiscal_year = get_fiscal_year(self.doc.posting_date, as_dict=True)
