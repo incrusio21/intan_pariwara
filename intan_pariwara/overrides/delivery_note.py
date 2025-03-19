@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import cint, flt
 
 from erpnext.stock import get_warehouse_account_map
 from erpnext.accounts.general_ledger import process_gl_map, toggle_debit_credit_if_negative
@@ -15,7 +15,7 @@ from intan_pariwara.controllers.account_controller import AccountsController
 
 class IPDeliveryNote(AccountsController, DeliveryNote):
     def validate_with_previous_doc(self):
-        super(DeliveryNote).validate_with_previous_doc(
+        super(DeliveryNote, self).validate_with_previous_doc(
             {
                 "Sales Order": {
                     "ref_dn_field": "against_sales_order",

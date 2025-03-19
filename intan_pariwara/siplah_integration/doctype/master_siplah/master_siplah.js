@@ -6,7 +6,8 @@ frappe.ui.form.on("Master SIPLAH", {
 		frm.set_query("account",function(){
 			return {
 				filters: {
-					"company": "Intan Pariwara Vitarana"
+					"company": "Intan Pariwara Vitarana",
+					"is_group": 0
 				}
 			}
 		})

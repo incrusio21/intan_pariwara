@@ -22,15 +22,18 @@ class RebateLedgerEntry(Document):
 	
 		jv.company = self.company
 		jv.posting_date = self.posting_date
+		jv.user_remark = self.voucher_no
 
 		jv.set("accounts", [
 			{
 				"account": self.account_from,
-				"debit_in_account_currency": self.rebate_total
+				"debit_in_account_currency": self.rebate_total,
+				"user_remark": self.voucher_no
 			},
 			{
 				"account": self.account_to,
-				"credit_in_account_currency": self.rebate_total
+				"credit_in_account_currency": self.rebate_total,
+				"user_remark": self.voucher_no
 			}
 		])
 

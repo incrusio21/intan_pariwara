@@ -21,14 +21,14 @@ def post_journal(no_siplah,tanggal,debits,credits):
 			"tanggal": tanggal
 		})
 	
-	jv_dict = create_journal_entry(body)
+	msg = create_journal_entry(body)
 
-	return jv_dict or body
+	return msg or body
 
 def create_journal_entry(args):
 	
 	jv = frappe.new_doc("Journal Entry")
-	jv.company = "Intan Pariwawara Vitarana"
+	jv.company = "Intan Pariwara Vitarana"
 	jv.voucher_type = "Journal Entry"
 	jv.posting_date = args.tanggal
 	jv.no_siplah = args.no_siplah
@@ -53,15 +53,15 @@ def create_journal_entry(args):
 				"credit_in_account_currency": amt
 			})
 
-	"""
+	# return jv.as_dict()
+
 	try:
 		jv.save()
 		jv.submit()
 	except Exception as e:
 		frappe.log_error(e,"Journal Entry API SIPLAH Error")
 		raise e
-	"""
-
+	
 	if jv.name:
 		return "Journal Entry {} created".format(jv.name)
 
