@@ -71,7 +71,7 @@ class IPDeliveryNote(AccountsController, DeliveryNote):
 
         # ketika hasil dari repost. ubah ledger invoice
         if from_repost and self.get("custom_use_delivery_account"):
-            invoice_list = frappe.db.get_list("Sales Invoice Item", filters={"delivery_note": self.name}, pluck="parent", group_by="parent")
+            invoice_list = frappe.db.get_list("Sales Invoice Item", filters={"delivery_note": self.name, "docstatus": 1}, pluck="parent", group_by="parent")
             for voucher_no in invoice_list:
                 voucher_obj = frappe.get_doc("Sales Invoice", voucher_no)
                 expected_gle = toggle_debit_credit_if_negative(voucher_obj.get_gl_entries())

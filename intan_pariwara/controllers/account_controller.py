@@ -5,7 +5,7 @@ import frappe
 from frappe.utils import cint, flt
 
 from erpnext.accounts.party import get_party_account_currency
-from erpnext.controllers.accounts_controller import get_payment_terms
+from erpnext.controllers.accounts_controller import get_payment_terms, get_taxes_and_charges
 
 class AccountsController:
     def onload(self):
@@ -121,7 +121,70 @@ class AccountsController:
         else:
             self.fetch_payment_terms_from_order(po_or_so, doctype)
             self.ignore_default_payment_terms_template = 1
-			       
+
+    def set_missing_lead_customer_details(self, for_validate=False):
+        customer, lead = None, None
+        if getattr(self, "customer", None):
+            customer = self.customer
+        elif self.doctype == "Opportunity" and self.party_name:
+            if self.opportunity_from == "Customer":
+                customer = self.party_name
+            else:
+                lead = self.party_name
+        elif self.doctype == "Quotation" and self.party_name:
+            if self.quotation_to == "Customer":
+                customer = self.party_name
+            elif self.quotation_to == "Lead":
+                lead = self.party_name
+
+        if customer:
+            from erpnext.accounts.party import _get_party_details
+            from intan_pariwara.controllers.queries import get_price_list_fund
+
+            fetch_payment_terms_template = False
+            if self.get("__islocal") or self.company != frappe.db.get_value(
+                self.doctype, self.name, "company"
+            ):
+                fetch_payment_terms_template = True
+
+            party_details = _get_party_details(
+                customer,
+                ignore_permissions=self.flags.ignore_permissions,
+                doctype=self.doctype,
+                company=self.company,
+                posting_date=self.get("posting_date"),
+                fetch_payment_terms_template=fetch_payment_terms_template,
+                party_address=self.customer_address,
+                shipping_address=self.shipping_address_name,
+                company_address=self.get("company_address"),
+            )
+            if not self.meta.get_field("sales_team"):
+                party_details.pop("sales_team")
+
+            party_details.update(
+                get_price_list_fund(
+                    self.company, self.customer, self.fund_source, self.seller, self.transaction_type, self.produk_inti_type
+                )
+            )
+            
+            self.update_if_missing(party_details)
+
+        elif lead:
+            from erpnext.crm.doctype.lead.lead import get_lead_details
+
+            self.update_if_missing(
+                get_lead_details(
+                    lead,
+                    posting_date=self.get("transaction_date") or self.get("posting_date"),
+                    company=self.company,
+                )
+            )
+
+        if self.get("taxes_and_charges") and not self.get("taxes") and not for_validate:
+            taxes = get_taxes_and_charges("Sales Taxes and Charges Template", self.taxes_and_charges)
+            for tax in taxes:
+                self.append("taxes", tax)
+                    		       
     def calculate_taxes_and_totals(self):
         from intan_pariwara.controllers.taxes_and_totals import calculate_taxes_and_totals
 

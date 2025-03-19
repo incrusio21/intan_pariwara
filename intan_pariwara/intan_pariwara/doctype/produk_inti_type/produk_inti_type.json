@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2025-03-19 09:37:27.254282",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "is_default",
+  "section_break_kkox",
+  "kumer",
+  "max_rebate_disable",
+  "fixed_rabate_disable"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "kumer",
+   "fieldtype": "Check",
+   "label": "Kumer"
+  },
+  {
+   "default": "0",
+   "fieldname": "max_rebate_disable",
+   "fieldtype": "Check",
+   "label": "Don't Allow Max Rebate"
+  },
+  {
+   "default": "0",
+   "fieldname": "fixed_rabate_disable",
+   "fieldtype": "Check",
+   "label": "Don't Allow Fixed Rebate"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default"
+  },
+  {
+   "fieldname": "section_break_kkox",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-19 10:25:31.203503",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Produk Inti Type",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

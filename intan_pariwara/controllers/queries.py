@@ -37,8 +37,14 @@ def get_price_list_fund(
         "apply_rebate": c_fund.apply_rebate
     }
 
+    # Get aturan produk inti type
+    produk_type = frappe.get_cached_value("Produk Inti Type", produk_inti, ["kumer", "max_rebate_disable", "fixed_rabate_disable"], as_dict=1) \
+        if produk_inti else {}
+
     if c_fund.fund_source_type:
-        if transaction_type == "Reguler":
+        tran_type = frappe.get_cached_value("Transaction Type", transaction_type, ["fixed_price_list", "default_price_list"], as_dict=1) \
+            if transaction_type else {}
+        if not tran_type.get("fixed_price_list"):
             party_details.update(
                 frappe.get_cached_value("Fund Source Type", c_fund.fund_source_type, 
                 ["is_max_rebate_applied", "is_rebate_fixed"], as_dict=1)
@@ -46,17 +52,19 @@ def get_price_list_fund(
 
             # Get price list
             filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"}
-            party_details["selling_price_list"] = frappe.get_value("Fund Source Detail", {**filters, "seller": seller }, "price_list") \
+            party_details["selling_price_list"] = frappe.get_value(
+                "Fund Source Detail", {**filters, "seller": seller, "kumer": produk_type.get("kumer", 0) }, "price_list") \
                     or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
+        else:
+            party_details["selling_price_list"] = tran_type.default_price_list or party_details["selling_price_list"]
 
     # Produk inti overrides
-    if produk_inti:
-        disable_flags = frappe.get_cached_value("Produk Inti", produk_inti, ["max_rebate_disable", "fixed_rabate_disable"]) or {}
+    if produk_type:
         party_details.update({
-            "is_max_rebate_applied": 0 if disable_flags.get("max_rebate_disable") else party_details["is_max_rebate_applied"],
-            "is_rebate_fixed": 0 if disable_flags.get("fixed_rabate_disable") else party_details["is_rebate_fixed"]
+            "is_max_rebate_applied": 0 if produk_type.get("max_rebate_disable") else party_details["is_max_rebate_applied"],
+            "is_rebate_fixed": 0 if produk_type.get("fixed_rabate_disable") else party_details["is_rebate_fixed"]
         })
-            
+
     # Check jenis relasi
     if party.custom_jenis_relasi:
         jr = frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, ["cant_have_rebate", "additional_rebate_disc", "has_relation", "customer_group"], as_dict=1)
@@ -75,6 +83,8 @@ def get_price_list_fund(
     # 	party_details.__delattr__("shipping_address")
 
     # Handle rebate accounts
+    company_acc = frappe.get_cached_value("Company", company, ["custom_rebate_order_account", "custom_rebate_payable_account"], as_dict=1)
+    
     rebate_accounts = (frappe.get_value("Fund Source Accounts", {
         "company": company, 
         "transaction_type": transaction_type, 
@@ -83,9 +93,9 @@ def get_price_list_fund(
 
     party_details.update({
         "rebate_account_from": rebate_accounts.get("rebate_order_account") or \
-            frappe.get_cached_value("Company", company, "custom_rebate_order_account"),
+            company_acc.custom_rebate_order_account,
         "rebate_account_to": rebate_accounts.get("rebate_payable_account") or \
-            frappe.get_cached_value("Company", company, "custom_rebate_payable_account"),
+            company_acc.custom_rebate_payable_account
     })
 
     return party_details

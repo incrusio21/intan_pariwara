@@ -262,13 +262,6 @@ intan_pariwara.sales_common = {
                 }
             }
 
-            // company(doc){
-            //     frappe.run_serially([
-            //         () => super.company(doc),
-            //         () => this.get_rebate_account(doc)
-            //     ])
-            // }
-
             customer(doc) {
 				var me = this;
                 frappe.flags.trigger_from_customer = true
@@ -284,16 +277,16 @@ intan_pariwara.sales_common = {
 
                 this.get_price_list_fund(doc)
             }
-            
-            kumer(doc){
-                this.get_price_list_fund(doc)
-            }
 
             transaction_type(doc){
                 this.get_price_list_fund(doc)
             }
 
             seller(doc){
+                this.get_price_list_fund(doc)
+            }
+
+            produk_inti_type(doc){
                 this.get_price_list_fund(doc)
             }
             
@@ -444,42 +437,42 @@ intan_pariwara.sales_common = {
                 let customer = doc.customer || doc.party_name
                 if(!customer){
                     frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
-                    this.frm.set_value("fund_source", "")
-                }else{
-                    frappe.call({
-                        method: "intan_pariwara.controllers.queries.get_price_list_fund",
-                        args: {
-                            company: doc.company,
-                            customer: customer,
-                            fund_source: doc.fund_source,
-                            kumer: doc.kumer,
-                            transaction_type: doc.transaction_type,
-                            seller: doc.seller,
-                        },
-                        callback: function (r) {
-                            if (r.message) {
-                                frappe.run_serially([
-                                    () => {
-                                        for (const [key, value] of Object.entries(r.message)) {
-                                            if (key !== "price_list_rate") {
-                                                me.frm.set_value(key, value)
-                                            }
-                                        }
-                                    },
-                                    () => {
-                                        if(r.message.selling_price_list != me.frm.doc.selling_price_list){
-                                            me.frm.set_value("selling_price_list", r.message.selling_price_list)
-                                            return;
-                                        }
-
-                                        me.apply_price_list();
-                                        me.set_dynamic_labels();
-                                    },
-                                ]);
-                            }
-                        },
-                    });
+                    return
                 }
+
+                frappe.call({
+                    method: "intan_pariwara.controllers.queries.get_price_list_fund",
+                    args: {
+                        company: doc.company,
+                        customer: customer,
+                        fund_source: doc.fund_source,
+                        transaction_type: doc.transaction_type,
+                        seller: doc.seller,
+                        produk_inti: doc.produk_inti_type,
+                    },
+                    callback: function (r) {
+                        if (r.message) {
+                            frappe.run_serially([
+                                () => {
+                                    for (const [key, value] of Object.entries(r.message)) {
+                                        if (key !== "price_list_rate") {
+                                            me.frm.set_value(key, value)
+                                        }
+                                    }
+                                },
+                                () => {
+                                    if(r.message.selling_price_list != me.frm.doc.selling_price_list){
+                                        me.frm.set_value("selling_price_list", r.message.selling_price_list)
+                                        return;
+                                    }
+
+                                    me.apply_price_list();
+                                    me.set_dynamic_labels();
+                                },
+                            ]);
+                        }
+                    },
+                });
             }
 
             is_a_mapped_document(item) {

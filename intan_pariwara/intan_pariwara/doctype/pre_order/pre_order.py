@@ -49,8 +49,8 @@ class PreOrder(AccountsController, SellingController):
 			if len(tax_type) > 1:
 				frappe.throw("Multiple Tax Types are present among Items.")
 
-			if self.produk_inti and self.produk_inti != item.custom_produk_inti:
-				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti))
+			if self.produk_inti_type and self.produk_inti_type != item.produk_inti_type:
+				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti_type))
 
 	def get_receivable_amount(self):
 		receivable_amount = frappe.db.sql("""

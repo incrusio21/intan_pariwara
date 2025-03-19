@@ -56,7 +56,8 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 		let key = [
 			this.price_list,
-			this.company,
+			...(this.seller ? [this.seller] : []),
+			...(this.produk_inti ? [this.produk_inti] : []),
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.jenjang ? [this.jenjang] : []), 
@@ -78,7 +79,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const price_list = this.price_list;
-		let { item_group, jenjang, kode_kelas, mata_pelajaran, seller, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas, mata_pelajaran, seller, produk_inti, poe_profile } = this;
 
 		!item_group && (item_group = this.parent_item_group);
 		
@@ -94,7 +95,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		this.request_item = frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
-			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, poe_profile, seller },
+			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, produk_inti, seller, poe_profile },
 		});
 
 		return this.request_item
@@ -439,6 +440,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		let key = [
 			this.price_list,
 			...(this.seller ? [this.seller] : []),
+			...(this.produk_inti ? [this.produk_inti] : []),
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]),
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []),  
 			...(this.jenjang ? [this.jenjang] : []), 
@@ -500,7 +502,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.$component.css("display", show ? "flex" : "none");
 	}
 
-	async update_filtered_item({ seller=null, price_list=null }) {
+	async update_filtered_item({ seller=null, price_list=null, produk_inti=null }) {
 
 		if(price_list){
 			this.price_list = price_list
@@ -508,6 +510,10 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 		if(seller){
 			this.seller = seller
+		}
+
+		if(produk_inti){
+			this.produk_inti = produk_inti
 		}
 
 		this.filter_items({ 

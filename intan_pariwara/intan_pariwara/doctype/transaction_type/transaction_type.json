@@ -6,6 +6,8 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "fixed_price_list",
+  "default_price_list",
   "description"
  ],
  "fields": [
@@ -13,11 +15,24 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "default": "0",
+   "fieldname": "fixed_price_list",
+   "fieldtype": "Check",
+   "label": "Is Fixed Price List"
+  },
+  {
+   "depends_on": "eval:doc.fixed_price_list",
+   "fieldname": "default_price_list",
+   "fieldtype": "Link",
+   "label": "Default Price LIst",
+   "options": "Price List"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-30 08:46:30.391160",
+ "modified": "2025-03-19 09:32:22.536551",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Transaction Type",
