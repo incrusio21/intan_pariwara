@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
+from erpnext.accounts.utils import get_fiscal_year
 
 class PlafonPromosi(Document):
 	
@@ -16,18 +17,19 @@ class PlafonPromosi(Document):
 	def set_remaining_plafon(self):
 		ste = frappe.qb.DocType("Stock Entry")
 
-		year = query_builder.CustomFunction("YEAR", ["date"])
-
+		fiscal_year = get_fiscal_year(fiscal_year=self.fiscal_year, as_dict=True)
+		
 		conditions = (
 			(ste.docstatus == 1)
-			& (ste.stock_entry_type == "Transfer of Promotional Goods")
+			& (ste.stock_entry_type.isin(["Receipt of Promotional Goods", "Issue of Promotional Goods"]))
 			& (ste.promosi_branch == self.cabang)
-			& (year(ste.posting_date) == self.fiscal_year)
+			& (ste.posting_date >= fiscal_year.year_start_date)
+			& (ste.posting_date <= fiscal_year.year_end_date)
 		)
 		
 		total_promotional_plafon = (
 			frappe.qb.from_(ste)
-			.select(Sum(ste.total_incoming_value).as_("amount"))
+			.select((Sum(ste.total_outgoing_value) - Sum(ste.total_incoming_value)).as_("amount"))
 			.where(conditions)
 		).run()[0][0]
 		
@@ -39,3 +41,4 @@ class PlafonPromosi(Document):
 
 def on_doctype_update():
 	frappe.db.add_unique("Plafon Promosi", ["fiscal_year", "cabang"], constraint_name="unique_fiscal_branch")
+ 

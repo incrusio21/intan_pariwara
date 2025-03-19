@@ -4,8 +4,17 @@
   "docstatus": 0,
   "doctype": "Stock Entry Type",
   "is_standard": 0,
-  "modified": "2025-02-17 10:20:15.408292",
-  "name": "Transfer of Promotional Goods",
-  "purpose": "Material Transfer"
+  "modified": "2025-03-19 14:46:00.042964",
+  "name": "Issue of Promotional Goods",
+  "purpose": "Material Issue"
+ },
+ {
+  "add_to_transit": 0,
+  "docstatus": 0,
+  "doctype": "Stock Entry Type",
+  "is_standard": 0,
+  "modified": "2025-03-19 14:46:16.927538",
+  "name": "Receipt of Promotional Goods",
+  "purpose": "Material Receipt"
  }
 ]
