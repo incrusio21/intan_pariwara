@@ -262,25 +262,41 @@ intan_pariwara.sales_common = {
                 }
             }
 
-            company(doc){
-                frappe.run_serially([
-                    () => super.company(doc),
-                    () => this.get_rebate_account(doc)
-                ])
-            }
+            // company(doc){
+            //     frappe.run_serially([
+            //         () => super.company(doc),
+            //         () => this.get_rebate_account(doc)
+            //     ])
+            // }
+
+            customer(doc) {
+				var me = this;
+                frappe.flags.trigger_from_customer = true
+				erpnext.utils.get_party_details(this.frm, null, null, function () {
+                    me.get_price_list_fund(doc, true)
+				});
+			}
 
             fund_source(doc){
-                this.get_rebate_account(doc)
+                if(!doc.fund_source){
+                    return 
+                }
+
+                this.get_price_list_fund(doc)
             }
             
             kumer(doc){
-                this.get_rebate_account(doc)
+                this.get_price_list_fund(doc)
             }
 
             transaction_type(doc){
-                this.get_rebate_account(doc)
+                this.get_price_list_fund(doc)
             }
 
+            seller(doc){
+                this.get_price_list_fund(doc)
+            }
+            
             rebate(doc, cdt, cdn) {
                 var item = frappe.get_doc(cdt, cdn);
                 if(doc.apply_rebate && doc.is_max_rebate_applied && 
@@ -412,10 +428,13 @@ intan_pariwara.sales_common = {
                 });
             }
 
-            get_rebate_account(doc){
+            get_price_list_fund(doc, force=false){
                 var me = this;
-                if(!doc.fund_source){
-                    return 
+
+                // memastikan tidak ada perubahan
+                if(frappe.flags.trigger_from_customer && !force){
+                    frappe.flags.trigger_from_customer = false
+                    return
                 }
 
                 if(!doc.customer){
@@ -430,6 +449,7 @@ intan_pariwara.sales_common = {
                             fund_source: doc.fund_source,
                             kumer: doc.kumer,
                             transaction_type: doc.transaction_type,
+                            seller: doc.seller,
                         },
                         callback: function (r) {
                             if (r.message) {

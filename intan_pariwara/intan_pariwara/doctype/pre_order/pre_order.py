@@ -15,7 +15,7 @@ class PreOrder(AccountsController, SellingController):
 	def validate(self):
 		super().validate()
 		self.validate_expected_date()
-		self.validate_item_tax_type()
+		self.validate_items()
 		self.get_receivable_amount()
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -41,7 +41,17 @@ class PreOrder(AccountsController, SellingController):
 		if date > getdate(self.delivery_date) or date > getdate(self.payment_date):
 			frappe.throw("Transaction date must be on or before Expected Delivery Date and Payment Date.")
 
-	def validate_item_tax_type(self):
+	def validate_items(self):
+		tax_type = set()
+		for d in self.items:
+			item = frappe.get_cached_value("Item", d.item_code, ["custom_tax_type", "custom_produk_inti"], as_dict=1)
+			tax_type.add(item.item.custom_tax_type)
+			if len(tax_type) > 1:
+				frappe.throw("Multiple Tax Types are present among Items.")
+
+			if self.produk_inti and self.produk_inti != item.custom_produk_inti:
+				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti))
+
 		tax_type = set(d.tax_type for d in self.items)
 		if len(set(tax_type)) > 1:
 			frappe.throw("Multiple Tax Types are present among Items.")
