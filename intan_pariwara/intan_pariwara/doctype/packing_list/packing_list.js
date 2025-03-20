@@ -82,8 +82,9 @@ frappe.ui.form.on("Packing List", {
 		frm.events.doc_name(frm)
 	},
 
-	doc_name: (frm) => {
+	pick_list: (frm) => {
 		frm.set_value("items", null);
+		frm.set_value("items_retail", null);
 		
 		// var purpose_method = {
 		// 	"Material Request": "intan_pariwara.intan_pariwara.custom.material_request.make_packing_list",
@@ -151,6 +152,7 @@ frappe.ui.form.on("Packing List", {
 			method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.get_items",
 			args: {
 				docname: frm.doc.pick_list,
+				purpose: frm.doc.purpose,
 				used_item: [...(frm.doc.items || []), ...(frm.doc.items_retail || [])]
 			},
 			freeze: true,

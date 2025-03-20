@@ -20,7 +20,11 @@
   "stock_uom",
   "weight_uom",
   "document_name",
-  "document_detail"
+  "document_detail",
+  "warehouse_section",
+  "from_warehouse",
+  "column_break_qmza",
+  "warehouse"
  ],
  "fields": [
   {
@@ -122,11 +126,34 @@
    "label": "Document Name",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "warehouse_section",
+   "fieldtype": "Section Break",
+   "label": "Warehouse"
+  },
+  {
+   "fieldname": "from_warehouse",
+   "fieldtype": "Link",
+   "label": "From Warehouse",
+   "options": "Warehouse",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qmza",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-03-16 22:00:19.419346",
+ "modified": "2025-03-20 10:08:27.364828",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Qr Code Bundle Item",

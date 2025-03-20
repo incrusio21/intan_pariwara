@@ -44,3 +44,20 @@ class StockEntry:
                 #     )
 
                 pr_obj.update_completed_qty(pr_item_rows)
+
+@frappe.whitelist()
+def detail_item_request(item, from_warehouse=None, to_warehouse=None):
+    ress = {}
+    fields = []
+    if not from_warehouse:
+        fields.append("from_warehouse as s_warehouse")
+
+    if not to_warehouse:
+        fields.append("warehouse as t_warehouse")
+
+    if fields:
+        ress.update(
+            frappe.get_value("Material Request Item", {"name": item}, fields, as_dict=1)
+        )
+
+    return ress

@@ -20,6 +20,37 @@ class QrCodePackingBundle(Document):
 			self.generate_kode_koli()
 
 		self.generate_data_qr()
+		self.set_status()
+
+	def set_status(self, db_update=False):
+		reference = "Delivery Note Item" if self.packing_purpose == "Delivery" else "Stock Entry Detail"
+
+		doctype = frappe.qb.DocType(reference)
+
+		query = (
+			frappe.qb.from_(doctype)
+			.select(
+				doctype.parent
+			).where(
+				(doctype.docstatus == 1)
+				& (
+					(doctype.qr_code_no == self.name) |
+					(doctype.qr_code_no.like(self.name + "\n%")) |
+					(doctype.qr_code_no.like("%\n" + self.name + "\n%")) |
+					(doctype.qr_code_no.like("%\n" + self.name))
+				)
+			)
+			.groupby(doctype.parent)
+			.limit(1)
+		)
+
+		if query.run():
+			self.status = "Used"
+		else:
+			self.status = "Not Used"
+
+		if db_update:
+			self.db_update()
 
 	def get_prev_doc_detail(self):
 		if self.packing_purpose == "Delivery":
@@ -53,6 +84,8 @@ class QrCodePackingBundle(Document):
 				doctype.net_weight,
 				doctype.stock_uom,
 				doctype.weight_uom,
+				doctype.from_warehouse,
+				doctype.warehouse,
 				pick_list[document_name].as_("document_name"),
 				pick_list[document_detail].as_("document_detail")
 			).where(

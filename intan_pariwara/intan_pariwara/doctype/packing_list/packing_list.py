@@ -325,7 +325,7 @@ class PackingList(StatusUpdater):
 		# 	item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
 
 @frappe.whitelist()
-def get_items(docname=None, used_item=[]):
+def get_items(docname=None, purpose=None, used_item=[]):
 
 	if not docname:
 		frappe.throw("Please Select Pick List first")
@@ -348,7 +348,6 @@ def get_items(docname=None, used_item=[]):
 			doctype.item_code,
 			doctype.item_name,
 			doctype.stock_uom,
-			doctype.warehouse,
 			item.qty_per_koli,
 			(doctype.qty - doctype.packed_qty).as_("remaining_qty")
 		).where(
@@ -357,6 +356,25 @@ def get_items(docname=None, used_item=[]):
 			& (doctype.packed_qty < doctype.qty)
 		)
 	)
+
+	if purpose == "Material Transfer":
+		mr_item = frappe.qb.DocType("Material Request Item")
+		query = (
+			query.inner_join(mr_item)
+			.on(doctype.material_request_item == mr_item.name)
+			.select(
+				doctype.material_request.as_("reference"),
+				mr_item.from_warehouse,
+				mr_item.warehouse
+			)
+		)
+	elif purpose == "Delivery":
+		query = (
+			query.select(
+				doctype.sales_order.as_("reference"),
+				doctype.warehouse
+			)
+		)
 
 	remaining_item = query.run(as_dict=1)
 	new_remaining = []

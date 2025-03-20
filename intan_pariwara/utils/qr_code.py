@@ -5,11 +5,12 @@ import frappe
 from frappe import _
 from erpnext.stock.utils import _update_item_info
 from frappe.query_builder.custom import ConstantColumn
+from frappe.utils import cstr
 
 BarcodeScanResult = dict[str, str | None]
 
 @frappe.whitelist()
-def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
+def scan_qr_barcode(search_value: str, purpose : None | str =None) -> BarcodeScanResult:
     def set_cache(data: BarcodeScanResult):
         frappe.cache().set_value(f"intan_pariwara:barcode_scan:{search_value}", data, expires_in_sec=120)
 
@@ -22,7 +23,7 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
     
     qr_bundle = frappe.db.get_value(
         "Qr Code Packing Bundle",
-        {"data_qr": search_value},
+        {"data_qr": search_value, "status": "Not Used", "packing_purpose": purpose},
         ["name", "packing_list", "packing_purpose", "packing_docname"],
         as_dict=True,
     )
@@ -31,6 +32,7 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         item_qr_list = (
             frappe.qb.from_(qr_item)
             .select(
+                qr_item.parent.as_("qr_code_no"),
                 qr_item.item_code,
                 qr_item.qty,
                 qr_item.document_detail,
@@ -90,3 +92,9 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         return batch_no_data
 
     return {}
+
+def get_qr_code_nos(qr_code):
+	if isinstance(qr_code, list):
+		return qr_code
+
+	return [s.strip() for s in cstr(qr_code).strip().replace(",", "\n").split("\n") if s.strip()]

@@ -5,12 +5,15 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		this.frm = opts.frm;
 		// frappe.flags.trigger_from_barcode_scanner is used for custom scripts
 
+		this.purpose = opts.purpose || ""
+
 		// field from which to capture input of scanned data
 		this.scan_field_name = opts.scan_field_name || "scan_barcode";
 		this.scan_barcode_field = this.frm.fields_dict[this.scan_field_name];
 
 		this.barcode_field = opts.barcode_field || "barcode";
 		this.serial_no_field = opts.serial_no_field || "serial_no";
+		this.qr_code_no_field = opts.qr_code_no_field || "qr_code_no";
 		this.batch_no_field = opts.batch_no_field || "batch_no";
 		this.uom_field = opts.uom_field || "uom";
 		this.qty_field = opts.qty_field || "qty";
@@ -81,6 +84,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 				method: this.scan_api,
 				args: {
 					search_value: input,
+					purpose: this.purpose
 				},
 			})
 			.then((r) => {
@@ -99,7 +103,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 
 			let row_list = []
 			data.forEach(async value => {
-				const { item_code, barcode, batch_no, serial_no, uom, document_detail } = value;
+				const { item_code, barcode, batch_no, serial_no, qr_code_no, uom, document_detail } = value;
 				
 				let row = this.get_row_to_modify_on_scan(item_code, batch_no, uom, barcode, document_detail);
 				
@@ -125,6 +129,12 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 					reject();
 					return;
 				}
+
+				if (this.is_duplicate_qr_code_no(row, qr_code_no)) {
+					this.clean_up();
+					reject();
+					return;
+				}
 				
 				this.set_selector_trigger_flag(data),
 
@@ -134,6 +144,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 
 				frappe.run_serially([
 					() => this.set_barcode_uom(row, uom),
+					() => this.set_qr_code_no(row, qr_code_no),
 					() => this.set_serial_no(row, serial_no),
 					() => this.set_batch_no(row, batch_no),
 					() => this.set_barcode(row, barcode),
@@ -166,7 +177,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 	}
 
 	set_item(row, data) {
-		const { item_code, barcode, batch_no, serial_no, qty, document_name, document_detail } = data;
+		const { item_code, barcode, batch_no, serial_no, qr_code_no, qty, document_name, document_detail } = data;
 
 		return new Promise((resolve) => {
 			const increment = async (value = 1) => {
@@ -183,7 +194,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 				frappe.prompt(__("Please enter quantity for item {0}", [item_code]), ({ value }) => {
 					increment(value).then((value) => resolve(value));
 				});
-			} else if (this.frm.has_items) {
+			} else if (this.frm.has_items && !qr_code_no) {
 				this.prepare_item_for_scan(row, item_code, barcode, batch_no, serial_no);
 			} else {
 				increment(qty).then((value) => resolve(value));
@@ -372,6 +383,20 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		}
 	}
 
+	async set_qr_code_no(row, qr_code_no) {
+		if (qr_code_no && frappe.meta.has_field(row.doctype, this.qr_code_no_field)) {
+			const existing_qr_code_nos = row[this.qr_code_no_field];
+			let new_qr_code_nos = "";
+
+			if (!!existing_qr_code_nos) {
+				new_qr_code_nos = existing_qr_code_nos + "\n" + qr_code_no;
+			} else {
+				new_qr_code_nos = qr_code_no;
+			}
+			await frappe.model.set_value(row.doctype, row.name, this.qr_code_no_field, new_qr_code_nos);
+		}
+	}
+
 	async set_serial_no(row, serial_no) {
 		if (serial_no && frappe.meta.has_field(row.doctype, this.serial_no_field)) {
 			const existing_serial_nos = row[this.serial_no_field];
@@ -411,6 +436,15 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		} else {
 			this.show_alert(__("Row #{0}: Item added", [idx]), "green");
 		}
+	}
+
+	is_duplicate_qr_code_no(row, qr_code_no) {
+		const is_duplicate = row[this.qr_code_no_field]?.includes(qr_code_no);
+
+		if (is_duplicate) {
+			this.show_alert(__("Row {0}: QR Core {1} is already added", [row.idx, qr_code_no]), "orange");
+		}
+		return is_duplicate;
 	}
 
 	is_duplicate_serial_no(row, serial_no) {

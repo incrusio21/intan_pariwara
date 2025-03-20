@@ -52,6 +52,7 @@ doctype_js = {
     "Quotation" : "intan_pariwara/custom/quotation.js",
     "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
+    "Stock Entry" : "intan_pariwara/custom/stock_entry.js",
     "Workflow" : "intan_pariwara/custom/workflow.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -190,6 +191,10 @@ doc_events = {
 	},
     ("Sales Order", "Delivery Note", "Sales Invoice"): {
         "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.SellingEvent"
+	},
+    ("Delivery Note", "Stock Entry"): {
+		"on_submit": "intan_pariwara.intan_pariwara.custom.stock_event.update_status_qr_code",
+		"on_cancel": "intan_pariwara.intan_pariwara.custom.stock_event.update_status_qr_code",
 	},
     "Customer": {
 		"before_validate": "intan_pariwara.intan_pariwara.custom.customer.disabled_based_account"
