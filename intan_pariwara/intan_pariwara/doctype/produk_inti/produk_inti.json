@@ -8,8 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "produk_inti",
-  "max_rebate_disable",
-  "fixed_rabate_disable"
+  "produk_inti_type"
  ],
  "fields": [
   {
@@ -21,21 +20,15 @@
    "unique": 1
   },
   {
-   "default": "0",
-   "fieldname": "max_rebate_disable",
-   "fieldtype": "Check",
-   "label": "Don't Allow Max Rebate"
-  },
-  {
-   "default": "0",
-   "fieldname": "fixed_rabate_disable",
-   "fieldtype": "Check",
-   "label": "Don't Allow Fixed Rebate"
+   "fieldname": "produk_inti_type",
+   "fieldtype": "Link",
+   "label": "Produk Inti Type",
+   "options": "Produk Inti Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-15 22:17:11.011297",
+ "modified": "2025-03-19 09:39:59.826327",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Produk Inti",

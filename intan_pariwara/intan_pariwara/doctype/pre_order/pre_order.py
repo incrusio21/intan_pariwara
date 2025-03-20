@@ -49,8 +49,8 @@ class PreOrder(AccountsController, SellingController):
 			if len(tax_type) > 1:
 				frappe.throw("Multiple Tax Types are present among Items.")
 
-			if self.produk_inti and self.produk_inti != item.custom_produk_inti:
-				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti))
+			if self.produk_inti_type and self.produk_inti_type != item.produk_inti_type:
+				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti_type))
 
 		tax_type = set(d.tax_type for d in self.items)
 		if len(set(tax_type)) > 1:

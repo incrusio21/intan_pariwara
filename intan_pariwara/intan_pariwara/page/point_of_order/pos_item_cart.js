@@ -330,6 +330,7 @@ erpnext.PointOfOrder.ItemCart = class {
 						frm.doc.customer = this.value
 						
 						// // frappe.model.set_value(frm.doc.doctype, frm.doc.name, "customer", this.value);
+						frappe.flags.trigger_from_customer = true
 						erpnext.utils.get_party_details(frm, null, null, function () {
 							me.make_customer_transaction_dialog(frm);
 						});
@@ -385,12 +386,12 @@ erpnext.PointOfOrder.ItemCart = class {
 					default: frm.doc.seller,
 				},
 				{
-					label: __("Produk Inti"),
+					label: __("Produk Inti Type"),
 					fieldtype: "Link",
-					options: "Produk Inti",
-					placeholder: __("Select Produk Inti"),
-					fieldname: "produk_inti",
-					default: frm.doc.produk_inti,
+					options: "Produk Inti Type",
+					placeholder: __("Select Produk Inti Type"),
+					fieldname: "produk_inti_type",
+					default: frm.doc.produk_inti_type,
 				},
 				{
 					label: __("Kerjasama"),
@@ -431,13 +432,18 @@ erpnext.PointOfOrder.ItemCart = class {
 				}
 			],
 			primary_action: async function (data) {
+				let item_filters = { seller: data.seller, price_list : data.selling_price_list, produk_inti: data.produk_inti_type }
 				frappe.run_serially([
 					() => frm.set_value(data),
+					() => {
+						frappe.flags.trigger_from_customer = false
+						frm.script_manager.trigger("trigger_from_customer")
+					},
 					() => me.fetch_customer_details(frm.doc.customer),
 					() => me.events.customer_details_updated(me.customer_info),
 					() => me.update_customer_section(),
 					() => me.make_transaction_selector(),
-					() => me.events.item_selector_updated({price_list : frm.doc.selling_price_list}),
+					() => me.events.item_selector_updated(item_filters),
 					() => me.update_totals_section(),
 				]);
 
@@ -1042,6 +1048,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					<div class="payment_date-field"></div>
 					<div class="relasi-field"></div>
 					<div class="relasi_name-field"></div>
+					<div class="produk_inti_type-field"></div>
 					<div class="kerjasama-field"></div>
 				</div>
 				<div class="transactions-label">${__("Recent Transactions")}</div>`
@@ -1149,6 +1156,13 @@ erpnext.PointOfOrder.ItemCart = class {
 				placeholder: __("Enter Seller"),
 			},
 			{
+				fieldname: "produk_inti_type",
+				label: __("Produk Inti Type"),
+				fieldtype: "Link",
+				options: "Produk Inti Type",
+				placeholder: __("Enter Produk Inti Type"),
+			},
+			{
 				fieldname: "kerjasama",
 				label: __("Kerjasama"),
 				fieldtype: "Select",
@@ -1208,14 +1222,16 @@ erpnext.PointOfOrder.ItemCart = class {
 						me.events.item_selector_updated({ price_list: frm.doc.selling_price_list })
 					}else if(this.df.fieldname == "seller"){
 						me.events.item_selector_updated({ seller: this.value })
-					}else if(this.df.fieldname == "relasi"){
+					}else if(this.df.fieldname == "produk_inti_type"){
+						me.events.item_selector_updated({ produk_inti: this.value })
+					}
+					else if(this.df.fieldname == "relasi"){
 						frappe.db.get_value("Customer", this.value, "customer_name", (data) => {
 							me[`po_relasi_name_field`].set_value(data.customer_name);
 						})
 					}
 				});
 			}
-			
 		}
 	}
 
@@ -1300,7 +1316,10 @@ erpnext.PointOfOrder.ItemCart = class {
 			this.update_customer_section();
 		});
 
-		this.events.item_selector_updated({price_list: frm.doc.selling_price_list})
+		
+		this.events.item_selector_updated(
+			{ seller: frm.doc.seller, price_list : frm.doc.selling_price_list, produk_inti: frm.doc.produk_inti_type }
+		)
 		
 		this.$cart_items_wrapper.html("");
 		if (frm.doc.items.length) {

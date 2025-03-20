@@ -28,6 +28,7 @@ def get_items(
     item_group, 
     poe_profile, 
     seller=None, 
+    produk_inti=None, 
     mata_pelajaran=None, 
     jenjang=None, 
     kode_kelas=None, 
@@ -42,6 +43,8 @@ def get_items(
     key_parts = [price_list, item_group]
     if seller:
         key_parts.append(seller)
+    if produk_inti:
+        key_parts.append(produk_inti)
     if mata_pelajaran:
         key_parts.append(mata_pelajaran)
     if jenjang:
@@ -73,8 +76,11 @@ def get_items(
 
     condition = get_conditions(search_term)
     condition += get_item_group_condition(poe_profile)
+    
+    if produk_inti:
+        condition += """ and produk_inti_type = "{}" """.format(produk_inti)
 
-    if seller: 
+    if seller:
         seller_dict = frappe.get_cached_doc("Seller", seller)
         if seller_dict.only_buku:
             condition += """ and custom_buku = 1 """

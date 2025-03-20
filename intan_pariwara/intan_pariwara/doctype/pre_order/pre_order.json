@@ -26,6 +26,8 @@
   "set_warehouse",
   "sales_person",
   "sales_id",
+  "negotiations",
+  "produk_inti_type",
   "column_break1",
   "order_type",
   "company",
@@ -1312,12 +1314,18 @@
    "remember_last_selected_value": 1,
    "reqd": 1,
    "width": "150px"
+  },
+  {
+   "fieldname": "produk_inti_type",
+   "fieldtype": "Link",
+   "label": "Produk Inti Type",
+   "options": "Produk Inti Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-15 23:45:15.573382",
+ "modified": "2025-03-19 10:11:15.452840",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

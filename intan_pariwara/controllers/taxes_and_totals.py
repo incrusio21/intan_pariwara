@@ -6,9 +6,6 @@ from frappe.utils import flt
 from frappe.model.document import Document
 
 from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals, get_round_off_applicable_accounts
-
-from intan_pariwara.controllers.queries import get_price_list_fund
-
 class calculate_taxes_and_totals(calculate_taxes_and_totals):
     def __init__(self, doc: Document):
         self.doc = doc
@@ -16,12 +13,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
         frappe.flags.round_row_wise_tax = frappe.db.get_single_value(
             "Accounts Settings", "round_row_wise_tax"
         )
-
-        fund_source = get_price_list_fund(self.doc.company, self.doc.customer, self.doc.fund_source, self.doc.transaction_type)
-        for key, value in fund_source.items():
-            if not self.doc.get(key):
-                self.doc.set(key, value)
-                
+        
         self._items = self.filter_rows() if self.doc.doctype == "Quotation" else self.doc.get("items")
 
         get_round_off_applicable_accounts(self.doc.company, frappe.flags.round_off_applicable_accounts)

@@ -7,9 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "fund_source_type",
-  "column_break_ldqi",
   "price_list",
-  "seller"
+  "column_break_ldqi",
+  "seller",
+  "kumer"
  ],
  "fields": [
   {
@@ -38,12 +39,19 @@
    "label": "Seller",
    "options": "Seller",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "kumer",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Kumer"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-16 00:25:31.474429",
+ "modified": "2025-03-19 10:18:04.147239",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Fund Source Detail",
