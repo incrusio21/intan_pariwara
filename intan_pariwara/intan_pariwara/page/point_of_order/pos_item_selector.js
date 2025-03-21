@@ -57,7 +57,6 @@ erpnext.PointOfOrder.ItemSelector = class {
 		let key = [
 			this.price_list,
 			...(this.seller ? [this.seller] : []),
-			...(this.produk_inti ? [this.produk_inti] : []),
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]), 
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []), 
 			...(this.jenjang ? [this.jenjang] : []), 
@@ -79,7 +78,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 
 	get_items({ start = 0, page_length = 40, search_term = "" }) {
 		const price_list = this.price_list;
-		let { item_group, jenjang, kode_kelas, mata_pelajaran, seller, produk_inti, poe_profile } = this;
+		let { item_group, jenjang, kode_kelas, mata_pelajaran, seller, poe_profile } = this;
 
 		!item_group && (item_group = this.parent_item_group);
 		
@@ -95,7 +94,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 		
 		this.request_item = frappe.call({
 			method: "intan_pariwara.intan_pariwara.page.point_of_order.point_of_order.get_items",
-			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, produk_inti, seller, poe_profile },
+			args: { start, page_length, price_list, item_group, mata_pelajaran, jenjang, kode_kelas, search_term, seller, poe_profile },
 		});
 
 		return this.request_item
@@ -113,7 +112,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 	get_item_html(item) {
 		const me = this;
 		// eslint-disable-next-line no-unused-vars
-		const { item_image, serial_no, batch_no, barcode, actual_qty, uom, price_list_rate } = item;
+		const { item_image, serial_no, batch_no, barcode, actual_qty, uom, price_list_rate, produk_inti_type } = item;
 		const precision = flt(price_list_rate, 2) % 1 != 0 ? 2 : 0;
 		let indicator_color;
 		let qty_to_display = actual_qty;
@@ -154,6 +153,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				data-item-code="${escape(item.item_code)}" data-serial-no="${escape(serial_no)}"
 				data-batch-no="${escape(batch_no)}" data-uom="${escape(uom)}"
 				data-rate="${escape(price_list_rate || 0)}"
+				data-produk-inti-type="${escape(produk_inti_type)}"
 				title="${item.item_name}">
 
 				${get_item_image_html()}
@@ -333,7 +333,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 				}
 			},
 		});
-
+		
 		this.$component.on("click", ".item-wrapper", function () {
 			const $item = $(this);
 			const item_code = unescape($item.attr("data-item-code"));
@@ -341,12 +341,21 @@ erpnext.PointOfOrder.ItemSelector = class {
 			let serial_no = unescape($item.attr("data-serial-no"));
 			let uom = unescape($item.attr("data-uom"));
 			let rate = unescape($item.attr("data-rate"));
+			let produk_inti_type = unescape($item.attr("data-produk-inti-type"));
 
 			// escape(undefined) returns "undefined" then unescape returns "undefined"
 			batch_no = batch_no === "undefined" ? undefined : batch_no;
 			serial_no = serial_no === "undefined" ? undefined : serial_no;
 			uom = uom === "undefined" ? undefined : uom;
 			rate = rate === "undefined" ? undefined : rate;
+			
+			let doc = me.events.get_frm().doc
+			if((doc.items || []).length && produk_inti_type != doc.produk_inti_type){
+				frappe.throw({
+					title: __("Diffrent Produk Item Type"),
+					message: __("Multiple Produk Item Type are present among Items."),
+				});
+			}
 
 			const dialog = new frappe.ui.Dialog({
 				title: __("Update Item Quantity"),
@@ -363,7 +372,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 					me.events.item_selected({
 						field: "qty",
 						value: qty,
-						item: { item_code, batch_no, serial_no, uom, rate },
+						item: { item_code, batch_no, serial_no, uom, rate, produk_inti_type },
 					});
 					me.search_field.set_focus();
 					dialog.hide();
@@ -440,7 +449,6 @@ erpnext.PointOfOrder.ItemSelector = class {
 		let key = [
 			this.price_list,
 			...(this.seller ? [this.seller] : []),
-			...(this.produk_inti ? [this.produk_inti] : []),
 			...(this.item_group ? [this.item_group] : [this.parent_item_group]),
 			...(this.mata_pelajaran ? [this.mata_pelajaran] : []),  
 			...(this.jenjang ? [this.jenjang] : []), 
@@ -502,18 +510,15 @@ erpnext.PointOfOrder.ItemSelector = class {
 		this.$component.css("display", show ? "flex" : "none");
 	}
 
-	async update_filtered_item({ seller=null, price_list=null, produk_inti=null }) {
+	async update_filtered_item({ seller=null, price_list=null }) {
 
+		console.log(price_list)
 		if(price_list){
 			this.price_list = price_list
 		}
 
 		if(seller){
 			this.seller = seller
-		}
-
-		if(produk_inti){
-			this.produk_inti = produk_inti
 		}
 
 		this.filter_items({ 

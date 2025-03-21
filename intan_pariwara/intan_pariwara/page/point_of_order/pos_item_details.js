@@ -245,7 +245,6 @@ erpnext.PointOfOrder.ItemDetails = class {
 			this.warehouse_control.df.reqd = 1;
 			this.warehouse_control.df.onchange = function () {
 				if (this.value) {
-					console.log(this.skip_validate_stock)
 					me.events.form_updated(me.current_item, "warehouse", this.value).then(() => {
 						me.item_stock_map = me.events.get_item_stock_map();
 						const available_qty = me.item_stock_map[me.item_row.item_code][me.value][0];

@@ -7,7 +7,7 @@ import frappe
 def get_price_list(teritory):
     fsd = frappe.get_all("Fund Source Detail", 
         filters={"parent": teritory, "parenttype": "Territory"},
-        fields=["fund_source_type", "price_list", "company"]
+        fields=["fund_source_type", "price_list", "seller", "kumer"]
     )
 
     return { "custom_details": fsd }

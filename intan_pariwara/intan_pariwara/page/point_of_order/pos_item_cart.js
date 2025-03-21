@@ -386,14 +386,6 @@ erpnext.PointOfOrder.ItemCart = class {
 					default: frm.doc.seller,
 				},
 				{
-					label: __("Produk Inti Type"),
-					fieldtype: "Link",
-					options: "Produk Inti Type",
-					placeholder: __("Select Produk Inti Type"),
-					fieldname: "produk_inti_type",
-					default: frm.doc.produk_inti_type,
-				},
-				{
 					label: __("Kerjasama"),
 					fieldtype: "Select",
 					options: ["", "Ya", "Tidak"],
@@ -432,18 +424,19 @@ erpnext.PointOfOrder.ItemCart = class {
 				}
 			],
 			primary_action: async function (data) {
-				let item_filters = { seller: data.seller, price_list : data.selling_price_list, produk_inti: data.produk_inti_type }
+				await frm.set_value(data)
+				
+				frappe.flags.trigger_from_customer = false
+				await frm.script_manager.trigger("get_price_list_fund")
+				
 				frappe.run_serially([
-					() => frm.set_value(data),
-					() => {
-						frappe.flags.trigger_from_customer = false
-						frm.script_manager.trigger("trigger_from_customer")
-					},
 					() => me.fetch_customer_details(frm.doc.customer),
 					() => me.events.customer_details_updated(me.customer_info),
 					() => me.update_customer_section(),
 					() => me.make_transaction_selector(),
-					() => me.events.item_selector_updated(item_filters),
+					() => me.events.item_selector_updated({ 
+							seller: data.seller, price_list : frm.doc.selling_price_list 
+						}),
 					() => me.update_totals_section(),
 				]);
 
@@ -1223,7 +1216,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					}else if(this.df.fieldname == "seller"){
 						me.events.item_selector_updated({ seller: this.value })
 					}else if(this.df.fieldname == "produk_inti_type"){
-						me.events.item_selector_updated({ produk_inti: this.value })
+						me.events.item_selector_updated({ price_list: frm.doc.selling_price_list })
 					}
 					else if(this.df.fieldname == "relasi"){
 						frappe.db.get_value("Customer", this.value, "customer_name", (data) => {
@@ -1318,7 +1311,7 @@ erpnext.PointOfOrder.ItemCart = class {
 
 		
 		this.events.item_selector_updated(
-			{ seller: frm.doc.seller, price_list : frm.doc.selling_price_list, produk_inti: frm.doc.produk_inti_type }
+			{ seller: frm.doc.seller, price_list : frm.doc.selling_price_list }
 		)
 		
 		this.$cart_items_wrapper.html("");

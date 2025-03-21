@@ -535,9 +535,14 @@ erpnext.PointOfOrder.Controller = class {
 			} else {
 				if (!this.frm.doc.customer) return this.raise_customer_selection_alert();
 
-				const { item_code, batch_no, serial_no, rate, uom } = item;
+				const { item_code, batch_no, serial_no, rate, uom, produk_inti_type } = item;
 
 				if (!item_code) return;
+				
+				if((this.frm.doc.items || []).length < 1){
+					await this.frm.set_value("produk_inti_type", produk_inti_type)
+					this.item_selector.update_filtered_item({ price_list: this.frm.doc.selling_price_list })
+				}
 
 				const new_item = { item_code, batch_no, rate, uom, [field]: value };
 

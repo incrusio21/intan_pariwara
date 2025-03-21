@@ -51,9 +51,9 @@ def get_price_list_fund(
             )
 
             # Get price list
-            filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer"}
+            filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer", "kumer": produk_type.get("kumer", 0)}
             party_details["selling_price_list"] = frappe.get_value(
-                "Fund Source Detail", {**filters, "seller": seller, "kumer": produk_type.get("kumer", 0) }, "price_list") \
+                "Fund Source Detail", {**filters, "seller": seller }, "price_list") \
                     or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
         else:
             party_details["selling_price_list"] = tran_type.default_price_list or party_details["selling_price_list"]
