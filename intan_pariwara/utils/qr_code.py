@@ -44,7 +44,6 @@ def scan_qr_barcode(search_value: str, purpose : None | str =None) -> BarcodeSca
             )
         ).run(as_dict=True)
             
-        set_cache(item_qr_list)
         return item_qr_list
 
 

@@ -41,13 +41,15 @@ class QrCodePackingBundle(Document):
 				)
 			)
 			.groupby(doctype.parent)
-			.limit(1)
 		)
 
-		if query.run():
-			self.status = "Used"
-		else:
+		qr_code_used = query.run()
+		if len(qr_code_used) > 1:
+			frappe.throw("QR code can only be used once")
+		elif not qr_code_used:
 			self.status = "Not Used"
+		else:
+			self.status = "Used"
 
 		if db_update:
 			self.db_update()
@@ -113,7 +115,7 @@ class QrCodePackingBundle(Document):
 			self.kode_koli = frappe.get_cached_value("Item", self.items[0].item_code, "custom_kode_koli")
 
 	def generate_data_qr(self):
-		self.data_qr = ",".join(
+		self.data_qr = f"{self.name}:" ",".join(
 			f"{d.document_name}:{d.document_detail}:{d.item_code}:{d.get_formatted('qty')}"
 			for d in self.items
 		)
