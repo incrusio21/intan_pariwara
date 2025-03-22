@@ -62,23 +62,27 @@ def create_payment_entry(args, sinv_id):
 	pe.reference_date = args.tanggal
 	pe.book_advance_payments_in_separate_party_account = 0
 
-	pe.append("references",
-		{
-			"reference_doctype":"Sales Invoice",
-			"reference_name": sinv_id,
-			"allocated_amount": flt(args.jumlah),
-			"account": sinv.debit_to,
-			"payment_term": ""
-		})
 
+	sum_biaya = 0
 	if args.biaya:
 		for acc,amt in args.biaya.items():
 			if frappe.get_value("Master SIPLAH",acc,"account"):
 				pe.append("deductions",{
 					"account": frappe.get_value("Master SIPLAH",acc,"account"),
 					"cost_center": "Main - IPV",
-					"amount": amt
+					"amount": flt(amt)
 				})
+				sum_biaya += flt(amt)
+	
+	allocated_amount = flt(args.jumlah) - sum_biaya
+	pe.append("references",
+		{
+			"reference_doctype":"Sales Invoice",
+			"reference_name": sinv_id,
+			"allocated_amount": flt(allocated_amount),
+			"account": sinv.debit_to,
+			"payment_term": ""
+		})
 
 	# return pe.as_dict()
 

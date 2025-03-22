@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2025-03-22 09:54:04.884270",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "request_type",
+  "url",
+  "headers",
+  "payload",
+  "response",
+  "token",
+  "token_exp"
+ ],
+ "fields": [
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token",
+   "fieldtype": "Small Text",
+   "label": "Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token_exp",
+   "fieldtype": "Data",
+   "label": "Token Exp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "request_type",
+   "fieldtype": "Data",
+   "label": "Request Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "headers",
+   "fieldtype": "Small Text",
+   "label": "Headers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Small Text",
+   "label": "Payload",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "Small Text",
+   "label": "Response",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-22 10:09:46.621467",
+ "modified_by": "Administrator",
+ "module": "SIPLAH Integration",
+ "name": "SIPLAH API Log",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
