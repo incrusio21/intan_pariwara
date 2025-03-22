@@ -5,6 +5,7 @@
 tags
 node_modules
 *patch.py
+*.env
 dist/
 fixtures_old/
 intan_pariwara/public/dist

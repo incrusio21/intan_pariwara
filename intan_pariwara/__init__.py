@@ -16,6 +16,18 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from intan_pariwara.controllers.queries import get_price_list_fund
 
+
+def load_env():
+	"""Returns the intan pariwara env variable"""
+	from dotenv import dotenv_values
+	from pathlib import Path
+
+	if not frappe.flags.intan_pariwara:
+		frappe.flags.intan_pariwara = frappe._dict(dotenv_values(Path(__file__).parent / ".env"))
+
+	return frappe.flags.intan_pariwara
+
+
 def is_delivery_account_enabled(company):
 	if not company:
 		company = "_Test Company" if frappe.flags.in_test else get_default_company()
@@ -29,6 +41,8 @@ def is_delivery_account_enabled(company):
 		)
 
 	return frappe.local.enable_delivery_account[company]
+
+# overwrite fungsi
 
 # custom menambahkan sales person berdasarkan custom field
 def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
