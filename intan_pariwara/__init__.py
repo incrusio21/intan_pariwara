@@ -426,7 +426,7 @@ def _get_party_details(
 	party_file.set_other_values(party_details, party, party_type)
 	party_file.set_price_list(party_details, party, party_type, price_list, pos_profile)
 	if party_type == "Customer":
-		party_details["fund_source"] = party.get("custom_customer_fund_group")
+		party_details["fund_source"] = "" if doctype == "Quotation" else party.get("custom_customer_fund_group")
 		# party_details.update({
 		# 	"fund_source": ,
 		# 	"has_relation": 0,

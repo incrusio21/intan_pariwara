@@ -254,6 +254,7 @@ scheduler_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
+	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "intan_pariwara.intan_pariwara.custom.quotation.make_sales_order",
 	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
 	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",

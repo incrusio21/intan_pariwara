@@ -14,14 +14,17 @@ intan_pariwara.sales_common = {
                 var me = this;
 
                 me.frm.set_query("relasi", function(doc){
-                    if(!doc.relasi_group){
-                        frappe.throw("Please Set Customer Group in Doctype Jenis Relasi First")
+                    let filter = {}
+                    if(doc.doctype != "Quotation"){
+                        if(!doc.relasi_group){
+                            frappe.throw("Please Set Customer Group in Doctype Jenis Relasi First")
+                        }
+
+                        filter["customer_group"] = doc.relasi_group
                     }
 
                     return {
-                        filters: {
-                            customer_group: doc.relasi_group
-                        },
+                        filters: filter
                     }
                 })
             }
@@ -436,7 +439,6 @@ intan_pariwara.sales_common = {
 
                 let customer = doc.customer || doc.party_name
                 if(!customer){
-                    frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
                     return
                 }
 
