@@ -8,32 +8,11 @@ import frappe
 from frappe import _, _dict
 from frappe.model.naming import _generate_random_string
 from frappe.utils import cint, flt
-from frappe.query_builder.functions import Sum
+from frappe.query_builder.functions import Sum, Coalesce
 
-from erpnext.controllers.status_updater import StatusUpdater
+from frappe.model.document import Document
 
-class PackingList(StatusUpdater):
-	
-	def __init__(self, *args, **kwargs) -> None:
-		super().__init__(*args, **kwargs)
-
-		self.status_updater = [
-			{
-				"target_dt": "Pick List Item",
-				"target_parent_dt": "Pick List",
-				"target_field": "packed_qty",
-				"target_ref_field": "qty",
-				"source_dt": "Packing List Item",
-				"source_field": "qty",
-				"target_parent_field": "per_packing",
-				"percent_join_field_parent": "pick_list",
-				"join_field": "document_detail",
-				"second_source_field": "qty",
-				"second_source_dt": "Packing List Item Retail",
-				"second_join_field": "document_detail",
-			}
-		]
-
+class PackingList(Document):
 	def validate(self) -> None:
 		from erpnext.utilities.transaction_base import validate_uom_is_integer
 
@@ -261,8 +240,7 @@ class PackingList(StatusUpdater):
 			self.gross_weight_pkg = self.net_weight_pkg
 
 	def on_submit(self):
-		self.update_qty(update_modified=False)
-		self.validate_qty()
+		self.update_picklist_status()
 
 		self.create_qr_code_items()
 		self.create_qr_code_items_retail()
@@ -294,8 +272,7 @@ class PackingList(StatusUpdater):
 			retail_key.append(d.retail_key)
 
 	def on_cancel(self):
-		self.update_qty(update_modified=False)
-		self.validate_qty()
+		self.update_picklist_status()
 		self.remove_qr_code()
 	
 	def remove_qr_code(self):
@@ -304,6 +281,9 @@ class PackingList(StatusUpdater):
 		for row in frappe.get_list("Qr Code Packing Bundle", filters={"packing_list": self.name}, pluck="name"):
 			delete_doc("Qr Code Packing Bundle", row)
 
+	def update_picklist_status(self):
+		frappe.get_doc("Pick List", self.pick_list).update_packed_qty()
+		
 	@frappe.whitelist()
 	def get_actual_qty(self):
 		pass

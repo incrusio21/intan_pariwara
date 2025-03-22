@@ -23,5 +23,8 @@ frappe.ui.form.on("Pick List", {
 				}
 			}
 		}
+
+		frm.remove_custom_button(__("Delivery Note"), __("Create"));
+		frm.remove_custom_button(__("Stock Entry"),__("Create"));
     }
 })

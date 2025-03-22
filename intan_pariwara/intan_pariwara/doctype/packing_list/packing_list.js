@@ -14,21 +14,6 @@ frappe.ui.form.on("Packing List", {
 			};
 		});
 
-		frm.set_query("doc_name", (doc) => {
-			var filters = {
-				docstatus: 1,
-				per_packing: ["<", 100]
-			}
-
-			if(doc.purpose == "Material Request"){
-				filters["material_request_type"] = "Material Transfer"
-			}
-
-			return {
-				filters: filters,
-			};
-		});
-
 		frm.set_query("item_code", "items", (doc, cdt, cdn) => {
 			if (!doc.doc_name) {
 				frappe.throw(__("Please select a " + doc.purpose));
@@ -46,7 +31,7 @@ frappe.ui.form.on("Packing List", {
 
 	refresh: (frm) => {
 		if (frm.doc.docstatus == 1 && frm.doc.per_delivered < 100) {
-			if(frm.doc.purpose == "Delivery" ){
+			if (frm.doc.purpose == "Delivery") {
 				frm.add_custom_button(
 					__("Delivery Note"),
 					() => {
@@ -61,7 +46,7 @@ frappe.ui.form.on("Packing List", {
 				);
 			}
 
-			if(frm.doc.purpose == "Material Transfer"){
+			if (frm.doc.purpose == "Material Transfer") {
 				frm.add_custom_button(
 					__("Material Transfer"),
 					() => {
@@ -146,6 +131,14 @@ frappe.ui.form.on("Packing List", {
 				in_list_view: 1,
 				label: __("Qty/Koli"),
 			},
+			{
+				fieldtype: "Data",
+				fieldname: "reference",
+				default: 0,
+				read_only: 1,
+				in_list_view: 0,
+				label: __("Reference"),
+			},
 		]
 
 		frappe.call({
@@ -156,8 +149,8 @@ frappe.ui.form.on("Packing List", {
 				used_item: [...(frm.doc.items || []), ...(frm.doc.items_retail || [])]
 			},
 			freeze: true,
-			callback: function(data){
-				if(data.message.length == 0){
+			callback: function (data) {
+				if (data.message.length == 0) {
 					frappe.throw(__("All items have been included in the packaging."))
 				}
 
@@ -187,8 +180,8 @@ frappe.ui.form.on("Packing List", {
 					],
 					primary_action: function () {
 						const trans_items = this.get_values()["trans_items"].filter((item) => !!item.qty);
-						
-						if(trans_items.length == 0){
+
+						if (trans_items.length == 0) {
 							frappe.throw("Please fill in the quantity on one of the rows")
 						}
 
@@ -200,7 +193,7 @@ frappe.ui.form.on("Packing List", {
 								trans_items: trans_items,
 							},
 							callback: function (data) {
-								if(data.message){
+								if (data.message) {
 									data.message.package.forEach(value => {
 										var p = frm.add_child("items");
 										frappe.model.set_value(p.doctype, p.name, value)
