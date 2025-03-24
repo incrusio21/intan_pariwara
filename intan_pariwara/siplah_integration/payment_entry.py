@@ -17,7 +17,7 @@ from frappe.utils import flt, getdate
 	"""
 
 @frappe.whitelist()
-def post_payment(no_siplah,jumlah,tanggal,biaya=None):
+def post_payment(no_siplah,jumlah,tanggal,biaya=None,sinv_name=None):
 	
 	
 	body = frappe._dict({
@@ -28,7 +28,8 @@ def post_payment(no_siplah,jumlah,tanggal,biaya=None):
 		})
 	
 	sinv_id = get_sinv_siplah(no_siplah)
-	
+	if not sinv_id and sinv_name:
+		sinv_id = sinv_name
 	pe_dict = create_payment_entry(body, sinv_id)
 
 	return pe_dict or body
