@@ -10,9 +10,9 @@ erpnext.sales_common.setup_selling_controller();
 intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.SellingController)
 
 frappe.ui.form.on("Pre Order", {
-    setup: function (frm) {
+	setup: function (frm) {
 
-        frm.set_df_property("packed_items", "cannot_add_rows", true);
+		frm.set_df_property("packed_items", "cannot_add_rows", true);
 		frm.set_df_property("packed_items", "cannot_delete_rows", true);
 
 		frm.set_query("serial_and_batch_bundle", "packed_items", (doc, cdt, cdn) => {
@@ -27,11 +27,11 @@ frappe.ui.form.on("Pre Order", {
 			};
 		});
 
-		
 
-    },
+
+	},
 	refresh(frm) {
-        frm.trigger("set_label");
+		frm.trigger("set_label");
 		frm.trigger("set_dynamic_field_label");
 
 		let sbb_field = frm.get_docfield("packed_items", "serial_and_batch_bundle");
@@ -45,14 +45,27 @@ frappe.ui.form.on("Pre Order", {
 			};
 		}
 	},
-	
-    set_label: function (frm) {
+
+	set_label: function (frm) {
 		frm.fields_dict.customer_address.set_label(__(frm.doc.quotation_to + " Address"));
 	},
 
-	discount_percent(frm){
+	discount_percent(frm) {
 		frm.doc.items.forEach((item) => {
-			frappe.model.set_value(item.doctype, item.name, "discount_percentage", frm.doc.discount_percent || 0)			
+			frappe.model.set_value(item.doctype, item.name, "discount_percentage", frm.doc.discount_percent || 0)
+		});
+	},
+	discount_percent_rebate(frm) {
+		frm.doc.items.forEach((item) => {
+			frappe.model.set_value(item.doctype, item.name, "rebate", frm.doc.discount_percent_rebate || 0)
+		});
+	}
+});
+
+frappe.ui.form.on('Pre Order Item', {
+	items_add(frm, cdt, cdn) {
+		frm.doc.items.forEach((item) => {
+			frappe.model.set_value(item.doctype, item.name, "rebate", 0)
 		});
 	}
 });
@@ -60,18 +73,18 @@ frappe.ui.form.on("Pre Order", {
 intan_pariwara.selling.PreOrderController = class PreOrderController extends intan_pariwara.selling.SellingController {
 	refresh(doc, dt, dn) {
 		super.refresh(doc, dt, dn);
-		
+
 		var me = this;
-		
+
 		if (doc.docstatus == 1 && doc.per_ordered < 100) {
 			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
 
 			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
 		}
 
-		new intan_pariwara.utils.OtpVerified({frm:this.frm});
+		new intan_pariwara.utils.OtpVerified({ frm: this.frm });
 	}
-	
+
 	make_sales_order() {
 		var me = this;
 
