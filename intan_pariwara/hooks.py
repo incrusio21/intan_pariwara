@@ -99,7 +99,7 @@ fixtures = [
 		"dt": "Stock Entry Type", 
 		"filters": [
             ["name", "in", [
-				"Transfer of Promotional Goods",
+				"Issue of Promotional Goods","Receipt of Promotional Goods",
 				]
             ]
 		]
@@ -173,6 +173,7 @@ override_doctype_class = {
 	"Quotation": "intan_pariwara.overrides.quotation.Quotation",
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
+	"Pick List": "intan_pariwara.overrides.pick_list.PickList",
 	# "Selling Setting": "intan_pariwara.overrides.selling_settings.SellingSettings",
 }
 
