@@ -44,7 +44,7 @@ class PreOrder(AccountsController, SellingController):
 	def validate_items(self):
 		tax_type = set()
 		for d in self.items:
-			item = frappe.get_cached_value("Item", d.item_code, ["custom_tax_type", "custom_produk_inti"], as_dict=1)
+			item = frappe.get_cached_value("Item", d.item_code, ["custom_tax_type", "custom_produk_inti", "produk_inti_type"], as_dict=1)
 			tax_type.add(item.custom_tax_type)
 			if len(tax_type) > 1:
 				frappe.throw("Multiple Tax Types are present among Items.")
@@ -155,8 +155,7 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 			})
 
 	def update_item(obj, target, source_parent):
-		# balance_qty = obj.qty - ordered_items.get(obj.item_code, 0.0)
-		# target.qty = balance_qty if balance_qty > 0 else 0
+		target.qty = obj.qty - obj.ordered_qty
 		target.stock_qty = flt(target.qty) * flt(obj.conversion_factor)
 
 		if obj.against_blanket_order:
@@ -171,7 +170,7 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 		2. If selections: Is Alternative Item/Has Alternative Item: Map if selected and adequate qty
 		3. If selections: Simple row: Map if adequate qty
 		"""
-		has_qty = item.qty > 0
+		has_qty = item.qty > item.ordered_qty
 
 		item_tax_type = frappe.get_cached_value("Item", item.item_code, "custom_tax_type")
 		if not item_tax_type: 
