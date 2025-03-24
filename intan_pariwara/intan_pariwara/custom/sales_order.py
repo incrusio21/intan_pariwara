@@ -154,7 +154,7 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 		sre_details = get_sre_reserved_qty_details_for_voucher("Sales Order", source_name)
 
 	mapper = {
-		"Sales Order": {"doctype": "Delivery Note", "field_map": { "payment_date": "payment_date"},
+		"Sales Order": {"doctype": "Delivery Note", "field_map": { "payment_date": "payment_date", "custom_no_siplah": "no_siplah"},
 		"validation": {"docstatus": ["=", 1]}},
 		"Sales Taxes and Charges": {"doctype": "Sales Taxes and Charges", "reset_value": True},
 		"Sales Team": {"doctype": "Sales Team", "add_if_empty": True},
@@ -169,7 +169,6 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 		target.run_method("set_po_nos")
 		target.run_method("calculate_taxes_and_totals")
 		target.run_method("set_use_serial_batch_fields")
-
 		if source.company_address:
 			target.update({"company_address": source.company_address})
 		else:
