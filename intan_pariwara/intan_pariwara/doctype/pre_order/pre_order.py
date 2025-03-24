@@ -45,16 +45,12 @@ class PreOrder(AccountsController, SellingController):
 		tax_type = set()
 		for d in self.items:
 			item = frappe.get_cached_value("Item", d.item_code, ["custom_tax_type", "custom_produk_inti"], as_dict=1)
-			tax_type.add(item.item.custom_tax_type)
+			tax_type.add(item.custom_tax_type)
 			if len(tax_type) > 1:
 				frappe.throw("Multiple Tax Types are present among Items.")
 
 			if self.produk_inti_type and self.produk_inti_type != item.produk_inti_type:
 				frappe.throw("Transaction is limited to Produk Inti {} only".format(self.produk_inti_type))
-
-		tax_type = set(d.tax_type for d in self.items)
-		if len(set(tax_type)) > 1:
-			frappe.throw("Multiple Tax Types are present among Items.")
 
 	def get_receivable_amount(self):
 		if not self.get("__is_local"):
@@ -89,7 +85,7 @@ class PreOrder(AccountsController, SellingController):
 		)
 
 		if self.fund_source == "Dana Siswa":
-			make_sales_order(self.name)
+			make_sales_order(self.name, submit=True)
 			
 		# update enquiry status
 		# self.update_opportunity("Quotation")
@@ -115,7 +111,7 @@ class PreOrder(AccountsController, SellingController):
 			self.db_set("otp_verified", 1)
 
 @frappe.whitelist()
-def make_sales_order(source_name: str, target_doc=None):
+def make_sales_order(source_name: str, target_doc=None, submit=False):
 	# if not frappe.db.get_singles_value(
 	# 	"Selling Settings", "allow_sales_order_creation_for_expired_quotation"
 	# ):
@@ -131,6 +127,9 @@ def make_sales_order(source_name: str, target_doc=None):
 		doc = _make_sales_order(source_name, target_doc=None, item_type=row)
 		if len(doc.items) > 0:
 			doc.save()
+			if submit:
+				doc.submit()
+
 			sales_order_list.append(doc.name)
 	
 	if not sales_order_list:
