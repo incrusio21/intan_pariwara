@@ -8,6 +8,16 @@ from frappe.query_builder.custom import ConstantColumn
 
 BarcodeScanResult = dict[str, str | None]
 
+def validate_duplicate_qr(self, method=None):
+    from intan_pariwara.utils.qr_code import get_qr_code_nos
+
+    for d in self.items:
+        if not d.get("qr_code_no"):
+            continue
+        
+        for qr_name in get_qr_code_nos(d.qr_code_no):
+            qr_code_status(qr_name, d.name)
+
 @frappe.whitelist()
 def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
     def set_cache(data: BarcodeScanResult):
@@ -21,11 +31,16 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         return scan_data
     
     parts = search_value.split(";")
-    if len(parts) > 4:
+    if len(parts) > 6:
+        qr_code_no = ";".join(parts[2:])
+        if not qr_code_status(qr_code_no):
+            return {}
+        
         qr_item = frappe.qb.DocType("Purchase Order Item")
         item_qr_list = (
             frappe.qb.from_(qr_item)
             .select(
+                ConstantColumn(qr_code_no).as_("qr_code_no"),
                 qr_item.parent.as_("document_name"),
                 qr_item.item_code,
                 qr_item.name.as_("document_detail"),
@@ -40,7 +55,6 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
         ).run(as_dict=True)
 
         if item_qr_list:
-            set_cache(item_qr_list)
             return item_qr_list 
 
     # search barcode no
@@ -88,6 +102,34 @@ def scan_qr_barcode(search_value: str) -> BarcodeScanResult:
 
     return {}
 
+def qr_code_status(qr_code, child_name=None):
+    doctype = frappe.qb.DocType("Purchase Receipt Item")
+
+    query = (
+        frappe.qb.from_(doctype)
+        .select(
+            doctype.parent
+        ).where(
+            (doctype.docstatus == 1)
+            & (
+                (doctype.qr_code_no == qr_code) |
+                (doctype.qr_code_no.like(qr_code + "\n%")) |
+                (doctype.qr_code_no.like("%\n" + qr_code + "\n%")) |
+                (doctype.qr_code_no.like("%\n" + qr_code))
+            )
+        )
+        .groupby(doctype.parent)
+    )
+    
+    if child_name:
+        query = query.where((doctype.name != child_name))
+        
+    qr_code_used = query.run()
+    if qr_code_used:
+        frappe.throw("QR code can only be used once")
+
+    return True
+           
 @frappe.whitelist()
 def detail_item_order(item, set_warehouse=None):
 	ress = {}

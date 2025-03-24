@@ -207,6 +207,9 @@ doc_events = {
     "Item": {
         "validate": "intan_pariwara.intan_pariwara.custom.item.validate_produk_inti_type"
 	},
+    "Purchase Receipt": {
+		"on_submit": "intan_pariwara.intan_pariwara.custom.purchase_receipt.validate_duplicate_qr",
+	},
     "Sales Order": {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_material_request",
 	},

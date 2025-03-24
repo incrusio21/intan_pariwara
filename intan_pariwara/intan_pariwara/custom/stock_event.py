@@ -15,4 +15,4 @@ def update_status_qr_code(self, method):
             qr_code.add(qr_name)
 
     for qr in list(qr_code):
-        frappe.get_doc("Qr Code Packing Bundle", qr).set_status(db_update=True)
+        frappe.get_doc("Qr Code Packing Bundle", qr, for_update=1).set_status(db_update=True)
