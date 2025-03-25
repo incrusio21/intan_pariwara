@@ -198,7 +198,8 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 				"field_map": { 
 					"transaction_date": "transaction_date",
 					"delivery_date": "delivery_date",
-					"payment_date": "payment_date"
+					"payment_date": "payment_date",
+					"name": "pre_order"
 				}
 			},
 			"Pre Order Item": {

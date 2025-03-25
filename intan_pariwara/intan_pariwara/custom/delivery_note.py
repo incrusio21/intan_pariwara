@@ -44,7 +44,7 @@ def add_picking_list_to_status_updater(self, method):
 @frappe.whitelist()
 def detail_item_order(item, set_warehouse=None):
 	ress = {}
-	fields = ["discount_percentage", "rebate"]
+	fields = ["discount_percentage", "rebate", "custom_pre_order as against_pre_order", "custom_pre_order_item as pre_order_detail"]
 	if not set_warehouse:
 		fields.append("warehouse")
 

@@ -18,7 +18,7 @@ class SalesOrder(AccountsController, SalesOrder):
                 "target_parent_field": "per_ordered",
                 "target_ref_field": "qty",
                 "source_field": "qty",
-                "percent_join_field": "custom_pre_order",
+                "percent_join_field_parent": "pre_order",
                 "status_field": "status",
 				"keyword": "Ordered",
             }
