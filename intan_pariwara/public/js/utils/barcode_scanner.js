@@ -17,6 +17,8 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		this.batch_no_field = opts.batch_no_field || "batch_no";
 		this.uom_field = opts.uom_field || "uom";
 		this.qty_field = opts.qty_field || "qty";
+		this.parent_qr_code = opts.parent_qr_code || "qr_code";
+		this.total_koli = opts.total_koli || "total_koli";
 		this.document_name_field = opts.document_name_field || "against_sales_order";
 		this.document_detail_field = opts.document_detail_field || "so_detail";
 		// field name on row which defines max quantity to be scanned e.g. picklist
@@ -148,6 +150,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 					() => this.set_serial_no(row, serial_no),
 					() => this.set_batch_no(row, batch_no),
 					() => this.set_barcode(row, barcode),
+					() => this.set_parent_qr_code(row, qr_code_no),
 					() => this.clean_up(),
 					() => this.revert_selector_flag(),
 					() => row_list.push(row)
@@ -426,6 +429,24 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 	async set_barcode(row, barcode) {
 		if (barcode && frappe.meta.has_field(row.doctype, this.barcode_field)) {
 			await frappe.model.set_value(row.doctype, row.name, this.barcode_field, barcode);
+		}
+	}
+
+	async set_parent_qr_code(row, qr_code) {
+		if (qr_code && frappe.meta.has_field(this.frm.doc.doctype, this.parent_qr_code)) {
+			const is_duplicate = this.frm.doc[this.parent_qr_code]?.includes(qr_code);
+			if(!is_duplicate){
+				const existing_qr_code = this.frm.doc[this.parent_qr_code];
+				let new_qr_code = "";
+				if (!!existing_qr_code) {
+					new_qr_code = existing_qr_code + "\n" + qr_code;
+				} else {
+					new_qr_code = qr_code;
+				}
+
+				await this.frm.set_value(this.parent_qr_code, new_qr_code)
+				await this.frm.set_value(this.total_koli, new_qr_code.split('\n').length)
+			}
 		}
 	}
 
