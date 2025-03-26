@@ -305,7 +305,7 @@ class PackingList(Document):
 		# 	item.actual_qty = frappe.get_value("Bin", {"item_code": item.item_code, "warehouse": item.warehouse}, "stock_value")
 
 @frappe.whitelist()
-def get_items(docname=None, purpose=None, used_item=[]):
+def get_items(docname=None, purpose=None, used_item="[]"):
 
 	if not docname:
 		frappe.throw("Please Select Pick List first")
@@ -334,7 +334,7 @@ def get_items(docname=None, purpose=None, used_item=[]):
 			(doctype.docstatus == 1)
 			& (doctype.parent == docname)
 			& (doctype.packed_qty < doctype.qty)
-		)
+		).orderby(doctype.idx)
 	)
 
 	if purpose == "Material Transfer":
