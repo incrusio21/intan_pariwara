@@ -194,6 +194,7 @@ doc_events = {
         "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.SellingEvent"
 	},
     ("Delivery Note", "Stock Entry"): {
+		"validate": "intan_pariwara.intan_pariwara.custom.stock_event.set_qr_code",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.stock_event.update_status_qr_code",
 		"on_cancel": "intan_pariwara.intan_pariwara.custom.stock_event.update_status_qr_code",
 	},
