@@ -424,23 +424,31 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 	
 	packing = frappe.get_doc("Packing List", source_name)
 	
-	target_doc = make_delivery_note(packing.doc_name)
-	non_packing_item = []
-	for item in target_doc.items:
-		packing_item = packing.get("items", {"document_detail": item.so_detail})
-		if packing_item:
-			remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
-			if item.qty > remaining_qty:
-				item.qty = remaining_qty
+	all_table = (packing.items or []) + (packing.items_retail or [])
+	so_dict = {d.reference for d in all_table}
 
-			item.against_packing_list = packing.name
-			item.packing_list_detail = packing_item[0].name
-			item.warehouse = packing_item[0].warehouse
-		else:
-			non_packing_item.append(item)
+	if not so_dict:
+		frappe.throw("Packing List doesnt have reference")
 
-	for r in non_packing_item:
-		target_doc.remove(r)
+	target_doc = make_delivery_note(list(so_dict)[0], kwargs={"skip_item_mapping": 1})
+	# target_doc.items = []
+	
+	# non_packing_item = []
+	# for item in target_doc.items:
+	# 	packing_item = packing.get("items", {"document_detail": item.so_detail})
+	# 	if packing_item:
+	# 		remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
+	# 		if item.qty > remaining_qty:
+	# 			item.qty = remaining_qty
+
+	# 		item.against_packing_list = packing.name
+	# 		item.packing_list_detail = packing_item[0].name
+	# 		item.warehouse = packing_item[0].warehouse
+	# 	else:
+	# 		non_packing_item.append(item)
+
+	# for r in non_packing_item:
+	# 	target_doc.remove(r)
 
 	target_doc.run_method("calculate_taxes_and_totals")
 
@@ -453,23 +461,30 @@ def make_stock_entry(source_name, target_doc=None, kwargs=None):
 	
 	packing = frappe.get_doc("Packing List", source_name)
 	
-	target_doc = make_stock_entry(packing.doc_name)
-	non_packing_item = []
-	for item in target_doc.items:
-		packing_item = packing.get("items", {"document_detail": item.material_request_item})
-		if packing_item:
-			remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
-			if item.qty > remaining_qty:
-				item.qty = remaining_qty
+	all_table = (packing.items or []) + (packing.items_retail or [])
+	mr_dict = {d.reference for d in all_table}
 
-			item.packing_list = packing.name
-			item.packing_list_item = packing_item[0].name
-			item.s_warehouse = packing_item[0].from_warehouse
-			item.t_warehouse = packing_item[0].warehouse
-		else:
-			non_packing_item.append(item)
+	if not mr_dict:
+		frappe.throw("Packing List doesnt have reference")
 
-	for r in non_packing_item:
-		target_doc.remove(r)
+	target_doc = make_stock_entry(list(mr_dict)[0])
+	target_doc.items = []
+	# non_packing_item = []
+	# for item in target_doc.items:
+	# 	packing_item = packing.get("items", {"document_detail": item.material_request_item})
+	# 	if packing_item:
+	# 		remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
+	# 		if item.qty > remaining_qty:
+	# 			item.qty = remaining_qty
+
+	# 		item.packing_list = packing.name
+	# 		item.packing_list_item = packing_item[0].name
+	# 		item.s_warehouse = packing_item[0].from_warehouse
+	# 		item.t_warehouse = packing_item[0].warehouse
+	# 	else:
+	# 		non_packing_item.append(item)
+
+	# for r in non_packing_item:
+	# 	target_doc.remove(r)
 		
 	return target_doc

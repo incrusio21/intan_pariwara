@@ -13,6 +13,7 @@
   "naming_series",
   "pick_list",
   "purpose",
+  "branch",
   "column_break1",
   "petugas_packing",
   "nama_petugas",
@@ -201,6 +202,7 @@
    "options": "get_actual_qty"
   },
   {
+   "fetch_from": "pick_list.parent_warehouse",
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
@@ -250,12 +252,19 @@
    "label": "Pick List",
    "options": "Pick List",
    "reqd": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-16 21:27:10.871675",
+ "modified": "2025-03-25 08:17:29.336322",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",
