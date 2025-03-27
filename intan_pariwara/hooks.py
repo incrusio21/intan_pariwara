@@ -170,6 +170,7 @@ jinja = {
 
 override_doctype_class = {
 	"Delivery Note": "intan_pariwara.overrides.delivery_note.IPDeliveryNote",
+	"Material Request": "intan_pariwara.overrides.material_request.MaterialRequest",
 	"Quotation": "intan_pariwara.overrides.quotation.Quotation",
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
@@ -261,6 +262,7 @@ scheduler_events = {
 override_whitelisted_methods = {
 	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "intan_pariwara.intan_pariwara.custom.quotation.make_sales_order",
 	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
+    "erpnext.stock.doctype.material_request.material_request.create_pick_list": "intan_pariwara.intan_pariwara.custom.material_request.create_pick_list",
 	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
 	"frappe.model.workflow.apply_workflow": "intan_pariwara.model.workflow.apply_workflow",
