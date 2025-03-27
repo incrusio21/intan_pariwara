@@ -435,17 +435,21 @@ def _get_party_details(
 		# 	"additional_rebate_disc": 0
 		# })
 
-		# if party.get("custom_jenis_relasi"):
-		# 	jenis_relasi = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["cant_have_rebate", "has_relation", "customer_group", "additional_rebate_disc"], as_dict=1)
+		if party.get("custom_jenis_relasi"):
+			jr = frappe.get_value("Jenis Relasi", party.get("custom_jenis_relasi"), ["has_relation", "customer_group", "additional_rebate_disc"], as_dict=1)
 
-		# 	party_details["has_relation"] = jenis_relasi.has_relation
-		# 	party_details["relasi_group"] = jenis_relasi.customer_group
-		# 	party_details["additional_rebate_disc"] = jenis_relasi.additional_rebate_disc
-		# 	if jenis_relasi.cant_have_rebate:
-		# 		party_details["apply_rebate"] = 0 
+			party_details.update({
+				"has_relation": jr.has_relation,
+				"relasi_group": jr.customer_group,
+				"additional_rebate_disc": jr.additional_rebate_disc or 0
+			})
 
-		# if not party_details["has_relation"]:
-		# 	party_details["relasi"] = ""
+		# menghapus isi relasi atau shipping address
+		if not party_details.get("has_relation"):
+			party_details["relasi"] = ""
+		else:
+			party_details.__delattr__("shipping_address_name")
+			party_details.__delattr__("shipping_address")
 
 		# party_details.update(get_price_list_fund(company, party.name, party.get("custom_customer_fund_group")))
 
