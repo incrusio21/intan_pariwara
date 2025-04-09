@@ -61,11 +61,15 @@ def apply_workflow(doc, action, reason=None):
 
         
     new_docstatus = cint(next_state.doc_status)
+    doc.set("is_cancelled", 0)
     if doc.docstatus.is_draft() and new_docstatus == DocStatus.draft():
         doc.save()
     elif doc.docstatus.is_draft() and new_docstatus == DocStatus.submitted():
         doc.submit()
     elif doc.docstatus.is_submitted() and new_docstatus == DocStatus.submitted():
+        if next_state.is_cancelled:
+            doc.set("is_cancelled", 1)
+
         doc.save()
     elif doc.docstatus.is_submitted() and new_docstatus == DocStatus.cancelled():
         doc.cancel()

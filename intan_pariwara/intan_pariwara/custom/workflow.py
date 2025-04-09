@@ -83,3 +83,22 @@ def create_or_update_reason_field(self, meta):
                 "owner": "Administrator",
             }
         ).save()
+
+    if not meta.get_field("is_cancelled"):
+        # create custom field
+        frappe.get_doc(
+            {
+                "doctype": "Custom Field",
+                "dt": self.document_type,
+                "__islocal": 1,
+                "fieldname": "is_cancelled",
+                "label": "Is Cancelled",
+                "insert_after": "workflow_state",
+                "allow_on_submit": 1,
+                "read_only": 1,
+                "hidden": 1,
+                "no_copy": 1,
+                "fieldtype": "Check",
+                "owner": "Administrator",
+            }
+        ).save()
