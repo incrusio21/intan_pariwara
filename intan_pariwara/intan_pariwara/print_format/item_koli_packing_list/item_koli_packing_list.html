@@ -1,20 +1,51 @@
 <style>
     @page
     {
-        size: 100mm 75mm;
+        size: 100mm 73mm;
         margin: 1mm 1mm 1mm 1mm;
     }
 </style>
 
 {% for d in frappe.db.get_all("Qr Code Packing Bundle", filters={"packing_list": doc.name}, 
-    fields=["name", "kode_koli", "is_retail", "data_qr", "total_qty", "packing_docname", "destination", "destination_code"]) %}
+    fields=["name", "kode_koli", "is_retail", "data_qr", "total_qty", "packing_docname", "destination", "destination_code", "kab_kota", "dropship_name"]) %}
 
 {% set item =  frappe.db.get_value("Qr Code Bundle Item", {"parent": d.name}, [
     "item_name","document_name", "from_warehouse", "warehouse"
     ], as_dict=1) %}
-<div style="page-break-inside: avoid;">
-    <div style="display: flex;flex-direction: column;justify-content: space-between;height:73mm;width:98mm;border: 1px solid #000">
-        <table style="width:100%;font-size: 10px;">
+<div class="page-break" style="page-break-inside: avoid;margin-top: 3mm">
+    <div style="display: flex;flex-direction: column;justify-content: space-between;height:68mm;width:98mm;border: 1px solid #000">
+        <div style="display: flex;">
+            <div style="width: 40%">
+                <img src="data:image/svg+xml;base64,{{ d.data_qr|get_qr_svg }}">
+                <p class="text-center" style="font-weight: bold;text-decoration: underline;">
+                    {{ item.document_name }}
+                </p>
+            </div>
+            <div style="width: 60%;display: flex;flex-direction: column;">
+                <div class="text-right" style="padding-right: 10px;padding-top: 5px;">
+                    {{ loop.index }} / {{ loop.length }}
+                </div>
+                <div style="padding-left: 10px;">
+                    Nama Koli : {{ d.kode_koli or "Koli Utuh" }}
+                </div>
+                <div style="padding-left: 10px;padding-top: 10px;">
+                    Isi koli: {{ item.item_name if not d.is_retail else "" }}<br>
+                </div>
+                <div style="padding-left: 10px;padding-top: 10px;">
+                    Koli {{ "Utuh" if not d.is_retail else "Campur" }} (isi : {{ frappe.format_value(d.total_qty) }})
+                </div>
+                <div class="text-center" style="margin: auto;font-size: 14px;">
+                    {{ d.destination or item.warehouse or "" }}
+                    {% if d.dropship_name %}
+                    <br>{{ d.dropship_name }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div  class="text-center" style="padding-top: 10px;font-size: 28px;">
+            <b>{{ d.kab_kota or "" }}</b>
+        </div>
+        <!-- <table style="width:100%;font-size: 10px;">
             <col style="width: 40%">
             <col style="width: 5%">
             <col style="width: 55%">
@@ -53,18 +84,17 @@
             <tr>
                 <td colspan="3" class="text-center" style="font-size: 18px;">
                     {{ item.from_warehouse or d.destination or "" }}<br>
-                    {{ item.warehouse or "" }}
                 </td>
             </tr>
-        </table>
-        {% if d.destination_code %}
+        </table> -->
         <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-top: auto;">
-            <div>&nbsp;</div>
+            <div style="padding: 2px;border-top: 1px solid #000;border-right: 1px solid #000">{{ item.from_warehouse or item.warehouse or "" }}</div>
+            {% if d.destination_code %}
             <div style="padding: 2px;border-top: 1px solid #000;border-left: 1px solid #000">
                 {{ d.destination_code }}
             </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 {% endfor %}
