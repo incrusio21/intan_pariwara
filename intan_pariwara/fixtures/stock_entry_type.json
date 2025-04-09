@@ -16,5 +16,14 @@
   "modified": "2025-03-19 14:46:16.927538",
   "name": "Receipt of Promotional Goods",
   "purpose": "Material Receipt"
+ },
+ {
+  "add_to_transit": 0,
+  "docstatus": 0,
+  "doctype": "Stock Entry Type",
+  "is_standard": 0,
+  "modified": "2025-04-09 13:38:25.979892",
+  "name": "Siplah Titipan",
+  "purpose": "Material Transfer"
  }
 ]

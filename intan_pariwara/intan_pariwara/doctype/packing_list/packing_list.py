@@ -470,6 +470,12 @@ def make_stock_entry(source_name, target_doc=None, kwargs=None):
 		frappe.throw("Packing List doesnt have reference")
 
 	target_doc = make_stock_entry(list(mr_dict)[0])
+
+	if packing.purpose == "Siplah Titipan":
+		target_doc.stock_entry_type = "Siplah Titipan"
+		target_doc.purpose = None
+		target_doc.set_purpose_for_stock_entry()
+	
 	target_doc.items = []
 	# non_packing_item = []
 	# for item in target_doc.items:

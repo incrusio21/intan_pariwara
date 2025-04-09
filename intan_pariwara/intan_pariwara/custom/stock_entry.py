@@ -45,6 +45,19 @@ class StockEntry:
 
                 pr_obj.update_completed_qty(pr_item_rows)
 
+def validasi_siplah_titipan(self, method):
+    if self.stock_entry_type not in ["Siplah Titipan"]:
+        return
+    
+    mr_list = set()
+    for d in self.items:
+        mr_list.add(d.material_request)
+
+    for mr in mr_list:
+        po = frappe.get_value("Material Request", mr, "pre_order")
+        if po != self.pre_order:
+            frappe.throw("Usage of item from Material Reqest {} is restricted due to Pre Order {}".format(mr, po))
+
 @frappe.whitelist()
 def detail_item_request(item, from_warehouse=None, to_warehouse=None):
     ress = {}

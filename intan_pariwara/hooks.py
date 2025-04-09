@@ -99,7 +99,7 @@ fixtures = [
 		"dt": "Stock Entry Type", 
 		"filters": [
             ["name", "in", [
-				"Issue of Promotional Goods","Receipt of Promotional Goods",
+				"Issue of Promotional Goods","Receipt of Promotional Goods", "Siplah Titipan"
 				]
             ]
 		]
@@ -222,6 +222,7 @@ doc_events = {
 		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
 	},
     "Stock Entry": {
+        "validate": "intan_pariwara.intan_pariwara.custom.stock_entry.validasi_siplah_titipan",
         "on_submit": "intan_pariwara.intan_pariwara.custom.stock_entry.StockEntry",
         "on_cancel": "intan_pariwara.intan_pariwara.custom.stock_entry.StockEntry",
 	},

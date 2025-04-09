@@ -97,9 +97,9 @@ class QrCodePackingBundle(Document):
 		pick_list = frappe.qb.DocType("Pick List Item")
 
 		document_name, document_detail = "sales_order", "sales_order_item"
-		if self.packing_purpose == "Material Transfer":
+		if self.packing_purpose in ["Siplah Titipan", "Material Transfer"]:
 			document_name, document_detail = "material_request", "material_request_item"
-
+		
 		query = (
 			frappe.qb.from_(doctype)
 			.inner_join(pick_list)

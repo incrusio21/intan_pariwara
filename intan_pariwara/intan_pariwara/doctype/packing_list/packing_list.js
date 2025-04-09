@@ -46,7 +46,7 @@ frappe.ui.form.on("Packing List", {
 				);
 			}
 
-			if (frm.doc.purpose == "Material Transfer") {
+			if (in_list(["Material Transfer", "Siplah Titipan"], frm.doc.purpose)) {
 				frm.add_custom_button(
 					__("Material Transfer"),
 					() => {
