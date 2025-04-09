@@ -22,7 +22,10 @@
   "status",
   "column_break_ytoe",
   "destination",
-  "destination_code"
+  "destination_code",
+  "kab_kota",
+  "dropship_to",
+  "dropship_name"
  ],
  "fields": [
   {
@@ -53,7 +56,8 @@
    "default": "0",
    "fieldname": "is_retail",
    "fieldtype": "Check",
-   "label": "Is Retail"
+   "label": "Is Retail",
+   "read_only": 1
   },
   {
    "fieldname": "packing_detail",
@@ -133,6 +137,25 @@
    "in_standard_filter": 1,
    "label": "Status",
    "options": "\nNot Used\nUsed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "kab_kota",
+   "fieldtype": "Data",
+   "label": "Kab Kota",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dropship_to",
+   "fieldtype": "Link",
+   "label": "Dropship To",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dropship_name",
+   "fieldtype": "Data",
+   "label": "Dropship Name",
    "read_only": 1
   },
   {
