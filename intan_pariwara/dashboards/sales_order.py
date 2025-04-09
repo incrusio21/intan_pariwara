@@ -6,7 +6,7 @@ from frappe import _
 
 def get_data(data):
     data.non_standard_fieldnames["Usulan Tambahan Rabat"] = "sales_order"
-    data.internal_links["Pre Order"] = ["pre_order"]
+    data.internal_links["Pre Order"] = "pre_order"
     for link in [{"label": _("Fulfillment"), "items": ["Usulan Tambahan Rabat"]},
                  {"label": _("Reference"), "items": ["Pre Order"]}]:
         # Cari transaksi dengan label "Reference"
