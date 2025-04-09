@@ -11,7 +11,9 @@ from intan_pariwara.intan_pariwara.doctype.packing_list.packing_list import get_
 def make_packing_list(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.run_method("set_missing_values")
-		
+		if target.purpose == "Siplah Titipan":
+			target.reference = source.pre_order
+
 		for d in get_items(source.name, source.purpose):
 			if d.qty_per_koli:
 				# Hitung kemasan utuh dan sisa

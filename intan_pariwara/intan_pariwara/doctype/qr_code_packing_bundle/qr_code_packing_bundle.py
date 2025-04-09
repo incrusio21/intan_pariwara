@@ -14,8 +14,8 @@ PACKING_TABLE = {
 
 class QrCodePackingBundle(Document):
 	def validate(self):
-		self.get_prev_doc_detail()
 		self.get_item_detail()
+		self.get_prev_doc_detail()
 		if not self.kode_koli:
 			self.generate_kode_koli()
 
@@ -23,46 +23,73 @@ class QrCodePackingBundle(Document):
 		self.set_status()
 
 	def set_status(self, db_update=False):
-		reference = "Delivery Note Item" if self.packing_purpose == "Delivery" else "Stock Entry Detail"
+		reference = "Delivery Note" if self.packing_purpose == "Delivery" else "Stock Entry"
 
 		doctype = frappe.qb.DocType(reference)
 
 		query = (
 			frappe.qb.from_(doctype)
 			.select(
-				doctype.parent
+				doctype.name
 			).where(
 				(doctype.docstatus == 1)
 				& (
-					(doctype.qr_code_no == self.name) |
-					(doctype.qr_code_no.like(self.name + "\n%")) |
-					(doctype.qr_code_no.like("%\n" + self.name + "\n%")) |
-					(doctype.qr_code_no.like("%\n" + self.name))
+					(doctype.qr_code == self.name) |
+					(doctype.qr_code.like(self.name + "\n%")) |
+					(doctype.qr_code.like("%\n" + self.name + "\n%")) |
+					(doctype.qr_code.like("%\n" + self.name))
 				)
-			)
-			.groupby(doctype.parent)
+			).orderby(doctype.posting_date, doctype.posting_time)
 		)
 
-		qr_code_used = query.run()
-		if len(qr_code_used) > 1:
+		if reference == "Stock Entry":
+			query = query.select(doctype.add_to_transit, doctype.outgoing_stock_entry)
+
+		qr_code_used = query.run(as_dict=1)
+		used_time, transit = 0, []
+		for qr in qr_code_used:
+			if qr.get("add_to_transit"):
+				transit.append(qr.name)
+				continue
+			
+			if qr.get("outgoing_stock_entry") and qr.outgoing_stock_entry not in transit:
+				frappe.throw("QR code not valid. Must be generated from Stock Entry Transit {}".format(",".join(transit)))
+
+			used_time += 1
+		
+		if used_time > 1 or len(transit) > 1:
 			frappe.throw("QR code can only be used once")
-		elif not qr_code_used:
-			self.status = "Not Used"
-		else:
+		elif transit and not used_time:
+			self.status = "Transit"
+		elif qr_code_used and used_time:
 			self.status = "Used"
+		else:
+			self.status = "Not Used"
 
 		if db_update:
 			self.db_update()
 
 	def get_prev_doc_detail(self):
+		doctype = "Sales Order"
 		if self.packing_purpose == "Delivery":
-			fields = ["customer_name", "customer"]
-		elif self.packing_purpose == "Material Transfer":
-			fields = ["branch"]
+			fields = ["branch", "customer_name as destination", "customer as destination_code", "relasi as dropship_to"]
 		
-		detail_doc = frappe.get_value("Pick List", self.pick_list, fields)
-		self.destination, self.destination_code = detail_doc if isinstance(detail_doc, (tuple, list)) else (detail_doc, "")
-	
+		elif self.packing_purpose == "Material Transfer":
+			fields = ["custom_branch as branch", "set_warehouse"]
+			doctype = "Material Request"
+		elif self.packing_purpose == "Siplah Titipan":
+			fields = ["branch", "customer_name as destination", "customer as destination_code", "relasi as dropship_to"]
+			doctype = "Pre Order"
+
+		document = self.reference or (self.items[0].document_name if self.items else self.items_retail[0].document_name)
+		if ref_doc := frappe.get_value(doctype, document, fields, as_dict=1):
+			self.update(ref_doc)
+			
+			self.kab_kota = frappe.get_cached_value("Warehouse", ref_doc.set_warehouse, "custom_kab_kota") \
+				if ref_doc.get("set_warehouse") else frappe.get_cached_value("Branch", ref_doc.branch, "kab_kota")
+			
+			self.dropship_name = frappe.get_cached_value("Customer", ref_doc.dropship_to, "customer_name") if ref_doc.get("dropship_to") else ""
+
 	def get_item_detail(self):
 		self.items = []
 
@@ -115,8 +142,8 @@ class QrCodePackingBundle(Document):
 			self.kode_koli = frappe.get_cached_value("Item", self.items[0].item_code, "custom_kode_koli")
 
 	def generate_data_qr(self):
-		self.data_qr = f"{self.name}:" ",".join(
-			f"{d.document_name}:{d.document_detail}:{d.item_code}:{d.get_formatted('qty')}"
+		self.data_qr = f"{self.name}:" + ",".join(
+			f"{d.document_name}:{d.item_code}:{d.get_formatted('qty')}"
 			for d in self.items
 		)
 			

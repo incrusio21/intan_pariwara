@@ -7,6 +7,7 @@
  "field_order": [
   "packing_list",
   "kode_koli",
+  "reference",
   "column_break_inct",
   "is_retail",
   "packing_detail",
@@ -90,7 +91,7 @@
    "fieldtype": "Select",
    "label": "Packing Purpose",
    "no_copy": 1,
-   "options": "Material Transfer\nDelivery",
+   "options": "Material Transfer\nDelivery\nSiplah Titipan",
    "read_only": 1
   },
   {
@@ -133,11 +134,18 @@
    "label": "Status",
    "options": "\nNot Used\nUsed",
    "read_only": 1
+  },
+  {
+   "fieldname": "reference",
+   "fieldtype": "Data",
+   "label": "Reference",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-20 13:27:28.642619",
+ "modified": "2025-04-09 09:01:13.522578",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Qr Code Packing Bundle",

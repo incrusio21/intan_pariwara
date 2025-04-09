@@ -13,7 +13,7 @@
   "naming_series",
   "pick_list",
   "purpose",
-  "branch",
+  "reference",
   "column_break1",
   "petugas_packing",
   "nama_petugas",
@@ -60,6 +60,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
+   "no_copy": 1,
    "options": "PAC-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
@@ -202,7 +203,6 @@
    "options": "get_actual_qty"
   },
   {
-   "fetch_from": "pick_list.parent_warehouse",
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
@@ -215,7 +215,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Purpose",
-   "options": "Material Transfer\nDelivery"
+   "options": "Material Transfer\nDelivery\nSiplah Titipan"
   },
   {
    "fieldname": "section_break_oazc",
@@ -254,17 +254,17 @@
    "reqd": 1
   },
   {
-   "fieldname": "branch",
-   "fieldtype": "Link",
-   "label": "Branch",
-   "options": "Branch",
+   "fieldname": "reference",
+   "fieldtype": "Data",
+   "label": "Reference",
+   "no_copy": 1,
    "read_only": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-25 08:17:29.336322",
+ "modified": "2025-04-09 08:52:06.061527",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",

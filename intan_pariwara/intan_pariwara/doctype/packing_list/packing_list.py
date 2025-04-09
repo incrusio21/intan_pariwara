@@ -250,6 +250,7 @@ class PackingList(Document):
 			qr_code = frappe.new_doc("Qr Code Packing Bundle")
 			qr_code.kode_koli = frappe.get_cached_value("Item", d.item_code, "custom_kode_koli")
 			qr_code.packing_list = self.name
+			qr_code.reference = self.reference
 			qr_code.packing_detail= d.name
 			qr_code.packing_purpose = self.purpose
 			qr_code.pick_list = self.pick_list
@@ -264,6 +265,7 @@ class PackingList(Document):
 			qr_code = frappe.new_doc("Qr Code Packing Bundle")
 			qr_code.is_retail = 1
 			qr_code.packing_list = self.name
+			qr_code.reference = self.reference
 			qr_code.packing_detail= d.retail_key
 			qr_code.packing_purpose = self.purpose
 			qr_code.pick_list = self.pick_list
@@ -337,7 +339,7 @@ def get_items(docname=None, purpose=None, used_item="[]"):
 		).orderby(doctype.idx)
 	)
 
-	if purpose == "Material Transfer":
+	if purpose in ["Material Transfer", "Siplah Titipan"]:
 		mr_item = frappe.qb.DocType("Material Request Item")
 		query = (
 			query.inner_join(mr_item)
