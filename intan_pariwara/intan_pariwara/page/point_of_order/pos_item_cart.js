@@ -381,6 +381,8 @@ erpnext.PointOfOrder.ItemCart = class {
 					fieldtype: "Link",
 					options: "Seller",
 					placeholder: __("Select Selller"),
+					options: "Seller",
+					placeholder: __("Select Selller"),
 					reqd: 1,
 					fieldname: "seller",
 					default: frm.doc.seller,
@@ -1044,6 +1046,7 @@ erpnext.PointOfOrder.ItemCart = class {
 					<div class="loyalty_points-field"></div>
 					<div class="fund_source-field"></div>
 					<div class="seller-field"></div>
+					<div class="seller-field"></div>
 					<div class="delivery_date-field"></div>
 					<div class="payment_date-field"></div>
 					<div class="relasi-field"></div>
@@ -1151,6 +1154,8 @@ erpnext.PointOfOrder.ItemCart = class {
 			{
 				fieldname: "seller",
 				label: __("Seller"),
+				fieldname: "seller",
+				label: __("Seller"),
 				fieldtype: "Link",
 				options: "Seller",
 				placeholder: __("Enter Seller"),
@@ -1184,6 +1189,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			{
 				fieldname: "relasi",
 				label: __("Dropship To"),
+				label: __("Dropship To"),
 				fieldtype: "Link",
 				options: "Customer",
 				placeholder: __("Select Relasi"),
@@ -1198,6 +1204,7 @@ erpnext.PointOfOrder.ItemCart = class {
 			},
 			{
 				fieldname: "relasi_name",
+				label: __("Dropship Name"),
 				label: __("Dropship Name"),
 				fieldtype: "Read Only",
 				hidden: !frm.doc.has_relation,

@@ -505,6 +505,7 @@ erpnext.PointOfOrder.ItemSelector = class {
 	async update_filtered_item({ seller=null, price_list=null, produk_inti=null }) {
 
 		if(price_list){
+		if(price_list){
 			this.price_list = price_list
 		}
 

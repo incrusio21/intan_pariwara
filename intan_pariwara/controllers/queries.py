@@ -76,6 +76,15 @@ def get_price_list_fund(
         })
     
     # menghapus isi relasi
+        jr = frappe.get_value("Jenis Relasi", party.custom_jenis_relasi, ["cant_have_rebate", "additional_rebate_disc", "has_relation", "customer_group"], as_dict=1)
+        party_details.update({
+            "apply_rebate": 0 if jr.cant_have_rebate else party_details["apply_rebate"],
+            "additional_rebate_disc": jr.additional_rebate_disc or 0,
+            "has_relation": jr.has_relation,
+            "relasi_group": jr.customer_group
+        })
+    
+    # menghapus isi relasi
     if not party_details["has_relation"]:
         party_details["relasi"] = ""
     # else:

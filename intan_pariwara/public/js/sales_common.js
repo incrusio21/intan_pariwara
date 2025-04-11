@@ -290,6 +290,7 @@ intan_pariwara.sales_common = {
                 this.get_price_list_fund(doc)
             }
             
+            
             rebate(doc, cdt, cdn) {
                 var item = frappe.get_doc(cdt, cdn);
                 if(doc.apply_rebate && doc.is_max_rebate_applied && 
@@ -422,7 +423,13 @@ intan_pariwara.sales_common = {
             }
 
             get_price_list_fund(doc, force=false){
+            get_price_list_fund(doc, force=false){
                 var me = this;
+
+                // memastikan tidak ada perubahan
+                if(frappe.flags.trigger_from_customer && !force){
+                    frappe.flags.trigger_from_customer = false
+                    return
 
                 // memastikan tidak ada perubahan
                 if(frappe.flags.trigger_from_customer && !force){

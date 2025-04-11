@@ -16,6 +16,7 @@ class PreOrder(AccountsController, SellingController):
 		super().validate()
 		self.validate_expected_date()
 		self.validate_items()
+		self.validate_items()
 		self.get_receivable_amount()
 		self.set_status()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
