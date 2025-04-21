@@ -1,0 +1,110 @@
+<table class="header-table">
+    <tbody>
+        <tr>
+            <td colspan="3">
+            {% if doc.custom_print_counter >= 1%}
+                HAS PRINTED
+            {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <img src="/files/Logo-IP-Outlook-n3e1tg0l.png"/>
+            </td>
+        </tr>
+        <tr>
+            <td width="30%">Picking List</td>
+            <td width="5%">:</td>
+            <td>{{ doc.name }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class='info-table'>
+    <tbody>
+        <tr>
+            <td width="52%">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td width="36%">Purpose</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.purpose }}</td>
+                        </tr>
+                        <tr>
+                            <td width="36%">Picked By</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.custom_nama_petugas }}</td>
+                        </tr>
+                        <tr>
+                            <td width="36%">Notes</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.custom_notes or "" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td width="48%">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td width="39%">Picking Status</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.custom_picking_status or "" }}</td>
+                        </tr>
+                        <tr>
+                            <td width="39%">{{ "Customer" if doc.purpose == "Delivery" else "Branch" }}</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.customer_name if doc.purpose == "Delivery" else frappe.db.get_value("Material Request",doc.material_request,"set_warehouse") }}</td>
+                        </tr>
+                        <tr>
+                            <td width="39%">WH</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.parent_warehouse or "" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class='line'></div>
+
+<table class='item-table'>
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Product</th>
+            <th>Qty to Fullfill</th>
+            <th>Qty On Hand</th>
+            <th>Picked Qty</th>
+            <th>Qty/Box</th>
+            <th>Koli Utuh</th>
+            <th>Koli Ecer</th>
+            <th>Nama Koli</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in doc.locations %}
+            {% set koli = qty_koli(row.qty, row.qtybox)%}
+            <tr>
+                <td>{{ row.idx }}</td>
+                <td>{{ row.item_code }} <br> {{ row.item_name }}</td>
+                <td>{{ row.get_formatted('qty') }}</td>
+                <td>{{ row.get_formatted('stock_qty') }}</td>
+                <td></td>
+                <td>{{ row.get_formatted('qtybox') }}</td>
+                <td>{{ frappe.format_value(koli["utuh"]) }}</td>
+                <td>{{ frappe.format_value(koli["retail"]) }}</td>
+                <td></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class='line'></div>
+
+<div>
+    Printed On {{ frappe.utils.today() }}
+</div>

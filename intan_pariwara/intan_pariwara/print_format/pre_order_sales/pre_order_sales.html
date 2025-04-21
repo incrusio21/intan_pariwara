@@ -1,0 +1,203 @@
+<div class="form-container">
+
+    <table style="width: 100%;font-size: inherit;">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 42%">
+        <col style="width: 30%">
+        <tr>
+            <td colspan="4">
+                {{ doc.company }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                {{ "-" }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                {{ "-" }}
+            </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td class="text-center" colspan="4">
+                <b style="font-size: large;">PRE-ORDER (PO)</b>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center" colspan="4" style="border-bottom: 3px double #000;">
+                {{ doc.name }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Customer Name</td>
+            <td>:</td>
+            <td>{{ doc.customer_name }}</td>
+            <td>To:</td>
+        </tr>
+        <tr>
+            <td>Contact Number</td>
+            <td>:</td>
+            <td>{{ doc.contact_mobile or "" }}</td>
+            <td>{{ doc.seller }}</td>
+        </tr>
+        {% set seller = frappe.db.get_value("Seller", doc.seller, ["address", "mobile_no"], as_dict=1) %}
+        <tr>
+            <td>Address</td>
+            <td>:</td>
+            <td>{{ doc.address_display or "" }}</td>
+            <td>
+                {{ seller.address or "" }}
+                <br>
+                {{ seller.mobile_no or "" }}
+            </td>
+        </tr>
+        <tr>
+            <td>Position</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        {% set customer = frappe.db.get_value("Customer", doc.customer, ["custom_jumlah_siswa"], as_dict=1) %}
+        <!-- <tr>
+            <td>Jumlah Siswa</td>
+            <td>:</td>
+            <td>{{ customer.custom_jumlah_siswa or "" }}</td>
+        </tr>
+        <tr>
+            <td>System Distribusi</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr> -->
+        <tr>
+            <td>Transaction Type</td>
+            <td>:</td>
+            <td>{{ doc.transaction_type }}</td>
+        </tr>
+        <tr>
+            <td>Fund Source</td>
+            <td>:</td>
+            <td>{{ doc.fund_source }}</td>
+        </tr>
+        <tr>
+            <td>Expected Delivery Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
+        </tr>
+        <tr>
+            <td>Expected Payment Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
+        </tr>
+        <tr>
+            <td>Probable SIPLah</td>
+            <td>:</td>
+            <td>{{ doc.custom_calon_siplah }}</td>
+        </tr>
+        <tr>
+            <td>Cooperation</td>
+            <td>:</td>
+            <td>{{ doc.kerjasama or "" }}</td>
+        </tr>
+        <tr>
+            <td>Notes</td>
+            <td>:</td>
+            <td>{{ doc.notes or "" }}</td>
+        </tr>
+        <tr>
+            <td>Sales Person</td>
+            <td>:</td>
+            <td>{{ doc.sales_person or "" }}</td>
+        </tr>
+        <tr>
+            <td>Last Action</td>
+            <td>:</td>
+            <td>{{ doc.workflow_state }}</td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered" style="width: 100%;font-size: inherit;">
+        <col style="width: 5%">
+        <col style="width: 17%">
+        <col style="width: 24%">
+        <col style="width: 8%">
+        <col style="width: 12%">
+        <col style="width: 16%">
+        <col style="width: 18%">
+        <tr>
+            <td class="text-center">No</td>
+            <td class="text-center">Item Code</td>
+            <td class="text-center">Item Name</td>
+            <td class="text-center">Qty</td>
+            <td class="text-center">UoM</td>
+            <td class="text-center">Rate</td>
+            <td class="text-center">Amount</td>
+        </tr>
+        {% set total = {"grand_total": 0 } %}
+        {% for d in doc.items %}
+        {# d.amount if relasi != "Reseller" else #}
+        {% set sub_total = (d.price_list_rate * d.qty) %}
+        <tr>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("uom") }}</td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("price_list_rate") }}
+            </td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total,
+                currency=doc.currency) }}</td>
+        </tr>
+        {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
+        {% endfor %}
+        <tr>
+            <td class="text-center" colspan="3  ">Total Quantity</td>
+            <td class="text-center">{{ doc.get_formatted("total_qty") }}</td>
+            <td class="text-right">&nbsp;</td>
+            <td class="text-center">Total Amount</td>
+            <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
+        </tr>
+    </table>
+
+    <table style="width: 100%;font-size: inherit;margin-top:10px">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 38%">
+        <col style="width: 34%">
+        <tr>
+            <td>Ship To</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.address_display or "" }}</td>
+        </tr>
+        <tr>
+            <td>Bill To</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.address_display or "" }}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                Date {{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") }}
+            </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td>{{ doc.customer }}</td>
+            <td colspan="2">&nbsp;</td>
+            <td>{{ doc.sales_person or "" }}</td>
+        </tr>
+    </table>
+</div>

@@ -1,12 +1,12 @@
 <div class="form-container">
-    
+
     <table style="width: 100%;font-size: inherit;">
         <col style="width: 25%">
         <col style="width: 3%">
         <col style="width: 72%">
         <tr>
             <td class="text-center" colspan="3">
-                <b style="font-size: x-large;">PRE ORDER</b>
+                <b style="font-size: x-large;">PROFORMA INVOICE</b>
             </td>
         </tr>
         <tr>
@@ -76,7 +76,7 @@
             <td colspan="3">&nbsp;</td>
         </tr>
     </table>
-    
+
     <table class="table-bordered" style="width: 100%;font-size: inherit;">
         <col style="width: 8%">
         <col style="width: 22%">
@@ -94,25 +94,28 @@
         </tr>
         {% set total = {"grand_total": 0 } %}
         {% for d in doc.items %}
-            {# d.amount if relasi != "Reseller" else  #}
-            {% set sub_total = (d.price_list_rate * d.qty) %}
-            <tr>
-                <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
-                <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
-                <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
-                <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("price_list_rate") }}</td>
-                <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
-                <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total, currency=doc.currency) }}</td>
-            </tr>
-            {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
+        {# d.amount if relasi != "Reseller" else #}
+        {% set sub_total = (d.price_list_rate * d.qty) %}
+        <tr>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ d.get_formatted("price_list_rate") }}
+            </td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total,
+                currency=doc.currency) }}</td>
+        </tr>
+        {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
         {% endfor %}
         <tr>
             <td class="text-center" colspan="5">TOTAL</td>
             <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
         </tr>
     </table>
-    
+
     <p>*Harga sudah termasuk pajak, dan biaya angkos kirim.</p>
-    <p>*Barang bisa diterima maksimal 30 hari sejak penerimaan.</p>
-    <p>*Pesanan ini sah tanpa tanda tangan dan stempel customer karena sudah diganti dengan tanda tangan elektronik (One Time Password).</p>
+    <p>*Barang yang sudah diterima tidak bisa dikembalikan.</p>
+    <p>*Pesanan ini sah tanpa tanda tangan dan stempel customer karena sudah diganti dengan tanda tangan elektronik (One
+        Time Password).</p>
 </div>

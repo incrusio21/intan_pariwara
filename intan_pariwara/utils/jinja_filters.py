@@ -23,10 +23,39 @@ def get_qr_svg(data):
     svg = ""
     stream = BytesIO()
     try:
-        url.svg(stream, scale=4, quiet_zone=2, module_color="#222")
+        url.svg(stream, scale=4, quiet_zone=1, module_color="#222")
         svg = stream.getvalue().decode().replace("\n", "")
         svg = b64encode(svg.encode())
     finally:
         stream.close()
 
     return svg.decode()
+
+def get_item_per_koli(items):
+    """Get Item List Per Koli."""
+    target = []
+    for d in items:
+        item = d.as_dict().copy()
+
+        quantity = item.qty
+        qty_per_koli = frappe.get_cached_value("Item", item.item_code, "qty_per_koli")
+        if qty_per_koli:
+            # Hitung kemasan utuh dan sisa
+            full_packs, quantity = divmod(quantity, qty_per_koli)
+            # Tambahkan kemasan utuh ke package
+            target.extend([{**item, "qty": qty_per_koli} for _ in range(int(full_packs))])
+        else:
+            target.append(item)
+            quantity = 0
+
+        # Tambahkan sisa ke retail
+        if quantity > 0:
+            item.is_retail = 1
+            target.append({**item, "qty": quantity})
+
+    return target
+
+def qty_koli(qty, qty_per_koli):
+    full_packs, quantity = divmod(qty, qty_per_koli)
+
+    return {"utuh": full_packs, "retail": quantity}

@@ -1,0 +1,176 @@
+<table class="header-table">
+    <tbody>
+        <tr>
+            <td class='brand' colspan='3'>
+                <img src="/files/Logo-IP-Outlook-n3e1tg0l.png"/><br>Delivery Note
+            </td>
+        </tr>
+        <tr>
+            <td width="22%">No. Delivery</td>
+            <td width="4%">:</td>
+            <td>{{ doc.name }}</td>
+        </tr>
+        <tr>
+            <td width="22%">No. Sales Order</td>
+            <td width="4%">:</td>
+            <td>{{ doc.items[0].against_sales_order }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class='line' style ='margin-bottom: 0.5rem !important;'></div>
+
+<table class='info-table'>
+    <tbody>
+        <tr>
+            <td width="60%">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td width="38%">Customer Name</td>
+                            <td width="6%">:</td>
+                            <td>{{ frappe.db.get_value("Customer",doc.customer,"custom_penanggung_jawab") or "" if doc.has_relation == 0 else frappe.db.get_value("Customer",doc.relasi,"custom_penanggung_jawab") or "" }}</td>
+                        </tr>
+                        <tr>
+                            <td width="38%">Instansi</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.customer_name if doc.has_relation == 0 else frappe.db.get_value("Customer",doc.relasi,"customer_name") or ""  }}</td>
+                        </tr>
+                        <tr>
+                            <td width="38%">Address</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.address_display or "" }}</td>
+                        </tr>
+                        <tr>
+                            <td width="38%">Mobile No</td>
+                            <td width="6%">:</td>
+                            <td>{{ frappe.db.get_value("Contact",doc.contact_person,"mobile_no") or ""  }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td width="40%">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td width="48%">Delivery Date</td>
+                            <td width="10%">:</td>
+                            <td>{{ doc.get_formatted("posting_date") }}</td>
+                        </tr>
+                        <tr>
+                            <td width="48%">Transaction Type</td>
+                            <td width="10%">:</td>
+                            <td>{{ doc.transaction_type or "" }}</td>
+                        </tr>
+                        <tr>
+                            <td width="48%">Branch</td>
+                            <td width="10%">:</td>
+                            <td>{{ doc.branch or "" }}</td>
+                        </tr>
+                        <tr>
+                            <td width="39%">Source Warehouse</td>
+                            <td width="6%">:</td>
+                            <td>{{ doc.set_warehouse or "" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+<table class='item-table'>
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>UOM </th>
+            <th>Accepted</th>
+            <th>Rejected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in doc.items %}
+            <tr>
+                <td>{{ row.idx }}</td>
+                <td>{{ row.item_code }} </td>
+                <td>{{ row.item_name }}</td>
+                <td>{{ row.get_formatted('qty') }}</td>
+                <td>{{ row.uom }}</td>
+                <td></td>
+                <td></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class='total-table'>
+    <tbody>
+        <tr>
+            <td>Total Quantity</td>
+            <td>:</td>
+            <td>{{ doc.get_formatted("total_qty") }}</td>
+        </tr>
+            <tr>
+                <td>Total Box</td>
+                <td>:</td>
+                <td>{{ doc.get_formatted("total_koli") }}</td>
+            </tr>
+    </tbody>
+</table>
+
+
+
+<table class='deliver-table'>
+    <tbody>
+        <tr>
+            <td width="42%">Deliver To</td>
+            <td width="5%">:</td>
+            <td>{{ doc.shipping_address or "" }}</td>
+        </tr>
+            <tr>
+                <td width="42%">Deliver From</td>
+                <td width="5%">:</td>
+                <td>{{ frappe.db.get_value("Seller",doc.seller,"address") or "" }}</td>
+            </tr>
+    </tbody>
+</table>
+
+<table border=1 style="width:100%; text-align:center; font-size:8pt">
+    <colgroup>
+        <col style="width:25%">
+        <col style="width:25%">
+        <col style="width:25%">
+        <col style="width:25%">
+    </colgroup>
+    <tbody>
+        <tr>
+            <td>Warehouse Officer</td>
+            <td>Logistic Officer</td>
+            <td>BO Officer</td>
+            <td>Customer</td>
+        </tr>
+        <tr>
+            <td><br><br><br><br>(TTD)</td>
+            <td><br><br><br><br>(TTD)</td>
+            <td><br><br><br><br>(TTD)</td>
+            <td><br><br><br><br>(TTD)</td>
+        </tr>
+        <tr>
+            <td>{{ frappe.db.get_value("User",doc.owner,"full_name") }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>{{ doc.customer_name }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div style="font-size:8pt; margin-top: 1rem !important;">
+    Note :
+    <br>1. Delivery Note ini merupakan dokumen resmi dan sah yang dikeluarkan oleh Seller sebagai bukti penyerahan barang kepada Customer.
+    <br>2. Para pihak wajib menandatangani Delivery Note disertai dengan nama terang.
+</div>

@@ -29,7 +29,7 @@
                     Nama Koli : {{ d.kode_koli or "Koli Utuh" }}
                 </div>
                 <div style="padding-left: 10px;padding-top: 10px;">
-                    Isi koli: {{ item.item_name if not d.is_retail else "" }}<br>
+                    Isi koli: {{ item.item_name|truncate(70,"...") if not d.is_retail else "" }}<br>
                 </div>
                 <div style="padding-left: 10px;padding-top: 10px;">
                     Koli {{ "Utuh" if not d.is_retail else "Campur" }} (isi : {{ frappe.format_value(d.total_qty) }})
@@ -89,6 +89,7 @@
         </table> -->
         <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-top: auto;">
             <div style="padding: 2px;border-top: 1px solid #000;border-right: 1px solid #000">{{ item.from_warehouse or item.warehouse or "" }}</div>
+            <div style="padding: 2px;">{{ doc.name }}</div>
             {% if d.destination_code %}
             <div style="padding: 2px;border-top: 1px solid #000;border-left: 1px solid #000">
                 {{ d.destination_code }}

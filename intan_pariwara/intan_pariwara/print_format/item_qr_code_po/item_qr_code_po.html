@@ -1,0 +1,38 @@
+<style>
+    @page
+    {
+        size: 100mm 73mm;
+        margin: 1mm 1mm 1mm 1mm;
+    }
+</style>
+
+{% set items = get_item_per_koli(doc.items) %}
+{% for d in items %}
+    {% set code = doc.transaction_date|string +";241217/YOSHC/S1;"+d.item_code+";"+doc.name+";"+d.qty|string+";2;"+loop.index|string %}
+    <div class="page-break" style="page-break-inside: avoid;margin-top: 3mm">
+        <div style="display: flex;flex-direction: column;justify-content: space-between;height:68mm;width:98mm;border: 1px solid #000">
+            <div style="display: flex;">
+                <div style="width: 40%">
+                    <img src="data:image/svg+xml;base64,{{ code|get_qr_svg }}">
+                    <p class="text-center" style="font-weight: bold;text-decoration: underline;">
+                        {{ doc.name }}
+                    </p>
+                </div>
+                <div style="width: 60%;display: flex;flex-direction: column;">
+                    <div class="text-right" style="padding-right: 10px;padding-top: 5px;">
+                        {{ loop.index }} / {{ loop.length }}
+                    </div>
+                    <div style="padding-left: 10px;padding-top: 10px;">
+                        Isi koli: {{ d.item_name }}<br>
+                    </div>
+                    <div style="padding-left: 10px;padding-top: 10px;">
+                        Koli {{ "Utuh" if not d.is_retail else "Campur" }} (isi : {{ frappe.format_value(d.qty) }})
+                    </div>
+                </div>
+            </div>
+            <div  class="text-center" style="padding-top: 10px;font-size: 28px;">
+                <b>{{ doc.supplier_name }}</b>
+            </div>
+        </div>
+    </div>
+{% endfor %}
