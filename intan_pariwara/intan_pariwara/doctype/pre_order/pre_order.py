@@ -148,11 +148,6 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 		
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
-		if source.sales_person:
-			target.append("sales_team", {
-				"sales_person": source.sales_person,
-				"allocated_percentage": 100,
-			})
 
 	def update_item(obj, target, source_parent):
 		target.qty = obj.qty - obj.ordered_qty
