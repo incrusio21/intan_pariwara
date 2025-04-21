@@ -89,8 +89,11 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             for item in self.doc.items:
                 self.doc.round_floats_in(item)
                 item.rebate_amount = 0
+                # pastikan tidak ada doble rabate dan discount
                 if not apply_rebate:
-                    item.rebate = 0
+                    item.rebate = item.rebate_rate = 0
+                else:
+                    item.discount_percentage = item.discount_amount = 0
 
                 # set nilai rebate sesuai dengan rebate max dan fix dari doctype item 
                 item.rebate_max, item.rebate_fix = frappe.get_cached_value("Item", item.item_code, ["custom_rabat_max", "custom_cb"]) or [0, 0]
@@ -103,6 +106,7 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
                 if item.discount_percentage == 100:
                     item.rate = 0.0
                 elif item.price_list_rate:
+                    item.rate = item.price_list_rate
                     if not item.rate or item.discount_percentage > 0:
                         item.rate = flt(
                             item.price_list_rate * (1.0 - (item.discount_percentage / 100.0)),
@@ -113,6 +117,11 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
 
                     elif item.discount_amount and item.pricing_rules:
                         item.rate = item.price_list_rate - item.discount_amount
+
+                    if item.rebate_rate and not item.rebate:
+                        item.rebate = flt(item.rebate_rate / item.price_list_rate * 100, item.precision("rebate"))
+                    elif not item.rebate_rate:
+                        item.rebate_rate = flt(item.price_list_rate * item.rebate / 100, item.precision("rebate_rate"))
 
                 if item.doctype in [
                     "Pre Order Item"
@@ -139,11 +148,11 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
 
                     elif flt(item.price_list_rate) > 0:
                         item.discount_amount = item.price_list_rate - item.rate
+                        
                 elif flt(item.price_list_rate) > 0 and not item.discount_amount:
                     item.discount_amount = item.price_list_rate - item.rate
 
                 item.net_rate = item.rate
-                item.rebate_rate = flt(item.price_list_rate * item.rebate / 100, item.precision("rebate_rate"))
 
                 if (
                     not item.qty
