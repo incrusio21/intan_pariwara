@@ -169,6 +169,7 @@ jinja = {
 # Override standard doctype classes
 
 override_doctype_class = {
+	"Customer": "intan_pariwara.overrides.customer.Customer",
 	"Delivery Note": "intan_pariwara.overrides.delivery_note.IPDeliveryNote",
 	"Material Request": "intan_pariwara.overrides.material_request.MaterialRequest",
 	"Quotation": "intan_pariwara.overrides.quotation.Quotation",
