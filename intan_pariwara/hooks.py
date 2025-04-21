@@ -214,7 +214,10 @@ doc_events = {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.purchase_receipt.validate_duplicate_qr",
 	},
     "Sales Order": {
-		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.create_material_request",
+		"before_validate": "intan_pariwara.intan_pariwara.custom.sales_order.SalesOrder",
+		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_order.SalesOrder",
+		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_order.SalesOrder",
+		"validate": "intan_pariwara.intan_pariwara.custom.sales_order.SalesOrder",
 	},
     "Sales Invoice": {
         "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
