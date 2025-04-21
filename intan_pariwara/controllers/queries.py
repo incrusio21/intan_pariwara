@@ -14,6 +14,7 @@ from erpnext.stock.get_item_details import apply_price_list_on_item, get_price_l
 def get_price_list_fund(
     company,
     customer,
+    relasi=None,
     fund_source=None,
     seller=None,
     transaction_type=None,
@@ -43,7 +44,7 @@ def get_price_list_fund(
         )
 
         # Get price list
-        filters = {"parent": customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer", "kumer": produk_type.get("kumer", 0)}
+        filters = {"parent": relasi or customer, "fund_source_type": c_fund.fund_source_type, "parenttype": "Customer", "kumer": produk_type.get("kumer", 0)}
         party_details["selling_price_list"] = frappe.get_value(
             "Fund Source Detail", {**filters, "seller": seller }, "price_list") \
                 or frappe.get_value("Fund Source Detail", filters, "price_list") or party_details["selling_price_list"]
@@ -160,9 +161,8 @@ def apply_price_list(args, as_doc=False, doc=None):
                 item_details.discount_percentage = 0.0
             else:
                 item_details.rebate = 0.0
-                if item_details.get("discount_percentage"):
-                    item_details.__delattr__("discount_percentage")
-                    item_details.__delattr__("discount_amount")
+                item_details.__delattr__("discount_percentage")
+                item_details.__delattr__("discount_amount")
 
             item_details.rebate_max, item_details.rebate_fix = frappe.get_cached_value("Item", args_copy.item_code, ["custom_rabat_max","custom_cb"])
             if is_fixed:

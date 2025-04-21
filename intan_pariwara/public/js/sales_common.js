@@ -29,6 +29,51 @@ intan_pariwara.sales_common = {
                 })
             }
 
+            setup() {
+                super.setup();
+                
+                frappe.ui.form.off(this.frm.doctype + " Item", "rate")
+                frappe.ui.form.on(this.frm.doctype + " Item", "rate", function(frm, cdt, cdn) {
+                    var item = frappe.get_doc(cdt, cdn);
+                    var has_margin_field = frappe.meta.has_field(cdt, 'margin_type');
+        
+                    frappe.model.round_floats_in(item, ["rate", "price_list_rate"]);
+        
+                    if(item.price_list_rate && !item.blanket_order_rate) {
+                        if(frm.doc.apply_rebate){
+                            item.price_list_rate = item.rate
+                        }
+
+                        if(item.rate > item.price_list_rate && has_margin_field) {
+                            // if rate is greater than price_list_rate, set margin
+                            // or set discount
+                            item.discount_percentage = 0;
+                            item.margin_type = 'Amount';
+                            item.margin_rate_or_amount = flt(item.rate - item.price_list_rate,
+                                precision("margin_rate_or_amount", item));
+                            item.rate_with_margin = item.rate;
+                        } else {
+                            item.discount_percentage = flt((1 - item.rate / item.price_list_rate) * 100.0,
+                                precision("discount_percentage", item));
+                            item.discount_amount = flt(item.price_list_rate) - flt(item.rate);
+                            item.margin_type = '';
+                            item.margin_rate_or_amount = 0;
+                            item.rate_with_margin = 0;
+                        }
+                    } else {
+                        item.discount_percentage = 0.0;
+                        item.margin_type = '';
+                        item.margin_rate_or_amount = 0;
+                        item.rate_with_margin = 0;
+                    }
+                    item.base_rate_with_margin = item.rate_with_margin * flt(frm.doc.conversion_rate);
+                    
+                    cur_frm.cscript.set_gross_profit(item);
+                    cur_frm.cscript.calculate_taxes_and_totals();
+                    cur_frm.cscript.calculate_stock_uom_rate(frm, cdt, cdn);
+                });
+            }
+
             setup_queries() {
 				super.setup_queries();
                 var me = this;
@@ -56,28 +101,30 @@ intan_pariwara.sales_common = {
                 });
 			}
 
-            // relasi() {
-			// 	var me = this;
-            //     frappe.call({
-            //         method: "intan_pariwara.controllers.queries.get_shipping_details",
-            //         args: {
-            //             relasi: me.frm.doc.relasi,
-            //             doctype: me.frm.doc.doctype
-            //         },
-            //         callback: function (r) {
-            //             if (r.message) {
-            //                 me.frm.updating_party_details = true;
-            //                 frappe.run_serially([
-            //                     () => me.frm.set_value(r.message),
-            //                     () => {
-            //                         me.frm.updating_party_details = false;
-            //                         me.frm.refresh();
-            //                     },
-            //                 ]);
-            //             }
-            //         },
-            //     });
-			// }
+            relasi(doc) {
+				var me = this;
+                frappe.call({
+                    method: "intan_pariwara.controllers.queries.get_shipping_details",
+                    args: {
+                        relasi: me.frm.doc.relasi,
+                        doctype: me.frm.doc.doctype
+                    },
+                    callback: function (r) {
+                        if (r.message) {
+                            me.frm.updating_party_details = true;
+                            frappe.run_serially([
+                                () => me.frm.set_value(r.message),
+                                () => {
+                                    me.frm.updating_party_details = false;
+                                    me.get_price_list_fund(doc, true)
+                                    me.frm.refresh();
+                                },
+                            ]);
+                        }
+                    },
+                });
+			}
+
 
             item_code(doc, cdt, cdn) {
                 var me = this;
@@ -295,12 +342,13 @@ intan_pariwara.sales_common = {
             
             rebate(doc, cdt, cdn) {
                 var item = frappe.get_doc(cdt, cdn);
-                if(doc.apply_rebate && doc.is_max_rebate_applied && 
-                    item.rebate_max && item.rebate > item.rebate_max){
-                    frappe.msgprint(__("Maximum Rebate limit exceeded."))
-                    item.rebate = item.rebate_max
-                }
-        
+                item.rebate_rate = 0.0
+                this.price_list_rate(doc, cdt, cdn)
+            }
+
+            rebate_rate(doc, cdt, cdn) {
+                var item = frappe.get_doc(cdt, cdn);
+                item.rebate = 0.0
                 this.price_list_rate(doc, cdt, cdn)
             }
             
@@ -314,6 +362,39 @@ intan_pariwara.sales_common = {
 				item.discount_amount = 0.0;
 				this.apply_discount_on_item(doc, cdt, cdn, "discount_percentage");
 			}
+            
+            price_list_rate(doc, cdt, cdn) {
+                var item = frappe.get_doc(cdt, cdn);
+                frappe.model.round_floats_in(item, ["price_list_rate", "discount_percentage"]);
+        
+                // check if child doctype is Sales Order Item/Quotation Item and calculate the rate
+                if (in_list(["Pre Order Item", "Quotation Item", "Sales Order Item", "Delivery Note Item", "Sales Invoice Item", "POS Invoice Item", "Purchase Invoice Item", "Purchase Order Item", "Purchase Receipt Item"]), cdt)
+                    this.apply_pricing_rule_on_item(item);
+                else
+                    item.rate = flt(item.price_list_rate * (1 - item.discount_percentage / 100.0),
+                        precision("rate", item));
+
+                if(doc.apply_rebate){
+                    if(item.rebate_rate && !item.rebate){
+                        item.rebate = flt(item.rebate_rate / item.price_list_rate * 100);
+                    }
+
+                    if(doc.is_max_rebate_applied && 
+                        item.rebate_max && item.rebate > item.rebate_max){
+                        frappe.msgprint(__("Maximum Rebate limit exceeded."))
+                        item.rebate = item.rebate_max
+                        item.rebate_rate = 0.0
+                    }
+                    if(!item.rebate_rate){
+                        item.rebate_rate = flt(item.price_list_rate * item.rebate / 100);
+                    }
+                }else{
+                    item.rebate = 0.0
+                    item.rebate_rate = 0.0
+                }
+
+                this.calculate_taxes_and_totals();
+            }
             
             _set_values_for_item_list(children) {
                 const items_rule_dict = {};
@@ -438,6 +519,7 @@ intan_pariwara.sales_common = {
                 }
 
                 let customer = doc.customer || doc.party_name
+
                 if(!customer){
                     return
                 }
@@ -447,6 +529,7 @@ intan_pariwara.sales_common = {
                     args: {
                         company: doc.company,
                         customer: customer,
+                        relasi: doc.has_relation ? doc.relasi : null,
                         fund_source: doc.fund_source,
                         transaction_type: doc.transaction_type,
                         seller: doc.seller,

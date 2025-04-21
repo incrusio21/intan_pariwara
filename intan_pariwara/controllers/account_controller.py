@@ -161,9 +161,10 @@ class AccountsController:
             if not self.meta.get_field("sales_team"):
                 party_details.pop("sales_team")
 
+            relasi = self.relasi if party_details.get("has_relation") else None
             party_details.update(
                 get_price_list_fund(
-                    self.company, self.customer, self.fund_source, self.seller, self.transaction_type, self.produk_inti_type
+                    self.company, customer, relasi, self.fund_source, self.seller, self.transaction_type, self.produk_inti_type
                 )
             )
             
