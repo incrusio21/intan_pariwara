@@ -204,6 +204,8 @@ frappe.ui.form.on("Packing List", {
 										r.retail_key = data.message.retail_key
 										frappe.model.set_value(r.doctype, r.name, value)
 									});
+									
+									frm.trigger("calculate_total")
 
 									dialog.hide();
 									refresh_field("items");
@@ -226,4 +228,17 @@ frappe.ui.form.on("Packing List", {
 		// 	freeze_message: __("Creating Packing List ..."),
 		// });
 	},
+
+	calculate_total(frm){
+		var total_qty = 0
+		frm.doc.items.forEach((item) => {
+			total_qty += item.qty
+		});
+
+		frm.doc.items_retail.forEach((item) => {
+			total_qty += item.qty
+		});
+
+		frm.set_value("total_qty", total_qty)
+	}
 });

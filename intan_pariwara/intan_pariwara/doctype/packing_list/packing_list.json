@@ -30,6 +30,8 @@
   "items",
   "section_break_oazc",
   "items_retail",
+  "section_break_pghc",
+  "total_qty",
   "package_weight_details",
   "net_weight_pkg",
   "net_weight_uom",
@@ -63,8 +65,7 @@
    "no_copy": 1,
    "options": "PAC-.YYYY.-",
    "print_hide": 1,
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "section_break0",
@@ -203,6 +204,7 @@
    "options": "get_actual_qty"
   },
   {
+   "fetch_from": "pick_list.parent_warehouse",
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
@@ -259,12 +261,22 @@
    "label": "Reference",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_pghc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Eksemplar",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-09 08:52:06.061527",
+ "modified": "2025-04-21 16:08:06.290054",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",

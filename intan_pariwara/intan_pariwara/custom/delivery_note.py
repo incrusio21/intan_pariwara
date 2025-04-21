@@ -2,7 +2,9 @@
 # License: GNU General Public License v3. See license.txt
 
 import json
+
 import frappe
+from frappe import bold
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.utils import cint, flt
@@ -10,6 +12,20 @@ from frappe.utils import cint, flt
 from erpnext.stock.doctype.delivery_note.delivery_note import get_company_address, get_invoiced_qty_map, get_returned_qty_map
 from erpnext.controllers.accounts_controller import merge_taxes
 # from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
+
+def update_bin_siplah(self, method):
+	if not self.is_advance:
+		return
+
+	customer = self.relasi if self.has_relation else self.customer
+	for d in self.items:
+		filters = {"item_code": d.item_code, "customer": customer, "branch": self.branch,"warehouse": d.warehouse}
+		if not frappe.db.exists("Bin Advance Siplah", filters):
+			frappe.throw(f"""Customer {self.customer} of an Item {bold(self.item_code)} 
+				has stock of quantity in the
+				warehouse {self.warehouse}""")
+
+		frappe.get_doc("Bin Advance Siplah", filters, for_update=1).update_item_qty()
 
 def add_picking_list_to_status_updater(self, method):
 	self.status_updater.extend([
@@ -23,21 +39,6 @@ def add_picking_list_to_status_updater(self, method):
 			"source_field": "qty",
 			"percent_join_field": "against_packing_list",
 			"target_parent_field": "per_delivered",
-		},
-	])
-
-	if cint(self.is_return):
-		self.status_updater.extend([
-		{
-			"source_dt": "Delivery Note Item",
-			"target_dt": "Sales Return Request Item",
-			"join_field": "srr_detail",
-			"target_field": "received_qty",
-			"target_parent_dt": "Sales Return Request",
-			"target_ref_field": "qty",
-			"source_field": "-1 * qty",
-			"percent_join_field": "against_srr",
-			"target_parent_field": "per_returned",
 		},
 	])
 

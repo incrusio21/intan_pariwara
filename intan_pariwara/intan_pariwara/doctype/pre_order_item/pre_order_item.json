@@ -84,6 +84,7 @@
   "item_balance",
   "projected_qty",
   "ordered_qty",
+  "request_qty",
   "col_break4",
   "stock_balance",
   "item_tax_rate",
@@ -657,8 +658,7 @@
    "fieldtype": "Float",
    "label": "Projected Qty",
    "print_hide": 1,
-   "read_only": 1,
-   "report_hide": 1
+   "read_only": 1
   },
   {
    "fieldname": "col_break4",
@@ -770,11 +770,18 @@
    "fieldname": "rebate_rate",
    "fieldtype": "Float",
    "label": "Rebate Rate"
+  },
+  {
+   "fieldname": "request_qty",
+   "fieldtype": "Float",
+   "label": "Request Qty",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-03-25 14:55:03.870394",
+ "modified": "2025-04-15 15:47:41.288438",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order Item",

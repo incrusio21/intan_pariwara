@@ -4,6 +4,9 @@
 import frappe
 from frappe import _
 from erpnext.accounts.utils import get_fiscal_year
+from frappe.model.mapper import get_mapped_doc
+
+BarcodeScanResult = dict[str, str | None]
 
 class StockEntry:
     def __init__(self, doc, method):
@@ -13,9 +16,11 @@ class StockEntry:
         if self.method == "on_submit":
             self.update_plafon_promosi()
             self.update_packing_qty()
+            self.create_and_update_bin_siplah()
         elif self.method == "on_cancel":
             self.update_plafon_promosi()
             self.update_packing_qty()
+            self.create_and_update_bin_siplah()
 
     def update_plafon_promosi(self):
         if self.doc.promotion_from == "Pusat" or self.doc.stock_entry_type not in ["Issue of Promotional Goods", "Receipt of Promotional Goods"]:
@@ -45,10 +50,43 @@ class StockEntry:
 
                 pr_obj.update_completed_qty(pr_item_rows)
 
-def validasi_siplah_titipan(self, method):
+    def create_and_update_bin_siplah(self):
+        if self.doc.stock_entry_type not in ["Siplah Titipan"]:
+            return
+        
+        pre_order = frappe.get_value("Pre Order", self.doc.pre_order, ["branch", "sales_person"], as_dict=1)
+        for d in self.doc.get("items"):
+            bin_siplah = "add_bin_siplah"
+            try:
+                frappe.db.savepoint(bin_siplah)
+                bin_adv_siplah = frappe.new_doc("Bin Advance Siplah")
+                bin_adv_siplah.update({
+                    "item_code": d.item_code,
+                    "customer": self.doc.customer,
+                    "branch": pre_order.branch,
+                    "warehouse": d.t_warehouse,
+                })
+
+                bin_adv_siplah.save()
+            except frappe.UniqueValidationError:
+                frappe.message_log.pop()
+                frappe.db.rollback(save_point=bin_siplah)  # preserve transaction in postgres
+
+            frappe.get_doc("Bin Advance Siplah", {
+                "item_code": d.item_code,
+                "customer": self.doc.customer,
+                "branch": pre_order.branch,
+                "warehouse": d.t_warehouse,
+            }, for_update=1).update_item_qty()
+
+
+def validasi_siplah_titipan(self, method=None):
     if self.stock_entry_type not in ["Siplah Titipan"]:
         return
     
+    po = frappe.get_value("Pre Order", self.pre_order, ["customer", "has_relation", "relasi"], as_dict=1)
+    self.customer = po.relasi if po.has_relation else po.customer
+
     mr_list = set()
     for d in self.items:
         mr_list.add(d.material_request)

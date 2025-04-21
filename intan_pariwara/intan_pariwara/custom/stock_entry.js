@@ -16,7 +16,7 @@ frappe.ui.form.on("Stock Entry Detail", {
                 if (r.message) {
                     frappe.run_serially([
                         () => frappe.model.set_value(item.doctype, item.name, r.message),
-                        () => refresh_fields("items")
+                        () => frm.refresh_field("items")
                     ]);
                 }
             }

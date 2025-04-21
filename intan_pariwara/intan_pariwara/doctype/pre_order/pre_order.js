@@ -76,13 +76,34 @@ intan_pariwara.selling.PreOrderController = class PreOrderController extends int
 
 		var me = this;
 
-		if (doc.docstatus == 1 && doc.per_ordered < 100) {
-			me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
+		if (doc.docstatus == 1) {
+			if(doc.per_ordered < 100){
 
-			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
+				me.frm.add_custom_button(__("Sales Order"), () => this.make_sales_order(), __("Create"));
+			}
+			
+			if(doc.custom_calon_siplah == 'Ya' &&
+				doc.delivery_before_po_siplah == "Ya" && 
+				doc.per_ordered == 0 && 
+				doc.per_request < 100){
+				me.frm.add_custom_button(__("Material Request"), () => this.make_material_request(), __("Create"));
+			}
+
+			if(cur_frm.page.get_inner_group_button("Create")){
+				cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
+			}
 		}
 
 		new intan_pariwara.utils.OtpVerified({ frm: this.frm });
+	}
+
+	make_material_request() {
+		var me = this;
+		
+		frappe.model.open_mapped_doc({
+			method: "intan_pariwara.intan_pariwara.doctype.pre_order.pre_order.make_material_request",
+			frm: me.frm,
+		});
 	}
 
 	make_sales_order() {

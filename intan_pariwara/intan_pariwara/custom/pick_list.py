@@ -7,6 +7,12 @@ from frappe.utils import flt, now_datetime
 
 from intan_pariwara.intan_pariwara.doctype.packing_list.packing_list import get_items
 
+def set_branch(self, method=None):
+	if self.purpose == "Material Transfer":
+		self.branch = frappe.get_value("Material Request", self.material_request, "custom_branch")
+	elif self.purpose == "Delivery":
+		self.branch = frappe.get_value("Sales Order", self.locations[0].sales_order, "branch")
+
 @frappe.whitelist()
 def make_packing_list(source_name, target_doc=None):
 	def set_missing_values(source, target):
@@ -22,6 +28,8 @@ def make_packing_list(source_name, target_doc=None):
 				target.extend("items", [{**d, "qty": d.qty_per_koli} for _ in range(int(full_packs))])
 			else:
 				target.append("items", d)
+
+		target.run_method("calculate_total")
 
 	doclist = get_mapped_doc(
 		"Pick List",

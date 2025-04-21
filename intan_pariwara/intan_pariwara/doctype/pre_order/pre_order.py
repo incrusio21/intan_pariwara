@@ -2,10 +2,12 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate
 from frappe.utils.csvutils import getlink
 
+from erpnext.stock.get_item_details import get_bin_details, get_price_list_rate
 from erpnext.controllers.selling_controller import SellingController
 
 from intan_pariwara.controllers.account_controller import AccountsController
@@ -64,7 +66,7 @@ class PreOrder(AccountsController, SellingController):
 			"party_type": "Customer",
 			"party": self.customer,
 			"account": self.debit_to,
-		}, debug=1)
+		})
 
 		self.receivable_amount = receivable_amount[0][0] if receivable_amount else 0
 
@@ -83,7 +85,8 @@ class PreOrder(AccountsController, SellingController):
 
 		if self.fund_source == "Dana Siswa":
 			make_sales_order(self.name, submit=True)
-			
+		
+		self.set_status()
 		# update enquiry status
 		# self.update_opportunity("Quotation")
 		# self.update_lead()
@@ -94,9 +97,53 @@ class PreOrder(AccountsController, SellingController):
 		super().on_cancel()
 
 		# update enquiry status
-		self.set_status(update=True)
+		self.set_status()
 		# self.update_opportunity("Open")
 		# self.update_lead()
+
+	def set_status(self, update=False, status=None, update_modified=True):
+		if self.docstatus == 2:
+			self.status = "Cancelled"
+		elif self.docstatus == 0:
+			self.status = "Draft"
+		elif self.per_ordered == 0:
+			self.status = "Open"
+		elif self.per_ordered == 100:
+			self.status = "Ordered"
+		elif self.per_ordered < 100:
+			self.status = "Partial Ordered"
+
+		self.db_set("status", self.status)
+
+	def update_po_status(self):
+		# self.db_set("is_advance", 1)
+
+		total_request = frappe._dict(frappe.db.sql("""
+			SELECT pre_order_item, SUM(qty) 
+				FROM `tabMaterial Request Item` 
+				WHERE pre_order = %(detail_id)s AND docstatus = 1
+				Group By pre_order_item
+			""", {"detail_id": self.name}))
+		
+		for po_item in self.items:
+			# Update packed_qty langsung ke database
+			po_item.db_set("request_qty", total_request.get(po_item.name) or 0)
+
+			total_request_qty += flt(po_item.request_qty) if po_item.qty > po_item.request_qty else flt(po_item.qty)
+			total_qty += flt(po_item.qty)
+
+		if total_request_qty and total_qty:
+			per_request = total_request_qty / total_qty * 100
+
+			if total_request_qty > total_qty:
+				frappe.throw(
+					_(
+						"Total Material Request Quantity {0} is more than requested qty {1}."
+					).format(total_request, total_qty)
+				)
+
+		self.db_set("per_request", flt(per_request), update_modified=False)
+		self.set_status()
 
 	@frappe.whitelist()
 	def otp_verification(self, otp):
@@ -106,6 +153,91 @@ class PreOrder(AccountsController, SellingController):
 		from intan_pariwara.controllers.otp_notification import get_verification_otp
 		if get_verification_otp(str(otp), self.name):
 			self.db_set("otp_verified", 1)
+
+def get_requested_item_qty(sales_order):
+	result = {}
+	for d in frappe.db.get_all(
+		"Material Request Item",
+		filters={"docstatus": 1, "pre_order": sales_order},
+		fields=["pre_order_item", "sum(qty) as qty", "sum(received_qty) as received_qty"],
+		group_by="pre_order_item",
+	):
+		result[d.pre_order_item] = frappe._dict({"qty": d.qty, "received_qty": d.received_qty})
+
+	return result
+
+@frappe.whitelist()
+def make_material_request(source_name, target_doc=None):
+	requested_item_qty = get_requested_item_qty(source_name)
+
+	def postprocess(source, target):
+		target.material_request_type = "Siplah Titipan"
+		target.schedule_date = source.delivery_date
+		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
+			target.tc_name = None
+			target.terms = None
+
+		advance_wh = frappe.get_cached_value("Company", target.company, "default_advance_wh")
+		target.set_from_warehouse = source.set_warehouse
+		target.set_warehouse = advance_wh
+
+		for row in target.get("items"):
+			row.from_warehouse = target.set_from_warehouse
+			row.warehouse = target.set_warehouse
+
+	def get_remaining_qty(so_item):
+		
+		return flt(
+			flt(so_item.qty)
+			- flt(requested_item_qty.get(so_item.name, {}).get("qty"))
+		)
+
+	def update_item(source, target, source_parent):
+		# qty is for packed items, because packed items don't have stock_qty field
+		target.qty = get_remaining_qty(source)
+		
+		target.stock_qty = flt(target.qty) * flt(target.conversion_factor)
+		target.actual_qty = get_bin_details(
+			target.item_code, target.warehouse, source_parent.company, True
+		).get("actual_qty", 0)
+
+		args = target.as_dict().copy()
+		args.update(
+			{
+				"company": source_parent.get("company"),
+				"price_list": frappe.db.get_single_value("Buying Settings", "buying_price_list"),
+				"currency": source_parent.get("currency"),
+				"conversion_rate": source_parent.get("conversion_rate"),
+			}
+		)
+
+		target.rate = flt(
+			get_price_list_rate(args=args, item_doc=frappe.get_cached_doc("Item", target.item_code)).get(
+				"price_list_rate"
+			)
+		)
+		target.amount = target.qty * target.rate
+
+	doc = get_mapped_doc(
+		"Pre Order",
+		source_name,
+		{
+			"Pre Order": {"doctype": "Material Request", "validation": {"docstatus": ["=", 1]}},
+			"Pre Order Item": {
+				"doctype": "Material Request Item",
+				"field_map": {
+					"name": "pre_order_item", "parent": "pre_order",
+					"warehouse": "from_warehouse"
+				},
+				"condition": lambda item: get_remaining_qty(item) > 0,
+				"postprocess": update_item,
+			},
+		},
+		target_doc,
+		postprocess,
+	)
+
+	return doc
 
 @frappe.whitelist()
 def make_sales_order(source_name: str, target_doc=None, submit=False):

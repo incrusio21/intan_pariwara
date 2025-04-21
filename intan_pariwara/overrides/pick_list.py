@@ -3,12 +3,15 @@
 
 import frappe
 from frappe import _
-from frappe.query_builder.functions import Sum, Coalesce
-from frappe.utils import flt
 
 from erpnext.stock.doctype.pick_list.pick_list import PickList
+from intan_pariwara.utils.data import get_bin_item
 
 class PickList(PickList):
+    def validate(self):
+        super().validate()
+        self.get_actual_qty()
+        
     def update_sales_order_picking_status(self) -> None:
         sales_orders, material_reqs = [], []
         for row in self.locations:
@@ -23,6 +26,14 @@ class PickList(PickList):
 
         for material_req in material_reqs:
             frappe.get_doc("Material Request", material_req, for_update=True).update_picking_status()
+
+    def get_actual_qty(self):        
+        for d in self.locations:
+            bin_detail =  get_bin_item(d.item_code, d.warehouse)
+            d.actual_qty = bin_detail.get("actual_qty", 0)
+            d.projected_qty = bin_detail.get("projected_qty", 0)
+            d.reserved_qty = bin_detail.get("reserved_qty", 0)
+            d.request_qty = bin_detail.get("request_qty", 0)
 
     def update_packed_qty(self):
 
@@ -47,9 +58,10 @@ class PickList(PickList):
             d.db_set("packed_qty", total_packed)
             
             # Hitung rasio packing
-            if d.qty > 0:  # Hindari division by zero
-                min_packing.append(d.packed_qty / d.qty)
+            if d.picked_qty > 0:  # Hindari division by zero
+                min_packing.append(d.packed_qty / d.picked_qty)
 
         # Update status berdasarkan rasio terkecil
         status = 'Completed' if min_packing and min(min_packing) >= 1 else 'Open'
         self.db_set("status", status)
+

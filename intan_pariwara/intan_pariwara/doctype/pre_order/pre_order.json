@@ -100,7 +100,6 @@
   "apply_discount_on",
   "base_discount_amount",
   "coupon_code",
-  "additional_discount_account",
   "column_break_46",
   "additional_discount_percentage",
   "discount_amount",
@@ -155,6 +154,7 @@
   "customer_group",
   "territory",
   "per_ordered",
+  "per_request",
   "column_break_108",
   "campaign",
   "source",
@@ -1005,7 +1005,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Draft\nOpen\nReplied\nPartially Ordered\nOrdered\nLost\nCancelled\nExpired",
+   "options": "Draft\nOpen\nNot Ordered\nPartially Ordered\nOrdered\nCancelled",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1
@@ -1190,13 +1190,6 @@
    "options": "\nYa\nTidak"
   },
   {
-   "fieldname": "additional_discount_account",
-   "fieldtype": "Link",
-   "label": "Discount Account",
-   "mandatory_depends_on": "eval: doc.discount_amount",
-   "options": "Account"
-  },
-  {
    "default": "0",
    "fieldname": "is_max_rebate_applied",
    "fieldtype": "Check",
@@ -1352,12 +1345,19 @@
    "fieldname": "discount_percent_rebate",
    "fieldtype": "Percent",
    "label": "Default Rebate %"
+  },
+  {
+   "fieldname": "per_request",
+   "fieldtype": "Percent",
+   "label": "% Request",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-22 11:01:28.568073",
+ "modified": "2025-04-18 11:33:01.359993",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

@@ -5,6 +5,14 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
 
+from intan_pariwara.utils.data import get_bin_item
+
+def update_pre_order_status(self, method):
+    if self.purpose not in ["Siplah Titipan"]:
+        return
+
+    frappe.get_doc("Pre Order", self.pre_order, for_update=True).update_po_status()
+
 @frappe.whitelist()
 def make_packing_list(source_name, target_doc=None):
     def set_missing_values(source, target):
@@ -36,12 +44,20 @@ def make_packing_list(source_name, target_doc=None):
 @frappe.whitelist()
 def create_pick_list(source_name, target_doc=None):
     
+    def postprocess(source, target):
+        target.parent_warehouse = source.set_from_warehouse
+
     def update_item_quantity(source, target, source_parent) -> None:
         qty_to_be_picked = flt(source.stock_qty) - flt(source.picked_qty)
 
         target.stock_qty = qty_to_be_picked 
         target.qty = qty_to_be_picked / flt(source.conversion_factor)
-          
+        bin_detail =  get_bin_item(target.item_code, target.warehouse)
+        target.actual_qty = bin_detail.get("actual_qty", 0)
+        target.projected_qty = bin_detail.get("projected_qty", 0)
+        target.reserved_qty = bin_detail.get("reserved_qty", 0)
+        target.request_qty = bin_detail.get("request_qty", 0)
+
     def should_pick_order_item(item) -> bool:
         return (
             abs(item.picked_qty) < abs(item.qty)
@@ -64,6 +80,7 @@ def create_pick_list(source_name, target_doc=None):
             },
         },
         target_doc,
+        postprocess
     )
 
     doc.set_item_locations()

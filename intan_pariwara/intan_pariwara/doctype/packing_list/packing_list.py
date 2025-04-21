@@ -19,12 +19,11 @@ class PackingList(Document):
 		self.validate_document()
 		self.validate_case_nos()
 		self.validate_items()
-
 		validate_uom_is_integer(self, "stock_uom", "qty")
 		validate_uom_is_integer(self, "weight_uom", "net_weight")
 
 		self.set_missing_values()
-		self.calculate_net_total_pkg()
+		self.calculate_total()
 
 		self.validate_item_not_empty()
 		
@@ -219,11 +218,11 @@ class PackingList(Document):
 			+ 1
 		)
 	
-	def calculate_net_total_pkg(self):
+	def calculate_total(self):
 		self.net_weight_uom = self.items[0].weight_uom if self.items else None
 		self.gross_weight_uom = self.net_weight_uom
-
-		net_weight_pkg = 0
+		
+		net_weight_pkg = total_qty = 0
 		for item in self.items:
 			if item.weight_uom != self.net_weight_uom:
 				frappe.throw(
@@ -232,8 +231,23 @@ class PackingList(Document):
 					)
 				)
 
+			total_qty += flt(item.qty)
 			net_weight_pkg += flt(item.net_weight) * flt(item.qty)
 
+		self.net_weight_uom_retail = self.items_retail[0].weight_uom if self.items_retail else None
+		self.gross_weight_uom_retail = self.net_weight_uom_retail
+		for r_item in self.items_retail:
+			if r_item.weight_uom != self.net_weight_uom_retail:
+				frappe.throw(
+					_(
+						"Different UOM for items will lead to incorrect (Total) Net Weight value. Make sure that Net Weight of each item is in the same UOM."
+					)
+				)
+
+			total_qty += flt(r_item.qty)
+			net_weight_pkg += flt(r_item.net_weight) * flt(r_item.qty)
+
+		self.total_qty = round(total_qty, 2)
 		self.net_weight_pkg = round(net_weight_pkg, 2)
 
 		if not flt(self.gross_weight_pkg):
@@ -331,11 +345,11 @@ def get_items(docname=None, purpose=None, used_item="[]"):
 			doctype.item_name,
 			doctype.stock_uom,
 			item.qty_per_koli,
-			(doctype.qty - doctype.packed_qty).as_("remaining_qty")
+			(doctype.picked_qty - doctype.packed_qty).as_("remaining_qty")
 		).where(
 			(doctype.docstatus == 1)
 			& (doctype.parent == docname)
-			& (doctype.packed_qty < doctype.qty)
+			& (doctype.packed_qty < doctype.picked_qty)
 		).orderby(doctype.idx)
 	)
 
@@ -475,7 +489,11 @@ def make_stock_entry(source_name, target_doc=None, kwargs=None):
 		target_doc.stock_entry_type = "Siplah Titipan"
 		target_doc.purpose = None
 		target_doc.set_purpose_for_stock_entry()
-	
+	else:
+		target_doc.add_to_transit = 1
+		target_doc.custom_end_target = target_doc.to_warehouse
+		target_doc.to_warehouse = frappe.get_cached_value("Company", target_doc.company, "default_in_transit_warehouse")
+
 	target_doc.items = []
 	# non_packing_item = []
 	# for item in target_doc.items:
