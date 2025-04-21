@@ -14,6 +14,24 @@ import intan_pariwara
 from intan_pariwara.controllers.account_controller import AccountsController
 
 class IPDeliveryNote(AccountsController, DeliveryNote):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if cint(self.is_return):
+            self.status_updater.extend([
+            {
+                "source_dt": "Delivery Note Item",
+                "target_dt": "Sales Return Request Item",
+                "join_field": "srr_detail",
+                "target_field": "received_qty",
+                "target_parent_dt": "Sales Return Request",
+                "target_ref_field": "qty",
+                "source_field": "-1 * qty",
+                "percent_join_field": "against_srr",
+                "target_parent_field": "per_returned",
+            },
+        ])
+            
     def validate_with_previous_doc(self):
         super(DeliveryNote, self).validate_with_previous_doc(
             {
