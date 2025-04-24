@@ -24,6 +24,7 @@ class SalesOrder:
 			case "before_validate":
 				self.sales_person_fixed()
 			case "validate":
+				self.validate_produk_inti()
 				self.validate_negotiation()
 				self.set_pre_order_text()
 			case "on_submit":
@@ -49,6 +50,17 @@ class SalesOrder:
 				"allocated_percentage": 100,
 				"is_fixed": 1
 			})
+
+	def validate_produk_inti(self):
+		is_smart = non_smart = False
+		for d in self.doc.items:
+			if d.produk_inti_type == "Smartbook":
+				is_smart = True
+			else:
+				non_smart = True
+
+			if is_smart and non_smart:
+				frappe.throw("There are Smartbook and Non-Smartbook items in a this transaction.")
 
 	def validate_negotiation(self):
 		if self.doc.get("__islocal") or self.doc.negotiations != "Yes":
@@ -87,17 +99,6 @@ class SalesOrder:
 				item_code, warehouse, self.doc.company, True
 			)
 
-			# jumlahkan dengan projected pada gudang yang include_projected_qty = 1 dan projected_qty > 0
-			for w in include_w:
-				if w == warehouse:
-					continue
-				
-				bin_w = get_bin_details(
-					item_code, w, self.doc.company, True
-				)
-				if bin_w["projected_qty"] > 0:
-					bin["projected_qty"] = flt(bin["projected_qty"] + bin_w["projected_qty"], precision)
-
 			# jumlahkan dengan stock entry dgn in_transit = 1
 			ste = frappe.qb.DocType("Stock Entry")
 			ste_item = frappe.qb.DocType("Stock Entry Detail")
@@ -119,6 +120,17 @@ class SalesOrder:
 
 			if remaining_transit:
 				bin["projected_qty"] = flt(bin["projected_qty"] + remaining_transit, precision)
+				
+			# jumlahkan dengan projected pada gudang yang include_projected_qty = 1 dan projected_qty > 0
+			for w in include_w:
+				if w == warehouse:
+					continue
+				
+				bin_w = get_bin_details(
+					item_code, w, self.doc.company, True
+				)
+				if bin_w["projected_qty"] > 0:
+					bin["projected_qty"] = flt(bin["projected_qty"] + bin_w["projected_qty"], precision)
 
 			return bin
 		
