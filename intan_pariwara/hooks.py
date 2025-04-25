@@ -46,12 +46,13 @@ page_js = {"print" : "public/js/print.js"}
 doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
+    "Lead" : "intan_pariwara/custom/lead.js",
     "Material Request" : "intan_pariwara/custom/material_request.js",
     "Pick List" : "intan_pariwara/custom/pick_list.js",
     "Purchase Receipt" : "intan_pariwara/custom/purchase_receipt.js",
     "Quotation" : "intan_pariwara/custom/quotation.js",
-    "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Sales Invoice" : "intan_pariwara/custom/sales_invoice.js",
+    "Sales Order" : "intan_pariwara/custom/sales_order.js",
     "Stock Entry" : "intan_pariwara/custom/stock_entry.js",
     "Workflow" : "intan_pariwara/custom/workflow.js",
 }
@@ -195,7 +196,7 @@ doc_events = {
 		"on_cancel": "intan_pariwara.controllers.otp_notification.OtpNotification",
 		"on_change": "intan_pariwara.controllers.otp_notification.OtpNotification",
 	},
-    ("Sales Order", "Delivery Note", "Sales Invoice"): {
+    ("Delivery Note", "Sales Invoice", "Sales Order"): {
         "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.SellingEvent"
 	},
     ("Delivery Note", "Stock Entry"): {
@@ -212,6 +213,9 @@ doc_events = {
 	},
     "Item": {
         "validate": "intan_pariwara.intan_pariwara.custom.item.validate_produk_inti_type"
+	},
+    "Lead": {
+        "validate": "intan_pariwara.intan_pariwara.custom.lead.set_annual_revenue_potensi"
 	},
     "Purchase Receipt": {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.purchase_receipt.validate_duplicate_qr",
