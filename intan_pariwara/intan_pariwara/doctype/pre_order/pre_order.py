@@ -343,4 +343,9 @@ def _make_sales_order(source_name, target_doc=None, item_type="Non Tax", null_ty
 		set_missing_values,
 	)
 
+	# add PreOrder into Sales Order PreOrder table
+	doclist.append("preorder",{
+			"preorder": source_name
+		})
+
 	return doclist

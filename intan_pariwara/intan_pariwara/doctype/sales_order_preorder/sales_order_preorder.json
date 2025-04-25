@@ -1,0 +1,34 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2025-04-15 23:31:05.167208",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "preorder"
+ ],
+ "fields": [
+  {
+   "fieldname": "preorder",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "PreOrder",
+   "options": "Pre Order"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-04-15 23:39:07.857554",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Sales Order PreOrder",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
