@@ -85,19 +85,19 @@ class SalesOrder:
 		self.doc.pre_order_list = ", ".join([d.preorder for d in self.doc.preorder])
 
 	def create_material_request(self):
-		if self.doc.delivery_before_po_siplah == "Ya":
+		if self.doc.get("delivery_before_po_siplah") == "Ya":
 			return
 		
-		item_bin, need_item = {}, {}
+		item_bin, need_item, transfer_item = {}, {}, {}
 		precision = frappe.get_precision("Bin", "projected_qty")
 
-		include_w = frappe.get_all("Warehouse", filters={"include_projected_qty": 1, "is_group": 0}, pluck="name")
+		include_w = frappe.get_all("Warehouse", filters={"include_projected_qty": 1, "is_group": 0, "company": self.company}, pluck="name")
 		
 		def get_bin_item(item_code, warehouse):
 			# cek bin warehouse
-			bin = get_bin_details(
+			projected_qty = get_bin_details(
 				item_code, warehouse, self.doc.company, True
-			)
+			).get("projected_qty", 0)
 
 			# jumlahkan dengan stock entry dgn in_transit = 1
 			ste = frappe.qb.DocType("Stock Entry")
@@ -119,37 +119,67 @@ class SalesOrder:
 			).run()[0][0]
 
 			if remaining_transit:
-				bin["projected_qty"] = flt(bin["projected_qty"] + remaining_transit, precision)
-				
-			# jumlahkan dengan projected pada gudang yang include_projected_qty = 1 dan projected_qty > 0
+				projected_qty += remaining_transit
+			
+			t_projected = {}
+			# projected pada gudang yang include_projected_qty = 1 dan projected_qty > 0 untuk request transfer
 			for w in include_w:
 				if w == warehouse:
 					continue
-				
-				bin_w = get_bin_details(
-					item_code, w, self.doc.company, True
-				)
-				if bin_w["projected_qty"] > 0:
-					bin["projected_qty"] = flt(bin["projected_qty"] + bin_w["projected_qty"], precision)
 
-			return bin
+				bin_w = get_detail_bin(item_code, w)
+				projected = bin_w.get('projected_qty', 0) - bin_w.get('request_qty', 0)
+				if projected > 0:
+					t_projected.setdefault(w, projected)
+			
+			return {"projected_qty": projected_qty, "transfered_qty": t_projected}
 		
 		for d in self.doc.items:
 			bin = item_bin.setdefault((d.item_code, d.warehouse), 
 				get_bin_item(d.item_code, d.warehouse)
 			)
 
-			if bin["projected_qty"] < 0:
-				need_item.setdefault(d.name, min(abs(bin["projected_qty"]), d.stock_qty))
+			stock_qty = d.stock_qty
+			# jika barang kurang di gudang lakukan request
+			if flt(bin["projected_qty"], precision) < 0:
+				# cek apakah ada d gudang include untuk d buatkan request transfer
+				for wh, qty in bin["transfered_qty"].items():
+					qty_transfer = flt(min(qty, stock_qty), precision)
+					if not qty_transfer:
+						continue
+					
+					# Update item transfer dan kuantitas
+					transfer_item.setdefault(wh, {})[d.name] = qty_transfer
 
-			bin["projected_qty"] = flt(bin["projected_qty"] + d.stock_qty, precision)
+					bin["transfered_qty"][wh] -= qty_transfer
+					bin["projected_qty"] += qty_transfer
+					stock_qty -= qty_transfer
+
+					if flt(stock_qty, precision) <= 0:
+						break
+				
+				needed = flt(min(abs(bin["projected_qty"]), stock_qty), precision)
+				if needed:
+					need_item.setdefault(d.name, needed)
+					bin["projected_qty"] += needed
 		
+		# buat mr berdasarkan list barang yg kurang 
+		mr_created_list = []
+		if transfer_item:
+			for wht, needed in transfer_item.items():
+				mr = make_material_request(self.doc.name, set_warehouse=wht, needed_item=needed)
+				mr.save()
+				mr.submit()
+				mr_created_list.append(mr.name)
+
 		if need_item:
 			mr = make_material_request(self.doc.name, needed_item=need_item)
-			mr.from_so = 1
 			mr.save()
+			mr.submit()
+			mr_created_list.append(mr.name)
 
-			frappe.msgprint(_("Material Request {} are Created".format(mr.name)))
+		if mr_created_list:
+			frappe.msgprint(_("List of Material Requests has been Generated: <br>".format("<br>".join(mr_created_list))))
 
 	def update_preorder_percentage(self):
 		ordered = 100 if self.method == "on_submit" else 0
@@ -160,18 +190,24 @@ class SalesOrder:
 			po.set_status()
 
 @frappe.whitelist()
-def make_material_request(source_name, target_doc=None, needed_item={}):
+def make_material_request(source_name, target_doc=None, set_warehouse=None, needed_item={}):
 	requested_item_qty = get_requested_item_qty(source_name)
 
 	def postprocess(source, target):
+		if set_warehouse:
+			target.material_request_type = "Material Transfer"
+			target.set_from_warehouse = set_warehouse
+
 		target.schedule_date = source.delivery_date
 		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
 			target.tc_name = None
 			target.terms = None
 
+		target.from_so = 1
+
 	def get_remaining_qty(so_item):
 		if needed_item:
-			return needed_item.get(so_item.name, 0) or 0.0
+			return needed_item.get(so_item.name, 0)
 		
 		return flt(
 			flt(so_item.qty)
@@ -186,6 +222,7 @@ def make_material_request(source_name, target_doc=None, needed_item={}):
 	def update_item(source, target, source_parent):
 		# qty is for packed items, because packed items don't have stock_qty field
 		target.project = source_parent.project
+		target.from_warehouse = set_warehouse
 
 		target.qty = flt(needed_item[source.name] / target.conversion_factor, target.precision("qty")) \
 			if needed_item else get_remaining_qty(source)
@@ -235,7 +272,7 @@ def make_material_request(source_name, target_doc=None, needed_item={}):
 		target_doc,
 		postprocess,
 	)
-
+	
 	return doc
 
 @frappe.whitelist()
