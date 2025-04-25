@@ -100,121 +100,106 @@ frappe.ui.form.on("Sales Order", {
 
 		if (!frm.is_new() && frm.doc.custom_no_siplah){
 			frm.set_df_property("custom_no_siplah", "options", [frm.doc.custom_no_siplah]);
+			if (frm.doc.custom_no_siplah) frm.events.custom_no_siplah(frm);
+			if (frm.doc.docstatus == 1) frm.set_df_property("custom_no_siplah", "read_only", 1);
+			
+		} else {
+			frm.events.show_load_siplah(frm);
 		}
+	},
+	show_load_siplah(frm){
+		frm.add_custom_button("Load SIPLAH",function(){
+				if (frm.doc.custom_calon_siplah == "Ya" && (frm.doc.relasi || frm.doc.customer)){
+					frappe.call({
+						"method":"intan_pariwara.siplah_integration.sales_order.get_list_siplah",
+						"args": {
+							"customer": frm.doc.customer,
+							"relasi": frm.doc.relasi
+
+						},
+						callback:function(r){
+							if (r.message){
+								var list_siplah = [];
+								var full_siplah = [];
+								for (var i = r.message.length - 1; i >= 0; i--) {
+									list_siplah.push(r.message[i]["nomor_order"]);
+									full_siplah.push({"nomor_order": r.message[i]["nomor_order"],"janji_bayar":r.message[i]["janji_bayar"]});
+								}
+								frm.set_df_property("custom_no_siplah", "options",list_siplah);
+								frm.set_value("siplah_json",full_siplah);
+								frm.refresh_fields();
+							}
+						}
+					})
+				}else{
+					// kosongkan select jika calon siplah tidak sama ya dan relasi atau customer kosong
+					frm.set_df_property("custom_no_siplah", "options", []);
+				}
+				
+				frm.set_value("custom_no_siplah", "");
+			},"SIPLAH")
 	},
 	
-	custom_fund_source(frm){
-
-		if(!frm.doc.custom_fund_source){
-			return 
-		}
-
-		if(!frm.doc.customer){
-			frappe.msgprint(__("Please specify") + ": Customer. " + __("It is needed to fetch Fund Source."));
-			frm.set_value("custom_fund_source", "")
-		}else{
-			frappe.call({
-				method: "intan_pariwara.controllers.queries.get_price_list_fund",
-				args: {
-					customer: frm.doc.customer,
-					fund_source: frm.doc.custom_fund_source,
-				},
-				callback: function (r) {
-					if (r.message) {
-						frappe.run_serially([
-							() => frm.set_value(r.message),
-							() => {
-								cur_frm.cscript.apply_price_list();
-							},
-						]);
-					}
-				},
-			});
-		}
-
-	},
 	customer(frm){
 		// cukup trigger event custom_calon_siplah
 		frm.events.custom_calon_siplah(frm)
 	},
 	custom_calon_siplah(frm){
-		if (frm.doc.custom_calon_siplah == "Ya" && (frm.doc.relasi || frm.doc.customer)){
-			frappe.call({
-				"method":"intan_pariwara.siplah_integration.sales_order.get_list_siplah",
-				"args": {
-					"customer": frm.doc.customer,
-					"relasi": frm.doc.relasi
-
-				},
-				callback:function(r){
-					if (r.message){
-						var list_siplah = [];
-						var full_siplah = [];
-						for (var i = r.message.length - 1; i >= 0; i--) {
-							list_siplah.push(r.message[i]["nomor_order"]);
-							full_siplah.push({"nomor_order": r.message[i]["nomor_order"],"janji_bayar":r.message[i]["janji_bayar"]});
-						}
-						frm.set_df_property("custom_no_siplah", "options",list_siplah);
-						frm.set_value("siplah_json",full_siplah);
-					}
-				}
-			})
-		}else{
-			// kosongkan select jika calon siplah tidak sama ya dan relasi atau customer kosong
-			frm.set_df_property("custom_no_siplah", "options", []);
-		}
-		
-		frm.set_value("custom_no_siplah", "");
+		frm.set_df_property("custom_no_siplah", "options", []);	
 	},
 	custom_no_siplah(frm){
-		frm.clear_table("items");
-		if(!frm.doc.custom_no_siplah) return
-
-		for (var i = 0; i < frm.doc.siplah_json.length; i++) {
-			let el = frm.doc.siplah_json[i];
-			if (el['nomor_order'] == frm.doc.custom_no_siplah){
-				frm.set_value("payment_date", el['janji_bayar']);
-				if (frm.doc.payment_schedule.length > 0){
-					frm.doc.payment_schedule[0].due_date = el['janji_bayar'];
-				} else {
-					var terms = frm.add_child("payment_schedule");
-					terms.due_date = el['janji_bayar'];
-					terms.invoice_portion = 100;
-				}
+		if(!frm.doc.custom_no_siplah) {
+			if (frm.doc.custom_calon_siplah == "Ya"){
+				frm.events.show_load_siplah(frm);
 			}
 		}
+		
+		if (frm.doc.custom_calon_siplah == "Ya" && (frm.doc.relasi || frm.doc.customer)) {		
 
-		frappe.call({
-			"method":"intan_pariwara.siplah_integration.sales_order.get_transaction_details",
-			"args": {"no_siplah": frm.doc.custom_no_siplah
-					,"price_list": frm.doc.selling_price_list
-			},
-			callback:function(r){
-				if (r.message){
-					var list_items = [];
-					for (var i = r.message.length - 1; i >= 0; i--) {
-						let el = r.message[i];
-						var row = frm.add_child("items")
-						row.item_code = el['item_code'].split("_")[0];
-						row.item_name = el['item_name'];
-						row.qty = el['qty'];
-						row.rate = el['price'];
-						row.description = el['description'];
-						row.uom = el['uom'];
-						row.stock_uom = el['uom'];
-						row.price_list_rate = el['price_list_rate'];
-						
+			frm.add_custom_button("Update SIPLAH Items",function(){
+				console.log(frm.doc.siplah_json)
+				// check jika dari preorder
+				frappe.call({
+					method: "get_items",
+					freeze: true,
+					doc: frm.doc,
+					callback:function(data){
+						frm.refresh_fields();
 					}
-					frm.refresh_field("items");
-					frm.cscript.calculate_taxes_and_totals();
+				})
+			},"SIPLAH")
+			
+			frappe.call({
+				method: "update_siplah_table",
+				freeze: true,
+				doc: frm.doc,
+				callback:function(data){
+					frm.refresh_field("tabel_siplah_items");
 				}
+			})
+		}
+	},
+	check_bin_siplah(frm){
+		frappe.call({
+			method: "validate_bin_siplah",
+			freeze: true,
+			doc: frm.doc,
+			args: {
+				update: true
+			},
+			callback:function(data){
+				frm.refresh_fields();
 			}
-		})	
+		})
 	},
 	before_save(frm){
 		frm.set_value("siplah_json","");
 		if (frm.doc.payment_schedule.length > 0 && frm.doc.grand_total > 0){
 			frm.doc.payment_schedule[0].payment_amount = frm.doc.grand_total;
+		}
+
+		if (frm.doc.delivery_date){
+			frm.trigger("delivery_date");
 		}
 	}
 })
@@ -246,9 +231,31 @@ intan_pariwara.selling.SalesOrderController = class SalesOrderController extends
 		// 	}
 		// }
 		
+		if(doc.delivery_before_po_siplah == "Ya"){
+			me.frm.remove_custom_button(__("Pick List"), __("Create"));
+		}else{
+			me.frm.remove_custom_button(__("Delivery Note"), __("Create"));
+		}
+
 		if(doc.docstatus == 1 && doc.workflow_state !== "Approved"){
 			me.frm.clear_custom_buttons()
 		}
+	}
+
+	make_delivery_note(delivery_dates, for_reserved_stock = false) {
+		let method = this.frm.doc.delivery_before_po_siplah == "Ya" ? 
+			"intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note_advance"
+			: "erpnext.selling.doctype.sales_order.sales_order.make_delivery_note"
+		frappe.model.open_mapped_doc({
+			method: method,
+			frm: this.frm,
+			args: {
+				delivery_dates,
+				for_reserved_stock: for_reserved_stock,
+			},
+			freeze: true,
+			freeze_message: __("Creating Delivery Note ..."),
+		});
 	}
 }
 

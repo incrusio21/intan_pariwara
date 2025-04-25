@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "request_type",
+  "api_type",
   "url",
   "headers",
   "payload",
@@ -55,12 +56,17 @@
    "fieldtype": "Small Text",
    "label": "Response",
    "read_only": 1
+  },
+  {
+   "fieldname": "api_type",
+   "fieldtype": "Data",
+   "label": "API Type"
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-22 10:09:46.621467",
+ "modified": "2025-04-15 10:31:53.201394",
  "modified_by": "Administrator",
  "module": "SIPLAH Integration",
  "name": "SIPLAH API Log",

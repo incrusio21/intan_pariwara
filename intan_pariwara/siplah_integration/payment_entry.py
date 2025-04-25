@@ -17,20 +17,35 @@ from frappe.utils import flt, getdate
 	"""
 
 @frappe.whitelist()
-def post_payment(no_siplah,jumlah,tanggal,biaya=None,sinv_name=None):
+def post_payment(jumlah,tanggal,mop,no_siplah=None,biaya=None,sinv_name=None,customer=None, ref_no=None,va_number=None):
 	
 	
 	body = frappe._dict({
 			"no_siplah": no_siplah,
 			"jumlah": jumlah,
-			"biaya": dict(json.loads(biaya)) if biaya else None,
-			"tanggal": tanggal
+			"biaya": biaya,
+			"tanggal": tanggal,
+			"mop":mop,
+			"ref_no": ref_no
 		})
 	
-	sinv_id = get_sinv_siplah(no_siplah)
-	if not sinv_id and sinv_name:
+	sinv_id = ""
+	if no_siplah:
+		sinv_id = get_sinv_siplah(no_siplah)
+
+	if sinv_id == "" and sinv_name:
 		sinv_id = sinv_name
-	pe_dict = create_payment_entry(body, sinv_id)
+
+	if sinv_id == "" and va_number:
+		sinv_id = frappe.get_value("Sales Invoice", {"va_number":va_number},"name") or ""
+
+	pe_dict = {}
+	if sinv_id:
+		pe_dict = create_payment_entry(body, sinv_id=sinv_id)
+
+	if sinv_id == "" and customer:
+		pe_dict = create_payment_entry(body, customer=customer)
+		
 
 	return pe_dict or body
 
@@ -40,18 +55,33 @@ def get_sinv_siplah(no_siplah):
 
 	frappe.throw("No SIPLAH tidak ditemukan di Invoice manapun.") 
 
-def create_payment_entry(args, sinv_id):
-	sinv = frappe.get_doc("Sales Invoice", sinv_id)
+def create_payment_entry(args, sinv_id=None, customer=None):
+	sinv = None
+	if sinv_id:
+		sinv = frappe.get_doc("Sales Invoice", sinv_id)
+	
+	c = None
+	if customer:
+		c = frappe.get_doc("Customer", customer)
+
 	pe = frappe.new_doc("Payment Entry")
 	pe.company = "Intan Pariwara Vitarana"
 	pe.naming_series = "ACC-PAY-.YYYY.-"
 	pe.payment_type = "Receive"
+	pe.mode_of_payment = args.mop
 	pe.posting_date = args.tanggal
 	pe.party_type = "Customer"
-	pe.party = sinv.customer
-	pe.party_name = sinv.customer_name
-	pe.paid_from = sinv.debit_to
+
+	pe.party = sinv.customer if sinv else c.name
+	pe.party_name = sinv.customer_name if sinv else c.customer_name
+	# pe.paid_from = sinv.debit_to if sinv else frappe.get_value("Master SIPLAH","Payment Entry Default Piutang","account")
+	# force paid from into Account Unallocated
+	pe.paid_from = frappe.get_value("Master SIPLAH","Payment Entry Default Piutang","account")
+	
 	pe.paid_to = frappe.get_value("Master SIPLAH","Payment Entry Hutang Titipan","account")
+	
+	if args.mop:
+		pe.paid_to = frappe.get_value("Mode of Payment Account",{"company":pe.company,"parent":args.mop},"default_account") or pe.paid_to
 	pe.paid_amount = flt(args.jumlah)
 	pe.received_amount = flt(args.jumlah)
 	pe.paid_from_account_currency = "IDR"
@@ -59,9 +89,10 @@ def create_payment_entry(args, sinv_id):
 	pe.source_exchange_rate = 1
 	pe.target_exchange_rate = 1
 	pe.no_siplah = args.no_siplah
-	pe.reference_no = args.no_siplah
+	pe.reference_no = sinv.va_number or args.ref_no or args.no_siplah  or "{} - {}".format(args.mop, customer.name) 
 	pe.reference_date = args.tanggal
-	pe.book_advance_payments_in_separate_party_account = 0
+	pe.book_advance_payments_in_separate_party_account = 1
+	pe.advance_reconciliation_takes_effect_on = "Reconciliation Date"
 
 
 	sum_biaya = 0
@@ -76,14 +107,18 @@ def create_payment_entry(args, sinv_id):
 				sum_biaya += flt(amt)
 	
 	allocated_amount = flt(args.jumlah) - sum_biaya
-	pe.append("references",
-		{
-			"reference_doctype":"Sales Invoice",
-			"reference_name": sinv_id,
-			"allocated_amount": flt(allocated_amount),
-			"account": sinv.debit_to,
-			"payment_term": ""
-		})
+	if sinv:
+		if allocated_amount > sinv.outstanding_amount:
+			allocated_amount = sinv.outstanding_amount
+		
+		pe.append("references",
+			{
+				"reference_doctype":"Sales Invoice",
+				"reference_name": sinv_id,
+				"allocated_amount": flt(allocated_amount),
+				"account": sinv.debit_to,
+				"payment_term": ""
+			})
 
 	# return pe.as_dict()
 
