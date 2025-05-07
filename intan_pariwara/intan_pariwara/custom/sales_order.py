@@ -91,7 +91,7 @@ class SalesOrder:
 		item_bin, need_item, transfer_item = {}, {}, {}
 		precision = frappe.get_precision("Bin", "projected_qty")
 
-		include_w = frappe.get_all("Warehouse", filters={"include_projected_qty": 1, "is_group": 0, "company": self.company}, pluck="name")
+		include_w = frappe.get_all("Warehouse", filters={"include_projected_qty": 1, "is_group": 0, "company": self.doc.company}, pluck="name")
 		
 		def get_bin_item(item_code, warehouse):
 			# cek bin warehouse
@@ -139,9 +139,11 @@ class SalesOrder:
 				get_bin_item(d.item_code, d.warehouse)
 			)
 
-			stock_qty = d.stock_qty
+			projected = flt(bin["projected_qty"], precision)
 			# jika barang kurang di gudang lakukan request
-			if flt(bin["projected_qty"], precision) < 0:
+			if projected < 0:
+				stock_qty = min(abs(projected), d.stock_qty)
+
 				# cek apakah ada d gudang include untuk d buatkan request transfer
 				for wh, qty in bin["transfered_qty"].items():
 					qty_transfer = flt(min(qty, stock_qty), precision)
@@ -158,7 +160,8 @@ class SalesOrder:
 					if flt(stock_qty, precision) <= 0:
 						break
 				
-				needed = flt(min(abs(bin["projected_qty"]), stock_qty), precision)
+				# barang yang harus request purchase
+				needed = flt(stock_qty, precision)
 				if needed:
 					need_item.setdefault(d.name, needed)
 					bin["projected_qty"] += needed
@@ -179,7 +182,7 @@ class SalesOrder:
 			mr_created_list.append(mr.name)
 
 		if mr_created_list:
-			frappe.msgprint(_("List of Material Requests has been Generated: <br>".format("<br>".join(mr_created_list))))
+			frappe.msgprint(_("List of Material Requests has been Generated: <br> {}".format("<br>".join(mr_created_list))))
 
 	def update_preorder_percentage(self):
 		ordered = 100 if self.method == "on_submit" else 0
@@ -198,7 +201,6 @@ def make_material_request(source_name, target_doc=None, set_warehouse=None, need
 			target.material_request_type = "Material Transfer"
 			target.set_from_warehouse = set_warehouse
 
-		target.schedule_date = source.delivery_date
 		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
 			target.tc_name = None
 			target.terms = None
@@ -253,7 +255,10 @@ def make_material_request(source_name, target_doc=None, set_warehouse=None, need
 		"Sales Order",
 		source_name,
 		{
-			"Sales Order": {"doctype": "Material Request", "validation": {"docstatus": ["=", 1]}},
+			"Sales Order": {
+				"doctype": "Material Request", "validation": {"docstatus": ["=", 1]},
+				"field_map": {"delivery_date": "schedule_date", "transaction_date": "transaction_date"},
+			},
 			"Packed Item": {
 				"doctype": "Material Request Item",
 				"field_map": {"parent": "sales_order", "uom": "stock_uom"},
