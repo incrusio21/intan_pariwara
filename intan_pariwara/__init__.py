@@ -15,7 +15,7 @@ from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from intan_pariwara.controllers.queries import get_price_list_fund
-
+from erpnext.controllers.status_updater import StatusUpdater
 
 def load_env():
 	"""Returns the intan pariwara env variable"""
@@ -250,6 +250,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"provisional_expense_account": get_item_details.get_provisional_account(
 				args, item_defaults, item_group_defaults, brand_defaults
 			),
+			"produk_inti_type": item.produk_inti_type,
 			"cost_center": get_item_details.get_default_cost_center(args, item_defaults, item_group_defaults, brand_defaults),
 			"has_serial_no": item.has_serial_no,
 			"has_batch_no": item.has_batch_no,
@@ -495,6 +496,25 @@ def _get_party_details(
 	return party_details
 
 
+def _update_percent_field_in_targets(self, args, update_modified=True):
+	"""Update percent field in parent transaction"""
+	if args.get("percent_join_field_parent"):
+		# if reference to target doc where % is to be updated, is
+		# in source doc's parent form, consider percent_join_field_parent
+		args["name"] = self.get(args["percent_join_field_parent"])
+		if args["name"]:
+			self._update_percent_field(args, update_modified)
+	else:
+		distinct_transactions = set(
+			d.get(args["percent_join_field"]) for d in self.get_all_children(args["source_dt"])
+		)
+
+		for name in distinct_transactions:
+			if name:
+				args["name"] = name
+				self._update_percent_field(args, update_modified)
+
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
 party_file._get_party_details = _get_party_details
+StatusUpdater._update_percent_field_in_targets = _update_percent_field_in_targets
