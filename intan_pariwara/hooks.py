@@ -180,6 +180,7 @@ override_doctype_class = {
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
 	"Pick List": "intan_pariwara.overrides.pick_list.PickList",
+	"Payment Entry": "intan_pariwara.overrides.payment_entry.PaymentEntry"
 	# "Selling Setting": "intan_pariwara.overrides.selling_settings.SellingSettings",
 }
 
