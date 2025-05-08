@@ -3,6 +3,9 @@
 
 import frappe
 from frappe.utils import cint, flt
+from frappe.query_builder import Criterion
+from frappe.query_builder.custom import ConstantColumn
+from frappe.query_builder.functions import IfNull
 
 from erpnext.accounts.party import get_party_account_currency
 from erpnext.controllers.accounts_controller import get_payment_terms, get_taxes_and_charges
@@ -199,3 +202,165 @@ class AccountsController:
         ):
             self.calculate_commission()
             self.calculate_contribution()
+
+def get_advance_payment_entries(
+    party_type,
+	party,
+	party_account,
+	order_doctype,
+	order_list=None,
+	default_advance_account=None,
+	include_unallocated=True,
+	against_all_orders=False,
+	limit=None,
+	condition=None,
+):
+    payment_entries = []
+    payment_entry = frappe.qb.DocType("Payment Entry")
+
+    if order_list or against_all_orders:
+        payment_ref = frappe.qb.DocType("Payment Entry Reference")
+
+        order_type = [
+            {"use_advance_account": False, "account_from": ""},
+            {"use_advance_account": True, "account_from": default_advance_account}
+        ]
+
+        for cond in order_type:
+            q = get_common_query(
+                payment_entry,
+                party_type,
+                party,
+                party_account,
+                default_advance_account,
+                limit,
+                condition,
+                cond.get("use_advance_account")
+            )
+            
+            q = (
+                q.inner_join(payment_ref)
+                .on(payment_entry.name == payment_ref.parent)
+                .select(
+                    payment_ref.allocated_amount.as_("amount"),
+                    payment_ref.name.as_("reference_row"),
+                    payment_ref.reference_name.as_("against_order"),
+                    payment_entry.book_advance_payments_in_separate_party_account,
+                )
+                .where(
+                    (payment_ref.reference_doctype == order_doctype)
+                    & (IfNull(payment_ref.account_from, "") == cond.get("account_from"))
+                )
+            )
+            
+            if order_list:
+                q = q.where(payment_ref.reference_name.isin(order_list))
+            
+            payment_entries += list(q.run(as_dict=True))
+
+    if include_unallocated:
+        q = get_common_query(
+            payment_entry,
+            party_type,
+            party,
+            party_account,
+            default_advance_account,
+            limit,
+            condition,
+        )
+        q = q.select((payment_entry.unallocated_amount).as_("amount"))
+        q = q.where(payment_entry.unallocated_amount > 0)
+
+        unallocated = list(q.run(as_dict=True))
+        payment_entries += unallocated
+
+    return payment_entries
+
+def get_common_query(
+    payment_entry,
+	party_type,
+	party,
+	party_account,
+	default_advance_account,
+	limit,
+	condition,
+    no_account=False
+):
+    account_type = frappe.db.get_value("Party Type", party_type, "account_type")
+    payment_type = "Receive" if account_type == "Receivable" else "Pay"
+
+    q = (
+        frappe.qb.from_(payment_entry)
+        .select(
+            ConstantColumn("Payment Entry").as_("reference_type"),
+            (payment_entry.name).as_("reference_name"),
+            payment_entry.posting_date,
+            (payment_entry.remarks).as_("remarks"),
+            (payment_entry.book_advance_payments_in_separate_party_account),
+        )
+        .where(payment_entry.payment_type == payment_type)
+        .where(payment_entry.party_type == party_type)
+        .where(payment_entry.party == party)
+        .where(payment_entry.docstatus == 1)
+    )
+
+    field = "paid_from" if payment_type == "Receive" else "paid_to"
+
+    q = q.select((payment_entry[f"{field}_account_currency"]).as_("currency"))
+    if not no_account:
+        q = q.select(payment_entry[field])
+        account_condition = payment_entry[field].isin(party_account)
+        if default_advance_account:
+            q = q.where(
+                account_condition
+                | (
+                    (payment_entry[field] == default_advance_account)
+                    & (payment_entry.book_advance_payments_in_separate_party_account == 1)
+                )
+            )
+
+        else:
+            q = q.where(account_condition)
+
+    if payment_type == "Receive":
+        q = q.select((payment_entry.source_exchange_rate).as_("exchange_rate"))
+    else:
+        q = q.select((payment_entry.target_exchange_rate).as_("exchange_rate"))
+
+    if condition:
+        # conditions should be built as an array and passed as Criterion
+        common_filter_conditions = []
+
+        common_filter_conditions.append(payment_entry.company == condition["company"])
+        if condition.get("name", None):
+            common_filter_conditions.append(payment_entry.name.like(f"%{condition.get('name')}%"))
+
+        if condition.get("from_payment_date"):
+            common_filter_conditions.append(payment_entry.posting_date.gte(condition["from_payment_date"]))
+
+        if condition.get("to_payment_date"):
+            common_filter_conditions.append(payment_entry.posting_date.lte(condition["to_payment_date"]))
+
+        if condition.get("get_payments") is True:
+            if condition.get("cost_center"):
+                common_filter_conditions.append(payment_entry.cost_center == condition["cost_center"])
+
+            if condition.get("accounting_dimensions"):
+                for field, val in condition.get("accounting_dimensions").items():
+                    common_filter_conditions.append(payment_entry[field] == val)
+
+            if condition.get("minimum_payment_amount"):
+                common_filter_conditions.append(
+                    payment_entry.unallocated_amount.gte(condition["minimum_payment_amount"])
+                )
+
+            if condition.get("maximum_payment_amount"):
+                common_filter_conditions.append(
+                    payment_entry.unallocated_amount.lte(condition["maximum_payment_amount"])
+                )
+        q = q.where(Criterion.all(common_filter_conditions))
+
+    q = q.orderby(payment_entry.posting_date)
+    q = q.limit(limit) if limit else q
+
+    return q

@@ -218,6 +218,9 @@ doc_events = {
     "Lead": {
         "validate": "intan_pariwara.intan_pariwara.custom.lead.set_annual_revenue_potensi"
 	},
+    "Payment Entry": {
+		"validate": "intan_pariwara.intan_pariwara.custom.payment_entry.set_reference_account_from",
+	},
     "Purchase Receipt": {
 		"on_submit": "intan_pariwara.intan_pariwara.custom.purchase_receipt.validate_duplicate_qr",
 	},
@@ -290,6 +293,13 @@ override_doctype_dashboards = {
 	"Delivery Note": "intan_pariwara.dashboards.delivery_note.get_data",
 	"Sales Order": "intan_pariwara.dashboards.sales_order.get_data",
 	"Sales Invoice": "intan_pariwara.dashboards.sales_invoice.get_data",
+}
+
+
+regional_overrides = {
+	"Indonesia": {
+        "erpnext.controllers.accounts_controller.get_advance_payment_entries_for_regional": "intan_pariwara.controllers.account_controller.get_advance_payment_entries"
+	},
 }
 
 # exempt linked doctypes from being automatically cancelled

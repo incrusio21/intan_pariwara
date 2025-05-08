@@ -34,7 +34,7 @@ class SalesInvoice:
             [incoming_field, "expense_account", discount_field]) or ["", "", ""]
         
         if not (incoming_account or expense_account or discount_account):
-            frappe.throw("Please insert Incoming, Expense adn Discount Account in Customer Fund Source first.")
+            frappe.throw("Please insert Incoming, Expense and Discount Account in Customer Fund Source first.")
         
         for d in self.doc.items:
             d.update({

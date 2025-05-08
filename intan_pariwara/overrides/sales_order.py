@@ -32,6 +32,14 @@ class SalesOrder(AccountsController, SalesOrder):
         if self.get("delivery_before_po_siplah") == "Ya":
             self.validate_bin_siplah()
 
+    def set_missing_values(self, for_validate=False):
+        super().set_missing_values(for_validate)
+        self.set_missing_account_advance()
+
+    def set_missing_account_advance(self):
+        if self.meta.get_field("advanced_account") and not self.get("advanced_account"):
+            self.set("advanced_account", frappe.get_value("Company", self.company, "selling_advance_account"))
+
     def update_prevdoc_status(self, flag=None):
         if self.delivery_before_po_siplah != "Ya":
             super().update_prevdoc_status(flag)
@@ -39,7 +47,6 @@ class SalesOrder(AccountsController, SalesOrder):
             self.update_qty()
             self.validate_qty()
 
-    
     @frappe.whitelist()
     def validate_bin_siplah(self, update=False):
         error_bin_log = ""

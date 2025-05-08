@@ -7,7 +7,7 @@ class PaymentReconciliation(PaymentReconciliation):
 	def reconcile_allocations(self, skip_ref_details_update_for_pe=False):
 		super().reconcile_allocations(skip_ref_details_update_for_pe)
 		for row in self.get("allocation"):
-			repair_gle_ple(row.reference_type,row.reference_name)
+			repair_gle_ple(row.reference_type, row.reference_name)
 
 # custom to re-generate GLE PLE from PaymentEntry / JournalEntry
 
