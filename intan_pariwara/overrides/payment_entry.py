@@ -135,9 +135,6 @@ class PaymentEntry(PaymentEntry):
 						"cost_center": cost_center,
 						dr_or_cr + "_in_account_currency": d.allocated_amount,
 						dr_or_cr: allocated_amount_in_company_currency,
-						dr_or_cr + "_in_transaction_currency": d.allocated_amount
-						if self.transaction_currency == self.party_account_currency
-						else allocated_amount_in_company_currency / self.transaction_exchange_rate,
 					},
 					item=self,
 				)
@@ -182,9 +179,6 @@ class PaymentEntry(PaymentEntry):
 						"account_currency": self.party_account_currency,
 						"cost_center": self.cost_center,
 						dr_or_cr + "_in_account_currency": self.unallocated_amount,
-						dr_or_cr + "_in_transaction_currency": self.unallocated_amount
-						if self.party_account_currency == self.transaction_currency
-						else base_unallocated_amount / self.transaction_exchange_rate,
 						dr_or_cr: base_unallocated_amount,
 					},
 					item=self,
@@ -232,16 +226,9 @@ class PaymentEntry(PaymentEntry):
 			frappe.db.set_value("Payment Entry Reference", invoice.name, "reconcile_effect_on", posting_date)
 
 		dr_or_cr, account = self.get_dr_and_account_for_advances(invoice)
-		base_allocated_amount = self.calculate_base_allocated_amount_for_reference(invoice)
 		args_dict["account"] = account
-		args_dict[dr_or_cr] = base_allocated_amount
+		args_dict[dr_or_cr] = self.calculate_base_allocated_amount_for_reference(invoice)
 		args_dict[dr_or_cr + "_in_account_currency"] = invoice.allocated_amount
-		args_dict[dr_or_cr + "_in_transaction_currency"] = (
-			invoice.allocated_amount
-			if self.party_account_currency == self.transaction_currency
-			else base_allocated_amount / self.transaction_exchange_rate
-		)
-
 		args_dict.update(
 			{
 				"against_voucher_type": invoice.reference_doctype,
@@ -259,13 +246,8 @@ class PaymentEntry(PaymentEntry):
 		args_dict[dr_or_cr + "_in_account_currency"] = 0
 		dr_or_cr = "debit" if dr_or_cr == "credit" else "credit"
 		args_dict["account"] = invoice.account_from or self.party_account
-		args_dict[dr_or_cr] = base_allocated_amount
+		args_dict[dr_or_cr] = self.calculate_base_allocated_amount_for_reference(invoice)
 		args_dict[dr_or_cr + "_in_account_currency"] = invoice.allocated_amount
-		args_dict[dr_or_cr + "_in_transaction_currency"] = (
-			invoice.allocated_amount
-			if self.party_account_currency == self.transaction_currency
-			else base_allocated_amount / self.transaction_exchange_rate
-		)
 		args_dict.update(
 			{
 				"against_voucher_type": "Payment Entry",
