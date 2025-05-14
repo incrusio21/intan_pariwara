@@ -1,0 +1,117 @@
+<div class="form-container">
+
+    <table style="width: 100%;font-size: inherit;">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 72%">
+        <tr>
+            <td class="text-center" colspan="3">
+                <b style="font-size: x-large;">PROFORMA INVOICE</b>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Customer Name</td>
+            <td>:</td>
+            <td>{{ doc.customer_name }}</td>
+        </tr>
+        <tr>
+            <td>Jabatan</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td>NPSN</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td>e-mail</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td>Address</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td>Mobile No.</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td>Fund Source</td>
+            <td>:</td>
+            <td>{{ doc.fund_source }}</td>
+        </tr>
+        <tr>
+            <td>Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.transaction_date, "dd/MM/YYYY") }}</td>
+        </tr>
+        <tr>
+            <td>Expected Payment Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
+        </tr>
+        <tr>
+            <td>Expected Delivery Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
+        </tr>
+        <tr>
+            <td>Sales Person</td>
+            <td>:</td>
+            <td>{{ doc.sales_person or "" }}</td>
+        </tr>
+        <tr>
+            <td>Catatan</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered" style="width: 100%;font-size: inherit;">
+        <col style="width: 8%">
+        <col style="width: 22%">
+        <col style="width: 42%">
+        <col style="width: 10%">
+        <col style="width: 18%">
+        <tr>
+            <td class="text-center">No</td>
+            <td class="text-center">Kode Barang</td>
+            <td class="text-center">Nama Barang</td>
+            <td class="text-center">Jumlah</td>
+            <td class="text-center">Sub Total</td>
+        </tr>
+        {% set total = {"grand_total": 0 } %}
+        {% for d in doc.items %}
+        {# d.amount if relasi != "Reseller" else #}
+        {% set sub_total = (d.price_list_rate * d.qty) * doc.prosentase_uang_muka / 100 %}
+        <tr>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+            <td style="vertical-align: middle !important;">Uang Muka : {{ d.item_name }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total,
+                currency=doc.currency) }}</td>
+        </tr>
+        {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
+        {% endfor %}
+        <tr>
+            <td class="text-center" colspan="4">TOTAL</td>
+            <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
+        </tr>
+    </table>
+
+    <p>*Harga sudah termasuk pajak, dan biaya angkos kirim.</p>
+    <p>*Barang yang sudah diterima tidak bisa dikembalikan.</p>
+    <p>*Pesanan ini sah tanpa tanda tangan dan stempel customer karena sudah diganti dengan tanda tangan elektronik (One
+        Time Password).</p>
+</div>

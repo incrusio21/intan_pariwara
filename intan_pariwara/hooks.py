@@ -113,12 +113,14 @@ fixtures = [
 # add methods and filters to jinja environment
 jinja = {
 	"methods": [
-    	"intan_pariwara.utils.jinja_filters.get_item_per_koli",
-    	"intan_pariwara.utils.jinja_filters.qty_koli",
+    	"intan_pariwara.utils.jinja_method.get_item_per_koli",
+    	"intan_pariwara.utils.jinja_method.qty_koli",
+    	"intan_pariwara.utils.jinja_method.same_item_price",
 	],
 	"filters": [
     	"intan_pariwara.utils.jinja_filters.format_nomor_telepon",
     	"intan_pariwara.utils.jinja_filters.get_qr_svg",
+    	"intan_pariwara.utils.jinja_filters.in_words",
 	]
 }
 

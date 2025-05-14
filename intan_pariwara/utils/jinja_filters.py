@@ -15,6 +15,17 @@ def format_nomor_telepon(nomor_telepon):
     
     return nomor_telepon
 
+def in_words(integer: int, in_million=True) -> str:
+    """
+    Returns string in words for the given integer.
+    """
+    from num2words import num2words
+
+    integer = int(integer)
+    ret = num2words(integer, lang="id")
+
+    return ret.replace("-", " ")
+
 def get_qr_svg(data):
     """Get SVG code to display Qrcode for OTP."""
     from pyqrcode import create as qrcreate
@@ -30,32 +41,3 @@ def get_qr_svg(data):
         stream.close()
 
     return svg.decode()
-
-def get_item_per_koli(items):
-    """Get Item List Per Koli."""
-    target = []
-    for d in items:
-        item = d.as_dict().copy()
-
-        quantity = item.qty
-        qty_per_koli = frappe.get_cached_value("Item", item.item_code, "qty_per_koli")
-        if qty_per_koli:
-            # Hitung kemasan utuh dan sisa
-            full_packs, quantity = divmod(quantity, qty_per_koli)
-            # Tambahkan kemasan utuh ke package
-            target.extend([{**item, "qty": qty_per_koli} for _ in range(int(full_packs))])
-        else:
-            target.append(item)
-            quantity = 0
-
-        # Tambahkan sisa ke retail
-        if quantity > 0:
-            item.is_retail = 1
-            target.append({**item, "qty": quantity})
-
-    return target
-
-def qty_koli(qty, qty_per_koli):
-    full_packs, quantity = divmod(qty, qty_per_koli)
-
-    return {"utuh": full_packs, "retail": quantity}
