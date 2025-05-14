@@ -72,6 +72,9 @@ intan_pariwara.sales_common = {
                     cur_frm.cscript.calculate_taxes_and_totals();
                     cur_frm.cscript.calculate_stock_uom_rate(frm, cdt, cdn);
                 });
+
+                const transaction = new intan_pariwara.utils.Transaction({ frm:this.frm });
+                transaction.default_warehouse()
             }
 
             setup_queries() {

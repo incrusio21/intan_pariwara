@@ -2,10 +2,12 @@
 # License: GNU General Public License v3. See license.txt
 
 import json
+from pypika import Order
 
 import frappe
 from frappe.utils.data import flt
 from frappe.model.utils import get_fetch_values
+from frappe.query_builder.functions import IfNull
 
 from erpnext.accounts.party import get_party_shipping_address, render_address
 from erpnext.stock.get_item_details import apply_price_list_on_item, get_price_list_currency_and_exchange_rate, process_args
@@ -208,3 +210,28 @@ def get_shipping_details(doctype, relasi=None):
         )
 
     return party_details
+
+@frappe.whitelist()
+def get_default_warehouse(branch, company=None):
+    doc = frappe.qb.DocType("Default Warehouse")
+    comp_filter = [""]
+
+    if company:
+        comp_filter.append(company)
+
+    q = (
+        frappe.qb.from_(doc)
+        .select(
+            doc.warehouse.as_("set_warehouse")    
+        )
+        .where(
+            (doc.parent == branch) & 
+            (IfNull(doc.company, "").isin(comp_filter))
+        )
+        .orderby(doc.company, order=Order.desc)
+        .limit(1)
+    )
+
+    query = q.run(as_dict=True)
+
+    return query[0] if query else {}
