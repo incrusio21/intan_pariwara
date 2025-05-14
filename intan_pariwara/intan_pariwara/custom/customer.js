@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Customer', {
-	custom_kab_kota(frm) {
+    custom_kab_kota(frm) {
         if(!frm.doc.custom_kab_kota) return
 
         frappe.call({
@@ -19,5 +19,20 @@ frappe.ui.form.on('Customer', {
                 }
             }
         })
+    },
+    refresh(frm){
+        if (!frm.is_new()){
+            if (!frm.doc.va_number || frappe.user_roles.includes("Script Manager")){
+                frm.add_custom_button("Generate VA",function(){
+                    frappe.call({
+                        method:"intan_pariwara.siplah_integration.customer.get_va_number",
+                        args:{"docname":frm.doc.name},
+                        callback:function(r){
+                            frm.reload_doc();
+                        }
+                    })
+                })
+            } 
+        }
     }
 })
