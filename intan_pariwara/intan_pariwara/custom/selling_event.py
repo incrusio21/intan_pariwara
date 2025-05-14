@@ -3,7 +3,8 @@
 
 import frappe
 from frappe import _
-from frappe.utils import getdate
+from frappe.utils import flt, getdate
+from intan_pariwara.utils.data import get_bin_with_request
 
 class SellingEvent:
     def __init__(self, doc, method):
@@ -46,3 +47,24 @@ class SellingEvent:
                 cr = frappe.get_cached_value("Sales Person", sp.sales_person, "commission_rate")
 
             sp.commission_rate = cr
+
+def validate_actual_bin(self, method):
+    # skip mr purchase
+    if self.doctype == "Material Request" and self.material_request_type == "Purchase":
+        return
+
+    # skip so titipan
+    if self.get("delivery_before_po_siplah") == "Ya":
+        return
+    
+    item_bin = {}
+    precision = frappe.get_precision("Bin", "projected_qty")
+    for d in self.items:
+        if not item_bin.get(d.item_code):
+            bin = get_bin_with_request(d.item_code, d.get("from_warehouse") or d.warehouse)
+            detail_qty = bin.get("projected_qty", 0) - bin.get("request_qty", 0)
+            item_bin.setdefault(d.item_code, {"detail_qty": detail_qty})
+        
+        item_bin[d.item_code]["detail_qty"] = flt(item_bin[d.item_code]["detail_qty"] - d.qty, precision)
+        if item_bin[d.item_code]["detail_qty"] < 0:
+            frappe.throw("Row {}: Item {} quantity exceeds warehouse projected by {}".format(d.idx, d.item_code, abs(item_bin[d.item_code]["detail_qty"])))

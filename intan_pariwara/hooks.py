@@ -46,7 +46,7 @@ page_js = {"print" : "public/js/print.js"}
 doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
-    "Lead" : "intan_pariwara/custom/lead.js",
+    "Journal Entry" : "intan_pariwara/custom/journal_entry.js",
     "Material Request" : "intan_pariwara/custom/material_request.js",
     "Pick List" : "intan_pariwara/custom/pick_list.js",
     "Purchase Receipt" : "intan_pariwara/custom/purchase_receipt.js",
@@ -182,6 +182,7 @@ override_doctype_class = {
 	"Sales Invoice": "intan_pariwara.overrides.sales_invoice.SalesInvoice",
 	"Sales Order": "intan_pariwara.overrides.sales_order.SalesOrder",
 	"Pick List": "intan_pariwara.overrides.pick_list.PickList",
+	"Payment Reconciliation": "intan_pariwara.overrides.payment_reconciliation.PaymentReconciliation",
 	"Payment Entry": "intan_pariwara.overrides.payment_entry.PaymentEntry"
 	# "Selling Setting": "intan_pariwara.overrides.selling_settings.SellingSettings",
 }
@@ -202,6 +203,9 @@ doc_events = {
     ("Delivery Note", "Sales Invoice", "Sales Order"): {
         "before_validate": "intan_pariwara.intan_pariwara.custom.selling_event.SellingEvent"
 	},
+    # ("Sales Order", "Material Request"): {
+    #     "validate": "intan_pariwara.intan_pariwara.custom.selling_event.validate_actual_bin"
+	# },
     ("Delivery Note", "Stock Entry"): {
 		"validate": "intan_pariwara.intan_pariwara.custom.stock_event.set_qr_code",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.stock_event.update_status_qr_code",
@@ -211,6 +215,7 @@ doc_events = {
 		"before_validate": "intan_pariwara.intan_pariwara.custom.customer.disabled_based_account"
 	},
     "Delivery Note": {
+        "on_submit": "intan_pariwara.intan_pariwara.custom.delivery_note.update_bin_siplah"
 		# "before_validate": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 		# "before_cancel": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 	},
@@ -220,10 +225,14 @@ doc_events = {
     "Lead": {
         "validate": "intan_pariwara.intan_pariwara.custom.lead.set_annual_revenue_potensi"
 	},
+    "Pick List": {
+        "validate": "intan_pariwara.intan_pariwara.custom.pick_list.set_branch"
+	},
     "Payment Entry": {
 		"validate": "intan_pariwara.intan_pariwara.custom.payment_entry.set_reference_account_from",
 	},
     "Purchase Receipt": {
+        "before_validate": "intan_pariwara.intan_pariwara.custom.purchase_receipt.set_order_tax_template",
 		"on_submit": "intan_pariwara.intan_pariwara.custom.purchase_receipt.validate_duplicate_qr",
 	},
     "Sales Order": {
@@ -234,9 +243,16 @@ doc_events = {
 	},
     "Sales Invoice": {
         "before_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
-		"on_submit": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
-		"on_cancel": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate",
-		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.create_and_delete_rebate"
+		"on_submit": ["intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice"
+				,"intan_pariwara.siplah_integration.sales_order.get_va_number"
+				,"intan_pariwara.overrides.payment_reconciliation.repair_advances"],
+		"on_cancel": ["intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice","intan_pariwara.overrides.payment_reconciliation.repair_advances"],
+		"on_trash": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
+        "validate": "intan_pariwara.intan_pariwara.custom.sales_invoice.SalesInvoice",
+	},
+	"Purchase Invoice": {
+		"on_submit":"intan_pariwara.overrides.payment_reconciliation.repair_advances",
+		"on_cancel":"intan_pariwara.overrides.payment_reconciliation.repair_advances",
 	},
     "Stock Entry": {
         "validate": "intan_pariwara.intan_pariwara.custom.stock_entry.validasi_siplah_titipan",
@@ -280,9 +296,13 @@ scheduler_events = {
 override_whitelisted_methods = {
 	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "intan_pariwara.intan_pariwara.custom.quotation.make_sales_order",
 	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
-    "erpnext.stock.doctype.material_request.material_request.create_pick_list": "intan_pariwara.intan_pariwara.custom.material_request.create_pick_list",
+	"erpnext.selling.doctype.sales_order.sales_order.create_pick_list": "intan_pariwara.intan_pariwara.custom.sales_order.create_pick_list",
 	"erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice": "intan_pariwara.intan_pariwara.custom.delivery_note.make_sales_invoice",
+    "erpnext.stock.doctype.material_request.material_request.create_pick_list": "intan_pariwara.intan_pariwara.custom.material_request.create_pick_list",
+	"erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_purchase_invoice": "intan_pariwara.intan_pariwara.custom.purchase_receipt.make_purchase_invoice",
+	"erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry": "intan_pariwara.intan_pariwara.custom.stock_entry.make_stock_in_entry",
 	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.controllers.queries.apply_price_list",
+    "frappe.model.mapper.map_docs": "intan_pariwara.model.mapper.map_docs",
 	"frappe.model.workflow.apply_workflow": "intan_pariwara.model.workflow.apply_workflow",
 	"frappe.model.workflow.get_transitions": "intan_pariwara.model.workflow.get_transitions",
 }

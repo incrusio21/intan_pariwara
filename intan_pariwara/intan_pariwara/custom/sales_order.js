@@ -98,7 +98,7 @@ frappe.ui.form.on("Sales Order", {
 			frm.set_df_property("reserve_stock", "description", null);
 		}
 
-		if (!frm.is_new() && frm.doc.custom_no_siplah){
+		if (!frm.is_new() && (frm.doc.custom_no_siplah != "") || frm.doc.custom_no_siplah !== undefined){
 			frm.set_df_property("custom_no_siplah", "options", [frm.doc.custom_no_siplah]);
 			if (frm.doc.custom_no_siplah) frm.events.custom_no_siplah(frm);
 			if (frm.doc.docstatus == 1) frm.set_df_property("custom_no_siplah", "read_only", 1);
@@ -146,6 +146,9 @@ frappe.ui.form.on("Sales Order", {
 	},
 	custom_calon_siplah(frm){
 		frm.set_df_property("custom_no_siplah", "options", []);	
+		frm.set_value("custom_no_siplah", "");
+		frm.clear_table("tabel_siplah_items");
+		frm.events.show_load_siplah(frm);
 	},
 	custom_no_siplah(frm){
 		if(!frm.doc.custom_no_siplah) {
@@ -156,6 +159,15 @@ frappe.ui.form.on("Sales Order", {
 		
 		if (frm.doc.custom_calon_siplah == "Ya" && (frm.doc.relasi || frm.doc.customer)) {		
 
+			frappe.call({
+				method: "update_siplah_table",
+				freeze: true,
+				doc: frm.doc,
+				callback:function(data){
+					frm.refresh_field("tabel_siplah_items");
+				}
+			})
+
 			frm.add_custom_button("Update SIPLAH Items",function(){
 				console.log(frm.doc.siplah_json)
 				// check jika dari preorder
@@ -165,18 +177,11 @@ frappe.ui.form.on("Sales Order", {
 					doc: frm.doc,
 					callback:function(data){
 						frm.refresh_fields();
+						frm.dirty();
+						frm.cscript.calculate_taxes_and_totals();
 					}
 				})
 			},"SIPLAH")
-			
-			frappe.call({
-				method: "update_siplah_table",
-				freeze: true,
-				doc: frm.doc,
-				callback:function(data){
-					frm.refresh_field("tabel_siplah_items");
-				}
-			})
 		}
 	},
 	check_bin_siplah(frm){
@@ -194,6 +199,11 @@ frappe.ui.form.on("Sales Order", {
 	},
 	before_save(frm){
 		frm.set_value("siplah_json","");
+		
+		if (frm.doc.custom_calon_siplah == "Tidak"){
+			frm.events.custom_calon_siplah(frm)
+		}
+
 		if (frm.doc.payment_schedule.length > 0 && frm.doc.grand_total > 0){
 			frm.doc.payment_schedule[0].payment_amount = frm.doc.grand_total;
 		}
