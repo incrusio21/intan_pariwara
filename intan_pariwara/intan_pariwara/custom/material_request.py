@@ -5,7 +5,7 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
 
-from intan_pariwara.utils.data import get_bin_item
+from intan_pariwara.utils.data import get_bin_with_request
 
 def update_pre_order_status(self, method):
     if self.purpose not in ["Siplah Titipan"]:
@@ -52,7 +52,7 @@ def create_pick_list(source_name, target_doc=None):
 
         target.stock_qty = qty_to_be_picked 
         target.qty = qty_to_be_picked / flt(source.conversion_factor)
-        bin_detail =  get_bin_item(target.item_code, target.warehouse)
+        bin_detail =  get_bin_with_request(target.item_code, target.warehouse)
         target.actual_qty = bin_detail.get("actual_qty", 0)
         target.projected_qty = bin_detail.get("projected_qty", 0)
         target.reserved_qty = bin_detail.get("reserved_qty", 0)
