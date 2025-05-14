@@ -3,7 +3,9 @@
 
 import frappe
 from erpnext.selling.doctype.customer.customer import Customer
-from frappe.model.naming import make_autoname, set_name_by_naming_series, set_name_from_naming_options
+from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options
+
+from intan_pariwara.intan_pariwara.doctype.customer_series.customer_series import make_autoname
 
 class Customer(Customer):
     
@@ -18,16 +20,8 @@ class Customer(Customer):
             set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
 
     def set_kode_customer(self):
-        kode_customer = ""
-        if self.custom_jenis_relasi  in ["Sekolah Dikbud","Sekolah Kemenag"]:
+        if frappe.flags.in_import:
             return
-        if self.custom_jenis_relasi  in ["Guru Sekolah Dikbud","Guru Sekolah Kemenag"]:
-            return
-        elif self.custom_jenis_relasi  == "Instansi":
-            kode_customer = self.custom_jenis_relasi[0] + self.kode_kab + self.kode_instansi + self.kode_bidangsatker + ".##"
-        elif self.custom_jenis_relasi == "Desa":
-            return
-        elif self.custom_jenis_relasi in ["Reseller", "UMUM"]:
-            kode_customer = self.custom_jenis_relasi[0] + self.kode_kab + ".####"
         
-        self.custom_kode_customer = make_autoname(kode_customer, doc=self)
+        if kode_customer := make_autoname(self.custom_jenis_relasi, self):
+            self.custom_kode_customer = kode_customer
