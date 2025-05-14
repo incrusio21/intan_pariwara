@@ -1,11 +1,15 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "prompt",
  "creation": "2025-03-15 21:10:42.603846",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "details_section",
+  "address",
+  "mobile_no",
   "section_break_ldeo",
   "only_buku",
   "exclude_buku"
@@ -28,11 +32,26 @@
    "fieldname": "exclude_buku",
    "fieldtype": "Check",
    "label": "Exclude Book"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-16 13:24:59.221004",
+ "modified": "2025-04-12 15:47:21.936970",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Seller",

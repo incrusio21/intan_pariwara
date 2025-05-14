@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2025-01-24 16:08:10.429778",
@@ -53,7 +54,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-24 16:12:23.472113",
+ "modified": "2025-05-14 14:09:02.389665",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Package Master",

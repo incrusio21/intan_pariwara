@@ -10,7 +10,10 @@
   "cant_have_rebate",
   "has_relation",
   "customer_group",
-  "additional_rebate_disc"
+  "additional_rebate_disc",
+  "column_break_ggzz",
+  "customer_inisial",
+  "series_digit"
  ],
  "fields": [
   {
@@ -43,11 +46,26 @@
    "fieldname": "additional_rebate_disc",
    "fieldtype": "Percent",
    "label": "Additional Rebate / Discount"
+  },
+  {
+   "fieldname": "column_break_ggzz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_inisial",
+   "fieldtype": "Data",
+   "label": "Customer Inisial",
+   "length": 1
+  },
+  {
+   "fieldname": "series_digit",
+   "fieldtype": "Int",
+   "label": "Series Digit"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-21 15:36:46.576195",
+ "modified": "2025-04-24 14:16:46.837382",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Jenis Relasi",
