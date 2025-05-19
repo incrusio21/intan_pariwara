@@ -118,6 +118,8 @@ def get_transitions(
             trn = transition.as_dict()
             trn.reason = workflow.reason_required and \
                 any(action.workflow_action == transition.action for action in workflow.reason_actions)
+            trn.reason_type = workflow.reason_type
+            trn.master_reason = workflow.master_reason if trn.reason_type == "Link" else ""
             trn.same_reason = same_transaction_action(last_action, transition.action)
 
             transitions.append(trn)

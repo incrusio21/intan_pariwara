@@ -27,8 +27,7 @@ def create_custom_field_for_reason(self, method=None):
         create_or_update_reason_field(self, meta)
 
 def create_or_update_reason_field(self, meta):
-    if not meta.get_field(self.workflow_reason_field):
-        # create custom field
+    def create_reason():
         frappe.get_doc(
             {
                 "doctype": "Custom Field",
@@ -40,11 +39,15 @@ def create_or_update_reason_field(self, meta):
                 "allow_on_submit": 1,
                 "read_only": 1,
                 "no_copy": 1,
-                "fieldtype": "Small Text",
+                "fieldtype": self.reason_type,
+                "options": self.master_reason if self.reason_type == "Link" else "",
                 "owner": "Administrator",
             }
         ).save()
-        
+    
+    if not meta.get_field(self.workflow_reason_field):
+        # create custom field
+        create_reason()
         frappe.msgprint(
             _("Created Custom Field Reason in {0}").format(self.document_type)
         )
@@ -56,14 +59,19 @@ def create_or_update_reason_field(self, meta):
             }
         )
         
-        data_update = False
-        for field, val in {"label": "Reason", "insert_after": self.insert_after_field}.items():
-            if c_field.get(field) != val:
-                c_field.set(field, val)
-                data_update = True
+        # hapus field ketika fieldtypeny berubah 
+        if c_field.fieldtype != self.reason_type:
+            c_field.delete()
+            create_reason()
+        else:
+            data_update = False
+            for field, val in {"label": "Reason", "insert_after": self.insert_after_field}.items():
+                if c_field.get(field) != val:
+                    c_field.set(field, val)
+                    data_update = True
 
-        if data_update:
-            c_field.save()
+            if data_update:
+                c_field.save()
 
     if not meta.get_field("last_action"):
         # create custom field
