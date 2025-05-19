@@ -1,0 +1,178 @@
+<div>
+    {% set seller = frappe.db.get_value("Seller", doc.seller, ["address", "mobile_no", "logo"], as_dict=1) %}
+    {% set rl_cust = frappe.db.get_value("Address", doc.shipping_address_name, ["address_line1", "city", "state", "phone"], as_dict=1) %}
+
+    <table style="width: 100%;font-size: inherit;">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 42%">
+        <col style="width: 30%">
+        {% if seller.logo %}
+        <tr>
+            <td colspan="4">
+                <img src="{{ seller.logo }}" />
+            </td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td colspan="4">
+                {{ doc.seller }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                {{ seller.address or "" }}
+                <br>
+                {{ seller.mobile_no or "" }}
+            </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td class="text-center" colspan="4">
+                <b style="font-size: large;">SALES INVOICE</b>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center" colspan="4" style="border-bottom: 3px double #000;">
+                {{ doc.name }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Customer Name</td>
+            <td>:</td>
+            <td>{{ frappe.db.get_value("Customer", doc.relasi, "customer_name") if doc.relasi else "" }}</td>
+            <td>To:</td>
+        </tr>
+        <tr>
+            <td>Contact Number</td>
+            <td>:</td>
+            <td>{{ rl_cust.phone or "" }}</td>
+            <td>{{ doc.customer_name }}</td>
+        </tr>
+        
+        <tr>
+            <td>Address</td>
+            <td>:</td>
+            
+            <td>
+                {% if rl_cust.address_line1 %}
+                    {{ rl_cust.address_line1 }} {{ rl_cust.city or "" }} {{ rl_cust.state or "" }}
+                {% endif %}
+            </td>
+            <td>
+                {% set ad_cust = frappe.db.get_value("Address", doc.customer_address, ["address_line1", "city", "state"], as_dict=1) %}
+                {% if ad_cust.address_line1 %}
+                    {{ ad_cust.address_line1 }} {{ ad_cust.city or "" }} {{ ad_cust.state or "" }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Position</td>
+            <td>:</td>
+            <td>{{ "-" }}</td>
+            <td>{{ doc.contact_mobile or "" }}</td>
+        </tr>
+        <tr>
+            <td>Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.posting_date, "dd/MM/YYYY") if doc.posting_date else "" }}</td>
+        </tr>
+        <tr>
+            <td>Transaction Type</td>
+            <td>:</td>
+            <td>{{ doc.transaction_type }}</td>
+        </tr>
+        <tr>
+            <td>Fund Source</td>
+            <td>:</td>
+            <td>{{ doc.fund_source }}</td>
+        </tr>
+        <tr>
+            <td>Payment Due Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.due_date, "dd/MM/YYYY") if doc.due_date else "" }}</td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered" style="width: 100%;font-size: inherit;">
+        <col style="width: 5%">
+        <col style="width: 17%">
+        <col style="width: 24%">
+        <col style="width: 8%">
+        <col style="width: 12%">
+        <col style="width: 16%">
+        <col style="width: 18%">
+        <tr>
+            <td class="text-center">No</td>
+            <td class="text-center">Item Code</td>
+            <td class="text-center">Item Name</td>
+            <td class="text-center">Qty</td>
+            <td class="text-center">UoM</td>
+            <td class="text-center">Rate</td>
+            <td class="text-center">Amount</td>
+        </tr>
+        {% set total = {"grand_total": 0 } %}
+        {% for index, d in same_item_price(doc.items).items() %}
+        {# d.amount if relasi != "Reseller" else #}
+        {% set sub_total = (d.price_list_rate * d.qty) %}
+        <tr>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ frappe.format(d.qty) }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ frappe.format(d.uom) }}</td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(d.price_list_rate,
+                currency=doc.currency) }}
+            </td>
+            <td class="text-right" style="vertical-align: middle !important;">{{ frappe.utils.fmt_money(sub_total,
+                currency=doc.currency) }}</td>
+        </tr>
+        {% if total.update({"grand_total": total["grand_total"] + sub_total })%}{% endif %}
+        {% endfor %}
+        <tr>
+            <td class="text-center" colspan="3">Total Quantity</td>
+            <td class="text-center">{{ doc.get_formatted("total_qty") }}</td>
+            <td class="text-right">&nbsp;</td>
+            <td class="text-center">Total Amount</td>
+            <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
+        </tr>
+    </table>
+
+    <table style="width: 100%;font-size: inherit;margin-top:10px">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 38%">
+        <col style="width: 34%">
+        <tr>
+            <td colspan="4" class="text-right">
+                {{ total["grand_total"]|in_words }}
+            </td>
+        </tr>
+        <tr>
+            <td>Receivable Balance</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.get_formatted("grand_total") }}</td>
+        </tr>
+        <tr>
+            <td>Down Payment</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.get_formatted("total_advance") }}</td>
+        </tr>
+        <tr>
+            <td>Remaining Receivable</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.get_formatted("outstanding_amount") }}</td>
+        </tr>
+        <tr>
+            <td>VA Number</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.va_number or "" }}</td>
+        </tr>
+    </table>
+</div>
