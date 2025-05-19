@@ -2,6 +2,14 @@
 // For license information, please see license.txt
 intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.QuotationController)
 
+frappe.ui.form.on("Quotation", {
+    discount_percent(frm) {
+		frm.doc.items.forEach((item) => {
+			frappe.model.set_value(item.doctype, item.name, "discount_percentage", frm.doc.discount_percent || 0)
+		});
+	}
+})
+
 intan_pariwara.selling.QuotationController = class QuotationController extends intan_pariwara.selling.SellingController {
 	party_name(doc) {
 		var me = this;

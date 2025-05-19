@@ -160,7 +160,11 @@ def make_sales_return(source_name, target_doc=None):
 			item.against_srr = return_request.name
 			item.srr_detail = request_item[0].name
 			item.warehouse = request_item[0].warehouse
-		else:
+		
+		if not request_item or not item.qty:
 			non_request_item.append(item)
+
+	for r in non_request_item:
+		target_doc.remove(r)			
 
 	return target_doc

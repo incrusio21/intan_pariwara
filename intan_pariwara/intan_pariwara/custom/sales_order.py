@@ -12,8 +12,8 @@ from frappe.utils import cstr, flt
 from erpnext.selling.doctype.sales_order.sales_order import get_requested_item_qty
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults
-from erpnext.stock.get_item_details import get_bin_details, get_price_list_rate
-from intan_pariwara.utils.data import get_bin_item as get_detail_bin
+from erpnext.stock.get_item_details import get_price_list_rate
+from intan_pariwara.utils.data import get_bin_details, get_bin_with_request
 
 class SalesOrder:
 	def __init__(self, doc, method):
@@ -95,9 +95,7 @@ class SalesOrder:
 		
 		def get_bin_item(item_code, warehouse):
 			# cek bin warehouse
-			projected_qty = get_bin_details(
-				item_code, warehouse, self.doc.company, True
-			).get("projected_qty", 0)
+			projected_qty = get_bin_details(item_code, warehouse).get("projected_qty", 0)
 
 			# jumlahkan dengan stock entry dgn in_transit = 1
 			ste = frappe.qb.DocType("Stock Entry")
@@ -116,6 +114,7 @@ class SalesOrder:
 					(ste.company == self.doc.company) &
 					(ste_item.item_code == item_code)
 				)
+				.for_update()
 			).run()[0][0]
 
 			if remaining_transit:
@@ -127,7 +126,7 @@ class SalesOrder:
 				if w == warehouse:
 					continue
 
-				bin_w = get_detail_bin(item_code, w)
+				bin_w = get_bin_with_request(item_code, w)
 				projected = bin_w.get('projected_qty', 0) - bin_w.get('request_qty', 0)
 				if projected > 0:
 					t_projected.setdefault(w, projected)
@@ -230,9 +229,7 @@ def make_material_request(source_name, target_doc=None, set_warehouse=None, need
 			if needed_item else get_remaining_qty(source)
 		
 		target.stock_qty = flt(target.qty) * flt(target.conversion_factor)
-		target.actual_qty = get_bin_details(
-			target.item_code, target.warehouse, source_parent.company, True
-		).get("actual_qty", 0)
+		target.actual_qty = get_bin_details(target.item_code, target.warehouse).get("actual_qty", 0)
 
 		args = target.as_dict().copy()
 		args.update(
@@ -300,7 +297,7 @@ def create_pick_list(source_name, target_doc=None):
 
 		target.qty = qty_to_be_picked
 		target.stock_qty = qty_to_be_picked * flt(source.conversion_factor)
-		bin_detail =  get_detail_bin(target.item_code, target.warehouse)
+		bin_detail =  get_bin_with_request(target.item_code, target.warehouse)
 		target.actual_qty = bin_detail.get("actual_qty", 0)
 		target.projected_qty = bin_detail.get("projected_qty", 0)
 		target.reserved_qty = bin_detail.get("reserved_qty", 0)

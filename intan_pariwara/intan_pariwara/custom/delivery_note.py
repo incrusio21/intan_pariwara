@@ -21,9 +21,9 @@ def update_bin_siplah(self, method):
 	for d in self.items:
 		filters = {"item_code": d.item_code, "customer": customer, "branch": self.branch,"warehouse": d.warehouse}
 		if not frappe.db.exists("Bin Advance Siplah", filters):
-			frappe.throw(f"""Customer {self.customer} of an Item {bold(self.item_code)} 
+			frappe.throw(f"""Customer {self.customer} of an Item {bold(d.item_code)} 
 				has stock of quantity in the
-				warehouse {self.warehouse}""")
+				warehouse {d.warehouse}""")
 
 		frappe.get_doc("Bin Advance Siplah", filters, for_update=1).update_item_qty()
 
@@ -105,6 +105,8 @@ def make_sales_invoice(source_name, target_doc=None, args=None):
 	returned_qty_map = get_returned_qty_map(source_name)
 	invoiced_qty_map = get_invoiced_qty_map(source_name)
 
+	from intan_pariwara.intan_pariwara.custom.sales_invoice import SalesInvoice
+
 	def set_missing_values(source, target):
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
@@ -127,9 +129,10 @@ def make_sales_invoice(source_name, target_doc=None, args=None):
 		if target.company_address:
 			target.update(get_fetch_values("Sales Invoice", "company_address", target.company_address))
 
+		SalesInvoice(target, "validate")
+
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = to_make_invoice_qty_map[source_doc.name]
-		target_doc.discount_account = source_parent.rebate_account_from
 		
 		# if source_doc.serial_no and source_parent.per_billed > 0 and not source_parent.is_return:
 		# 	target_doc.serial_no = get_delivery_note_serial_no(

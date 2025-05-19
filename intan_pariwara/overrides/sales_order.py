@@ -74,6 +74,9 @@ class SalesOrder(AccountsController, SalesOrder):
         if self.custom_no_siplah:
             get_transaction_details(self.custom_no_siplah, json.dumps(self.siplah_json), self)
 
+        self.append_taxes_from_item_tax_template()
+        self.calculate_taxes_and_totals()
+        
     @frappe.whitelist()
     def update_siplah_table(self):
         if self.custom_no_siplah:

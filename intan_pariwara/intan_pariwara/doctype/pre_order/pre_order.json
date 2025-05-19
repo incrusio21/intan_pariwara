@@ -51,10 +51,11 @@
   "price_list_currency",
   "plc_conversion_rate",
   "ignore_pricing_rule",
-  "items_section",
+  "section_break_cokw",
   "scan_barcode",
   "discount_percent",
   "discount_percent_rebate",
+  "items_section",
   "items",
   "sec_break23",
   "total_qty",
@@ -1352,12 +1353,16 @@
    "label": "% Request",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cokw",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-18 11:33:01.359993",
+ "modified": "2025-05-02 16:06:28.737015",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",

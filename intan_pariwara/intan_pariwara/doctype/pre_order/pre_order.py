@@ -24,6 +24,7 @@ class PreOrder(AccountsController, SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.set_child_wharehouse()
 		self.set_customer_mobile_no()
+		self.set_down_payment()
 
 		if self.items:
 			self.with_items = 1
@@ -32,6 +33,13 @@ class PreOrder(AccountsController, SellingController):
 
 		make_packing_list(self)
 	
+	def set_down_payment(self):
+		match self.uang_muka:
+			case "Tanpa Uang Muka" | "Dengan Prosentase":
+				return
+			case "Dengan Nominal":
+				self.prosentase_uang_muka = flt(self.nominal_uang_muka / self.grand_total * 100, self.precision("prosentase_uang_muka"))
+
 	def set_customer_mobile_no(self):
 		if self.contact_person:
 			return

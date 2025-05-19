@@ -110,8 +110,13 @@ def execute(filters=None):
 			key = (sle.voucher_type, sle.voucher_no)
 			if key not in voucher_party:
 				party_type = "Customer" if sle.voucher_type in ["Delivery Note", "Sales Invoice"] else "Supplier"
-				party = frappe.get_value(sle.voucher_type, sle.voucher_no, scrub(party_type))
-				voucher_party.setdefault(key, {"party_type": party_type, "party": party})
+				field = [scrub(party_type)]
+				if party_type == "Customer":
+					field.append("relasi")
+
+				party = frappe.get_value(sle.voucher_type, sle.voucher_no, field, as_dict=1)
+
+				voucher_party.setdefault(key, {"party_type": party_type, "party": party.get('relasi') or party[scrub(party_type)]})
 
 			sle.update(voucher_party.get(key, {}))
 
@@ -192,7 +197,7 @@ def get_columns(filters):
 				"width": 100,
 				"options": "party_type",
 			},
-			{"label": _("Transaction Type"), "fieldname": "voucher_type", "width": 110, "hidden": 1},
+			{"label": _("Transaction Type"), "fieldname": "voucher_type", "width": 110},
 			{
 				"label": _("Transaction No"),
 				"fieldname": "voucher_no",

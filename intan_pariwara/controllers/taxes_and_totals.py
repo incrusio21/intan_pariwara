@@ -2,6 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 import frappe
+from frappe.modules import scrub
 from frappe.utils import flt
 from frappe.model.document import Document
 
@@ -18,6 +19,28 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
 
         get_round_off_applicable_accounts(self.doc.company, frappe.flags.round_off_applicable_accounts)
         self.calculate()
+
+    def initialize_taxes(self):
+        # tambahkan tax template jika tidak ada satupun tax
+        if not self.doc.taxes:
+            self.doc.append_taxes_from_item_tax_template()
+
+        super().initialize_taxes()
+               
+    def set_discount_amount(self):
+        if self.doc.customer[0] == "R" and \
+            self.doc.custom_calon_siplah == "Ya":
+
+            self.doc.discount_amount = frappe.get_cached_value("Company", self.doc.company, "default_siplah_discount") \
+                if not self.already_discount else 0.0
+                
+        if self.doc.additional_discount_percentage:
+            self.doc.discount_amount = flt(
+                flt(self.doc.get(scrub(self.doc.apply_discount_on)))
+                * self.doc.additional_discount_percentage
+                / 100,
+                self.doc.precision("discount_amount"),
+            )
 
     # update agar doctype pre order dianggap bagian dari penjualan
     def calculate_totals(self):
@@ -85,6 +108,10 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
             is_max_applied = self.doc.get("is_max_rebate_applied")
             is_fixed = self.doc.get("is_rebate_fixed")
             add_rebate_disc = self.doc.get("additional_rebate_disc") or 0
+
+            if is_fixed:
+                # memastikan default diskon dan rabate menjadi 0 
+                self.doc.discount_percent = self.doc.discount_percent_rebate = 0
 
             for item in self.doc.items:
                 self.doc.round_floats_in(item)

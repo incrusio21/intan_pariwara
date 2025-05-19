@@ -540,7 +540,10 @@ erpnext.PointOfOrder.Controller = class {
 				if (!item_code) return;
 				
 				if((this.frm.doc.items || []).length < 1){
-					await this.frm.set_value("produk_inti_type", produk_inti_type)
+					// memastikan tidak mengirim data string null
+					const has_produk_inti_type = produk_inti_type !== "null" && produk_inti_type !== null && produk_inti_type !== undefined;
+					await this.frm.set_value("produk_inti_type", has_produk_inti_type ? produk_inti_type : "")
+
 					this.item_selector.update_filtered_item({ price_list: this.frm.doc.selling_price_list })
 				}
 

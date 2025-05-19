@@ -70,6 +70,8 @@ def get_list_siplah(customer=None, relasi=None):
 @frappe.whitelist()
 def get_transaction_details(no_siplah, siplah_list, doc=None, docname=None):
 	
+	from erpnext.stock.get_item_details import get_item_tax_template, get_item_tax_map
+
 	if not doc and docname:
 		doc = frappe.get_doc("Sales Order", docname)
 
@@ -89,31 +91,51 @@ def get_transaction_details(no_siplah, siplah_list, doc=None, docname=None):
 	
 	pre_old_items = frappe.get_all("Pre Order Item", filters={"parent": doc.pre_order}, 
 		fields=[
-			"item_code", "item_name", "description", "price_list_rate", "uom", "warehouse",
-			"name as custom_pre_order_item", "parent as custom_pre_order"]) \
+			"item_code", "item_name", "description", "uom", "warehouse",
+			"name as custom_pre_order_item", "parent as custom_pre_order", "item_tax_template"]) \
 		if doc.pre_order else []
 	
 	pre_old_items_dict = {item.item_code: item for item in pre_old_items}
 
 	for sitems in siplah_items:
-		if (item := pre_old_items_dict.get(sitems['item_code'])):
-			# Update existing item
-			item.qty = sitems['qty']
-			item.rate = sitems['price']
-			item.delivery_date = doc.delivery_date
-			doc.append("items", item)
-		else:
-			# Create new item
-			doc.append("items", {
+		# Tax Conditions Price
+		item = frappe._dict()
+		
+		get_item_tax_template(
+			{ "company": doc.company }, 
+			frappe.get_cached_doc("Item", sitems['item_code']),
+			sitems
+		)
+
+		sitems["item_tax_rate"] = get_item_tax_map(
+			doc.company,
+			sitems["item_tax_template"],
+			False
+		)
+
+		for rate in sitems['item_tax_rate'].values():
+			sitems['price'] = sitems['price'] / (1 + (rate/100))
+			sitems['price_list_rate'] = sitems['price']
+
+		item.update(
+			pre_old_items_dict.get(sitems['item_code']) or 
+			{
 				"item_code": sitems["item_code"],
 				"item_name": sitems["item_name"],
 				"description": sitems["item_name"],  # Duplikasi item_name ke description
-				"rate": sitems["price"],
-				"price_list_rate": sitems["price_list_rate"],
-				"delivery_date": doc.delivery_date,
-				"uom": sitems["uom"],
-				"qty": sitems["qty"]
-			})
+				"uom": sitems["uom"]
+			}
+		)
+
+		item.qty = sitems['qty']
+		item.price_list_rate = sitems['price_list_rate']
+		item.rate = sitems['price']
+		item.item_tax_template = sitems['item_tax_template']
+		item.item_tax_rate = json.dumps(sitems['item_tax_rate'])
+		item.delivery_date = doc.delivery_date
+
+		# Create new item
+		doc.append("items", item)
 
 	doc.siplah_json = None
 	
@@ -136,12 +158,15 @@ def load_siplah_items(no_siplah, doc=None, docname=None):
 	doc.custom_no_siplah = no_siplah
 	doc.tabel_siplah_items = []
 	for sitems in siplah_items:
-		doc.append("tabel_siplah_items",{
+		doc.append("tabel_siplah_items",
+			{
 				"item_code": sitems["item_code"],
 				"item_name": sitems["item_name"],
 				"qty": sitems["qty"],
 				"rate": sitems["price"],
-			})
+			}
+		)
+		
 	doc.siplah_json = None
 
 	return doc
@@ -177,14 +202,16 @@ def get_siplah_items(no_siplah,price_list):
 			sku = t['sku'].split("_")[0]
 			uom = frappe.get_value("Item", sku, "stock_uom") or ""
 			item_name = frappe.get_value("Item", sku, "item_name") or None
+			rate = flt(t["price"])
+
 			list_items.append({
 				"item_code": sku,
 				"qty": t['qty'],
-				"price": flt(t['price']),
+				"price": rate,
 				"uom": uom,
 				"item_name": item_name or t['name'],
 				"description": t['name'],
-				"price_list_rate": flt(frappe.get_value("Item Price", {"item_code":sku,"price_list":price_list}, "price_list_rate")) or 0
+				"price_list_rate": rate or 0
 			})
 
 	return list_items
@@ -206,11 +233,12 @@ def get_va_number(doc,method):
 		response = requests.request("POST", url, headers=headers, data=payload)
 		make_log("POST", url, str(headers), str(payload), str(response.text))
 		if response.text and response.text != "":
-			try:
-				resp_content = json.loads(response.text)
-				doc.db_set("va_number", resp_content['virtual_account_number'])
-			except Exception as e:
-				raise e
+			if "virtual_account_number" in response.text:
+				try:
+					resp_content = json.loads(response.text)
+					doc.db_set("va_number", resp_content['virtual_account_number'])
+				except Exception as e:
+					frappe.throw("VA Number API Error")
 		else:
 			frappe.throw("VA Number API Error")
 
@@ -226,7 +254,7 @@ def make_log(req_type, url, headers, payload, response, token=None, token_exp=No
 		doc.token = token
 	if token_exp:
 		doc.token_exp = token_exp
-	doc.save(ignore_permissions=True)
+	doc.insert(ignore_permissions=True)
 
 def is_token_expired():
 

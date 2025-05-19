@@ -14,7 +14,7 @@ intan_pariwara.sales_common = {
                 var me = this;
 
                 me.frm.set_query("relasi", function(doc){
-                    let filter = {}
+                    let filter = {"custom_kab_kota": doc.kab_kota}
                     if(doc.doctype != "Quotation"){
                         if(!doc.relasi_group){
                             frappe.throw("Please Set Customer Group in Doctype Jenis Relasi First")
@@ -128,6 +128,14 @@ intan_pariwara.sales_common = {
                 });
 			}
 
+            payment_date(doc){
+                if(!doc.payment_date) return
+
+                if((doc.payment_schedule || []).length == 1){
+                    doc.payment_schedule[0].due_date = doc.payment_date
+                    this.frm.refresh_field("payment_schedule")
+                }
+            }
 
             item_code(doc, cdt, cdn) {
                 var me = this;

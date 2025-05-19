@@ -11,9 +11,17 @@ class SalesInvoice:
         self.doc = doc
         self.method = method
 
-        if self.method == "before_submit":
-            self.validate_fund_source_account()
-            self.validate_bad_debt()
+        match self.method:
+            case "validate":
+                self.validate_fund_source_account() 
+            case "before_submit":
+                self.validate_bad_debt()
+            case "on_submit":
+                self.create_and_delete_rebate()
+            case "on_cancel":
+                self.create_and_delete_rebate()
+            case "on_trash":
+                self.create_and_delete_rebate()
 
     def validate_fund_source_account(self):
         if not self.doc.fund_source:
@@ -43,6 +51,8 @@ class SalesInvoice:
                 "discount_account": discount_account,
             })
 
+        self.doc.additional_discount_account = discount_account
+
     def validate_bad_debt(self):
         date_before_bad_debt = date_diff(self.doc.due_date, None)
         if date_before_bad_debt >= 0:
@@ -51,34 +61,34 @@ class SalesInvoice:
         self.doc.bad_debt = 1
         self.doc.bad_debt_days = abs(date_before_bad_debt)
 
-def create_and_delete_rebate(self, method):
-    if not self.apply_rebate:
-        return
-    
-    rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doctype, "voucher_no": self.name}, pluck="name")
-    for rle in rle_list:
-        doc = frappe.get_doc("Rebate Ledger Entry", rle)
-        if method == "on_cancel":
-            doc.is_cancelled = 1
-            doc.save()
-        if method == "on_trash":
-            doc.delete()
-            
-    if method == "on_submit":
-        if not (self.rebate_account_from and self.rebate_account_to):
-            frappe.throw("Select Rebate Account First")
+    def create_and_delete_rebate(self):
+        if not self.doc.apply_rebate:
+            return
+        
+        rle_list = frappe.get_list("Rebate Ledger Entry", filters={"voucher_type": self.doc.doctype, "voucher_no": self.doc.name}, pluck="name")
+        for rle in rle_list:
+            doc = frappe.get_doc("Rebate Ledger Entry", rle)
+            if self.method == "on_cancel":
+                doc.is_cancelled = 1
+                doc.save()
+            if self.method == "on_trash":
+                doc.delete()
+                
+        if self.method == "on_submit":
+            if not (self.doc.rebate_account_from and self.doc.rebate_account_to):
+                frappe.throw("Select Rebate Account First")
 
-        from intan_pariwara.intan_pariwara.doctype.rebate_ledger_entry.rebate_ledger_entry import make_rebate_ledger_entry
+            from intan_pariwara.intan_pariwara.doctype.rebate_ledger_entry.rebate_ledger_entry import make_rebate_ledger_entry
 
-        make_rebate_ledger_entry(
-            self.company,
-            self.doctype,
-            self.name,
-            self.posting_date,
-            self.rebate_account_from,
-            self.rebate_account_to,
-            self.rebate_total,
-        )
+            make_rebate_ledger_entry(
+                self.doc.company,
+                self.doc.doctype,
+                self.doc.name,
+                self.doc.posting_date,
+                self.doc.rebate_account_from,
+                self.doc.rebate_account_to,
+                self.doc.rebate_total,
+            )
 
 
 def update_bad_debt_sales_invoice():
