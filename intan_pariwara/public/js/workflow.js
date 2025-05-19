@@ -57,7 +57,8 @@ $.extend(frappe.ui.form.States.prototype, {
                                     {
                                         label: `Reason`,
                                         fieldname: "reason",
-                                        fieldtype: "Small Text",
+                                        fieldtype: d.reason_type,
+                                        options: d.master_reason,
                                         reqd: 1,
                                     },
                                 ],

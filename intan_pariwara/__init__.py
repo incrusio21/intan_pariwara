@@ -383,27 +383,8 @@ def _get_party_details(
 	shipping_address=None,
 	pos_profile=None,
 ):
-	from erpnext import get_company_currency
-
-	def set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype):
-		if doctype not in ["Pre Order", "POS Invoice", "Sales Invoice", "Purchase Invoice"]:
-			# not an invoice
-			return {party_type.lower(): party}
-
-		if party:
-			account = party_file.get_party_account(party_type, party, company)
-
-		account_fieldname = "debit_to" if party_type == "Customer" else "credit_to"
-		out = {
-			party_type.lower(): party,
-			account_fieldname: account,
-			"due_date": party_file.get_due_date(posting_date, party_type, party, company, bill_date),
-		}
-
-		return out
-	
 	party_details = frappe._dict(
-		set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype)
+		party_file.set_account_and_due_date(party, account, party_type, company, posting_date, bill_date, doctype)
 	)
 	party = party_details[party_type.lower()]
 	party = frappe.get_doc(party_type, party)
@@ -428,6 +409,7 @@ def _get_party_details(
 	party_file.set_contact_details(party_details, party, party_type)
 	party_file.set_other_values(party_details, party, party_type)
 	party_file.set_price_list(party_details, party, party_type, price_list, pos_profile)
+
 	if party_type == "Customer":
 		party_details["fund_source"] = "" if doctype == "Quotation" else party.get("custom_customer_fund_group")
 		# party_details.update({
