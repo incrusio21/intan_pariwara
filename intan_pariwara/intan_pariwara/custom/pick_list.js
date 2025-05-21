@@ -58,6 +58,8 @@ frappe.ui.form.on("Pick List", {
 				setters: {
 					company: frm.doc.company,
 					customer: frm.doc.customer,
+					customer_name: frm.doc.customer_name,
+					per_picked: "",
 				},
 				date_field: "transaction_date",
 				get_query_filters: get_query_filters,
