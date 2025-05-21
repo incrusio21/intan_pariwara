@@ -12,12 +12,12 @@ from erpnext.accounts import (
 	utils as acc_utils
 )
 from erpnext.selling.doctype.quotation import quotation
-from erpnext.stock import get_item_details
+from erpnext.stock import stock_balance, get_item_details
 
+from erpnext.controllers.status_updater import StatusUpdater
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
-from erpnext.controllers.status_updater import StatusUpdater
 
 def load_env():
 	"""Returns the intan pariwara env variable"""
@@ -479,7 +479,7 @@ def _get_party_details(
 
 	return party_details
 
-
+# fix parent percent jika link kosong
 def _update_percent_field_in_targets(self, args, update_modified=True):
 	"""Update percent field in parent transaction"""
 	if args.get("percent_join_field_parent"):
@@ -498,6 +498,7 @@ def _update_percent_field_in_targets(self, args, update_modified=True):
 				args["name"] = name
 				self._update_percent_field(args, update_modified)
 
+# tambahan account untuk uang muka untuk document dari sales order
 def update_reference_in_payment_entry(
 	d, payment_entry, do_not_save=False, skip_ref_details_update_for_pe=False, dimensions_dict=None
 ):
@@ -590,8 +591,41 @@ def update_reference_in_payment_entry(
 		payment_entry.save(ignore_permissions=True)
 	return row, update_advance_paid
 
+def get_indented_qty(item_code, warehouse):
+	# Ordered Qty is always maintained in stock UOM
+	inward_qty = frappe.db.sql(
+		"""
+		select sum(mr_item.stock_qty - mr_item.ordered_qty)
+		from `tabMaterial Request Item` mr_item, `tabMaterial Request` mr
+		where mr_item.item_code=%s and mr_item.warehouse=%s
+			and mr.material_request_type in ('Purchase', 'Manufacture', 'Customer Provided', 'Material Transfer')
+			and mr_item.stock_qty > mr_item.ordered_qty and mr_item.parent=mr.name
+			and mr.status!='Stopped' and mr.docstatus=1
+	""",
+		(item_code, warehouse),
+	)
+	inward_qty = flt(inward_qty[0][0]) if inward_qty else 0
+
+	outward_qty = frappe.db.sql(
+		"""
+		select sum(mr_item.stock_qty - mr_item.ordered_qty)
+		from `tabMaterial Request Item` mr_item, `tabMaterial Request` mr
+		where mr_item.item_code=%s and mr_item.warehouse=%s
+			and mr.material_request_type in ('Material Issue', 'Promotional Goods')
+			and mr_item.stock_qty > mr_item.ordered_qty and mr_item.parent=mr.name
+			and mr.status!='Stopped' and mr.docstatus=1
+	""",
+		(item_code, warehouse),
+	)
+	outward_qty = flt(outward_qty[0][0]) if outward_qty else 0
+
+	requested_qty = inward_qty - outward_qty
+
+	return requested_qty
+
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
 party_file._get_party_details = _get_party_details
 acc_utils.update_reference_in_payment_entry = update_reference_in_payment_entry
 StatusUpdater._update_percent_field_in_targets = _update_percent_field_in_targets
+stock_balance.get_indented_qty = get_indented_qty
