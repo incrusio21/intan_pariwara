@@ -105,6 +105,9 @@ fixtures = [
             ]
 		]
 	},
+    {
+		"dt": "Purpose Request"
+	},
 ]
 
 # Jinja
@@ -224,9 +227,6 @@ doc_events = {
 	},
     "Lead": {
         "validate": "intan_pariwara.intan_pariwara.custom.lead.set_annual_revenue_potensi"
-	},
-    "Pick List": {
-        "validate": "intan_pariwara.intan_pariwara.custom.pick_list.set_branch"
 	},
     "Payment Entry": {
 		"validate": "intan_pariwara.intan_pariwara.custom.payment_entry.set_reference_account_from",

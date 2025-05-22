@@ -64,7 +64,7 @@ intan_pariwara.stock.DeliveryNoteController = class DeliveryNoteController exten
             frappe.throw("Cant use Scan in Advance Delivery")
         }
 
-		const barcode_scanner = new intan_pariwara.utils.BarcodeScanner({frm:this.frm, purpose: "Delivery"});
+		const barcode_scanner = new intan_pariwara.utils.BarcodeScanner({ frm:this.frm, purpose: "Delivery"});
 		barcode_scanner.process_scan();
 	}
 }

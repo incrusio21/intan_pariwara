@@ -9,8 +9,23 @@ from frappe.utils import cstr
 
 BarcodeScanResult = dict[str, str | None]
 
+def get_qr_code_bundle(filters, purpose, is_ste=0):
+    if is_ste:
+        filters["packing_purpose"]  = ["in", frappe.get_all("Purpose Request", filters={"stock_entry_type": purpose}, pluck="name")]
+    else:
+        filters["packing_purpose"] = purpose
+
+    qr_bundle = frappe.db.get_value(
+        "Qr Code Packing Bundle",
+        filters,
+        ["name", "packing_list", "packing_purpose", "packing_docname"],
+        as_dict=True,
+    )
+
+    return qr_bundle
+
 @frappe.whitelist()
-def scan_qr_barcode(search_value: str, purpose : None | str =None) -> BarcodeScanResult:
+def scan_qr_barcode(search_value: str, purpose, is_ste: None | str =None) -> BarcodeScanResult:
     def set_cache(data: BarcodeScanResult):
         frappe.cache().set_value(f"intan_pariwara:barcode_scan:{search_value}", data, expires_in_sec=120)
 
@@ -21,12 +36,8 @@ def scan_qr_barcode(search_value: str, purpose : None | str =None) -> BarcodeSca
     if scan_data := get_cache():
         return scan_data
     
-    qr_bundle = frappe.db.get_value(
-        "Qr Code Packing Bundle",
-        {"data_qr": search_value, "status": "Not Used", "packing_purpose": purpose},
-        ["name", "packing_list", "packing_purpose", "packing_docname"],
-        as_dict=True,
-    )
+    qr_bundle = get_qr_code_bundle({"data_qr": search_value, "status": "Not Used"}, purpose, is_ste)
+
     if qr_bundle:
         qr_item = frappe.qb.DocType("Qr Code Bundle Item")
         item_qr_list = (
@@ -45,7 +56,6 @@ def scan_qr_barcode(search_value: str, purpose : None | str =None) -> BarcodeSca
         ).run(as_dict=True)
             
         return item_qr_list
-
 
     # search barcode no
     barcode_data = frappe.db.get_value(

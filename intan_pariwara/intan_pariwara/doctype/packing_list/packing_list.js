@@ -31,35 +31,20 @@ frappe.ui.form.on("Packing List", {
 
 	refresh: (frm) => {
 		if (frm.doc.docstatus == 1 && frm.doc.per_delivered < 100) {
-			if (frm.doc.purpose == "Delivery") {
-				frm.add_custom_button(
-					__("Delivery Note"),
-					() => {
-						frappe.model.open_mapped_doc({
-							method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_delivery_note",
-							frm: frm,
-							freeze: true,
-							freeze_message: __("Creating Delivery Note ..."),
-						});
-					},
-					__("Create")
-				);
-			}
+			frappe.db.get_value("Purpose Request", frm.doc.purpose, "request_to", (data) => {
+				if(!data.request_to){
+					frappe.throw(__("Please set Request To in document Purpose Request"))
+				}
 
-			if (in_list(["Material Transfer", "Siplah Titipan"], frm.doc.purpose)) {
+				var label = __(frm.doc.purpose)
 				frm.add_custom_button(
-					__("Material Transfer"),
+					label,
 					() => {
-						frappe.model.open_mapped_doc({
-							method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_stock_entry",
-							frm: frm,
-							freeze: true,
-							freeze_message: __("Creating Material Transfer ..."),
-						});
+						frm.trigger("make_" + frappe.scrub(data.request_to))
 					},
 					__("Create")
 				);
-			}
+			})
 		}
 	},
 
@@ -240,5 +225,23 @@ frappe.ui.form.on("Packing List", {
 		});
 
 		frm.set_value("total_qty", total_qty)
+	},
+
+	make_delivery_note(frm){
+		frappe.model.open_mapped_doc({
+			method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_delivery_note",
+			frm: frm,
+			freeze: true,
+			freeze_message: __("Creating Delivery Note ..."),
+		});
+	},
+
+	make_stock_entry(frm){
+		frappe.model.open_mapped_doc({
+			method: "intan_pariwara.intan_pariwara.doctype.packing_list.packing_list.make_stock_entry",
+			frm: frm,
+			freeze: true,
+			freeze_message: __("Creating Stock Entry ..."),
+		});
 	}
 });

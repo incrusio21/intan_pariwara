@@ -196,8 +196,10 @@ def make_material_request(source_name, target_doc=None, set_warehouse=None, need
 	requested_item_qty = get_requested_item_qty(source_name)
 
 	def postprocess(source, target):
+		target.purpose = "Purchase" if not set_warehouse else "Material Transfer"
+		target.set_material_request_type()
+
 		if set_warehouse:
-			target.material_request_type = "Material Transfer"
 			target.set_from_warehouse = set_warehouse
 
 		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
@@ -351,8 +353,9 @@ def create_pick_list(source_name, target_doc=None):
 		target_doc,
 	)
 
-	doc.purpose = "Delivery"
+	doc.custom_purpose = "Delivery"
 
+	doc.set_purpose()
 	doc.set_item_locations()
 
 	return doc

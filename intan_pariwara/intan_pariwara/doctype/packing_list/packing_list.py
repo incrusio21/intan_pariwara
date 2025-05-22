@@ -6,9 +6,10 @@ from collections import defaultdict
 
 import frappe
 from frappe import _, _dict
+from frappe.model.mapper import get_mapped_doc
 from frappe.model.naming import _generate_random_string
 from frappe.utils import cint, flt
-from frappe.query_builder.functions import Sum, Coalesce
+from frappe.query_builder.functions import Sum
 
 from frappe.model.document import Document
 
@@ -81,11 +82,14 @@ class PackingList(Document):
 	def validate_document(self):
 		"""Raises an exception if the (`Pick List`) status is not Submited"""
 		
-		if cint(frappe.db.get_value("Pick List", self.pick_list, "docstatus")) != 1:
+		pick_list = frappe.db.get_value("Pick List", self.pick_list, ["pick_list_type", "docstatus"], as_dict=1)
+		if cint(pick_list.docstatus) != 1:
 			frappe.throw(
 				_("A Packing List Slip can only be created for Submited Pick List.")
 			)
 
+		self.purpose = pick_list.pick_list_type
+	
 	def validate_case_nos(self):
 		"""Validate if case nos overlap. If they do, recommend next case no."""
 
@@ -353,24 +357,27 @@ def get_items(docname=None, purpose=None, used_item="[]"):
 		).orderby(doctype.idx)
 	)
 
-	if purpose in ["Material Transfer", "Siplah Titipan"]:
-		mr_item = frappe.qb.DocType("Material Request Item")
-		query = (
-			query.inner_join(mr_item)
-			.on(doctype.material_request_item == mr_item.name)
-			.select(
-				doctype.material_request.as_("reference"),
-				mr_item.from_warehouse,
-				mr_item.warehouse
+	# cek tujuan. jika ste maka dari mr dan jika dn maka dari so
+	rq_to = frappe.get_value("Purpose Request", purpose, "request_to")
+	match rq_to:
+		case "Stock Entry":
+			mr_item = frappe.qb.DocType("Material Request Item")
+			query = (
+				query.inner_join(mr_item)
+				.on(doctype.material_request_item == mr_item.name)
+				.select(
+					doctype.material_request.as_("reference"),
+					mr_item.from_warehouse,
+					mr_item.warehouse
+				)
 			)
-		)
-	elif purpose == "Delivery":
-		query = (
-			query.select(
-				doctype.sales_order.as_("reference"),
-				doctype.warehouse
+		case "Delivery Note":
+			query = (
+				query.select(
+					doctype.sales_order.as_("reference"),
+					doctype.warehouse
+				)
 			)
-		)
 
 	remaining_item = query.run(as_dict=1)
 	new_remaining = []
@@ -472,9 +479,6 @@ def make_delivery_note(source_name, target_doc=None, kwargs=None):
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None, kwargs=None):
-	from erpnext.stock.doctype.material_request.material_request import make_stock_entry
-	
-	
 	packing = frappe.get_doc("Packing List", source_name)
 	
 	all_table = (packing.items or []) + (packing.items_retail or [])
@@ -483,34 +487,63 @@ def make_stock_entry(source_name, target_doc=None, kwargs=None):
 	if not mr_dict:
 		frappe.throw("Packing List doesnt have reference")
 
-	target_doc = make_stock_entry(list(mr_dict)[0])
+	def set_missing_values(source, target):
+		target.stock_entry_type = frappe.get_value("Purpose Request", source.purpose, "stock_entry_type")
+		target.set_purpose_for_stock_entry()
+		
+		target.from_warehouse = source.set_from_warehouse
 
-	if packing.purpose == "Siplah Titipan":
-		target_doc.stock_entry_type = "Siplah Titipan"
-		target_doc.purpose = None
-		target_doc.set_purpose_for_stock_entry()
-	else:
-		target_doc.add_to_transit = 1
-		target_doc.custom_end_target = target_doc.to_warehouse
-		target_doc.to_warehouse = frappe.get_cached_value("Company", target_doc.company, "default_in_transit_warehouse")
+		if packing.purpose == "Material Transfer":
+			target.add_to_transit = 1
+			target.custom_end_target = target.set_warehouse
+			target.to_warehouse = frappe.get_cached_value("Company", target.company, "default_in_transit_warehouse")
+		else:
+			target.to_warehouse = source.set_warehouse
 
-	target_doc.items = []
-	# non_packing_item = []
-	# for item in target_doc.items:
-	# 	packing_item = packing.get("items", {"document_detail": item.material_request_item})
-	# 	if packing_item:
-	# 		remaining_qty = packing_item[0].qty - packing_item[0].get("delivered_qty", 0)
-	# 		if item.qty > remaining_qty:
-	# 			item.qty = remaining_qty
+		if target.purpose == "Material Issue":
+			target.from_warehouse = source.set_warehouse
+			target.to_warehouse = ""
 
-	# 		item.packing_list = packing.name
-	# 		item.packing_list_item = packing_item[0].name
-	# 		item.s_warehouse = packing_item[0].from_warehouse
-	# 		item.t_warehouse = packing_item[0].warehouse
-	# 	else:
-	# 		non_packing_item.append(item)
+		if source.job_card:
+			target.purpose = "Material Transfer for Manufacture"
 
-	# for r in non_packing_item:
-	# 	target_doc.remove(r)
+		if source.material_request_type == "Customer Provided":
+			target.purpose = "Material Receipt"
+
+		# target.set_transfer_qty()
+		# target.set_actual_qty()
+		# target.calculate_rate_and_amount(raise_error_if_no_rate=False)
+		
+		target.set_job_card_data()
+
+		if source.job_card:
+			job_card_details = frappe.get_all(
+				"Job Card", filters={"name": source.job_card}, fields=["bom_no", "for_quantity"]
+			)
+
+			if job_card_details and job_card_details[0]:
+				target.bom_no = job_card_details[0].bom_no
+				target.fg_completed_qty = job_card_details[0].for_quantity
+				target.from_bom = 1
+
+	target_doc = get_mapped_doc(
+		"Material Request",
+		list(mr_dict)[0],
+		{
+			"Material Request": {
+				"doctype": "Stock Entry",
+				"field_no_map": ["purpose"],
+				"validation": {
+					"docstatus": ["=", 1],
+					"material_request_type": [
+						"in",
+						["Material Transfer", "Material Issue", "Customer Provided", "Promotional Goods"],
+					],
+				},
+			}
+		},
+		target_doc,
+		set_missing_values,
+	)
 		
 	return target_doc

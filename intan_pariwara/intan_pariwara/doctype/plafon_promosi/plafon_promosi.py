@@ -32,9 +32,9 @@ class PlafonPromosi(Document):
 			frappe.qb.from_(ste)
 			.select((Sum(ste.total_outgoing_value) - Sum(ste.total_incoming_value)).as_("amount"))
 			.where(conditions)
-		).run(debug=1)[0][0]
+		).run(debug=1)[0][0] or 0
 	  
-		remaining_plafon = flt(self.plafon_promosi + total_promotional_plafon, self.precision("remaining_plafon"))
+		remaining_plafon = flt(self.plafon_promosi - total_promotional_plafon, self.precision("remaining_plafon"))
 		if remaining_plafon < 0:
 			frappe.throw("Promotional Plafon limit exceeded")
 		elif remaining_plafon > self.plafon_promosi:

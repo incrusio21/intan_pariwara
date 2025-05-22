@@ -15,10 +15,10 @@
   "purpose",
   "reference",
   "column_break1",
+  "company",
   "petugas_packing",
   "nama_petugas",
   "warehouse",
-  "amended_from",
   "section_break0",
   "column_break2",
   "from_case_no",
@@ -42,7 +42,8 @@
   "letter_head",
   "more_info_tab",
   "status_section",
-  "per_delivered"
+  "per_delivered",
+  "amended_from"
  ],
  "fields": [
   {
@@ -212,12 +213,11 @@
   },
   {
    "default": "Delivery",
-   "fetch_from": "pick_list.purpose",
    "fieldname": "purpose",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Purpose",
-   "options": "Material Transfer\nDelivery\nSiplah Titipan"
+   "options": "Purpose Request"
   },
   {
    "fieldname": "section_break_oazc",
@@ -271,12 +271,21 @@
    "fieldtype": "Float",
    "label": "Total Eksemplar",
    "read_only": 1
+  },
+  {
+   "fetch_if_empty": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
+ "grid_page_length": 50,
  "icon": "fa fa-suitcase",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-21 16:08:06.290054",
+ "modified": "2025-05-21 15:22:18.533642",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Packing List",
@@ -354,6 +363,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "search_fields": "pick_list",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

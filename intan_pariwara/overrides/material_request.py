@@ -8,6 +8,13 @@ from frappe.utils import flt
 from erpnext.stock.doctype.material_request.material_request import MaterialRequest
 
 class MaterialRequest(MaterialRequest):
+    def validate(self):
+        self.set_material_request_type()
+        super().validate()
+
+    def set_material_request_type(self):
+        self.material_request_type = frappe.db.get_value("Purpose Request", self.purpose, "purpose")
+
     def update_picking_status(self):
         total_picked_qty = 0.0
         total_qty = 0.0

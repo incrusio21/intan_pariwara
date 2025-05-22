@@ -6,6 +6,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 		// frappe.flags.trigger_from_barcode_scanner is used for custom scripts
 
 		this.purpose = opts.purpose || ""
+		this.is_ste = opts.is_ste || 0
 		this.args = opts.args || {}
 
 		// field from which to capture input of scanned data
@@ -88,6 +89,7 @@ intan_pariwara.utils.BarcodeScanner = class BarcodeScanner {
 				args: {
 					search_value: input,
 					purpose: this.purpose,
+					is_ste: this.is_ste,
 					...this.args
 				},
 			})
