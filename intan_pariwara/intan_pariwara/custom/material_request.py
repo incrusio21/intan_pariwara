@@ -45,7 +45,9 @@ def make_packing_list(source_name, target_doc=None):
 def create_pick_list(source_name, target_doc=None):
     
     def postprocess(source, target):
-        target.parent_warehouse = source.set_from_warehouse
+        target.parent_warehouse = source.set_from_warehouse \
+            if source.material_request_type == "Material Transfer" else \
+            source.set_warehouse
 
     def update_item_quantity(source, target, source_parent) -> None:
         qty_to_be_picked = flt(source.stock_qty) - flt(source.picked_qty)
@@ -69,7 +71,10 @@ def create_pick_list(source_name, target_doc=None):
         {
             "Material Request": {
                 "doctype": "Pick List",
-                "field_map": {"material_request_type": "purpose"},
+                "field_map": {
+                    "purpose": "pick_list_type",
+                    "material_request_type": "purpose"
+                },
                 "validation": {"docstatus": ["=", 1]},
             },
             "Material Request Item": {

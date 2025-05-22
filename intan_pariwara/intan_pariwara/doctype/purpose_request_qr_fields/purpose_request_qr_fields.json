@@ -1,0 +1,45 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-22 09:51:57.135244",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fieldname",
+  "column_break_oocx",
+  "ref_fieldname"
+ ],
+ "fields": [
+  {
+   "fieldname": "fieldname",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Fieldname"
+  },
+  {
+   "fieldname": "column_break_oocx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ref_fieldname",
+   "fieldtype": "Autocomplete",
+   "in_list_view": 1,
+   "label": "Ref Fieldname"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-22 10:21:14.111939",
+ "modified_by": "Administrator",
+ "module": "Intan Pariwara",
+ "name": "Purpose Request Qr Fields",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

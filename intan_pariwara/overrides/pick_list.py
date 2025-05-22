@@ -14,9 +14,37 @@ from intan_pariwara.utils.data import get_bin_with_request
 
 class PickList(PickList):
     def validate(self):
+        self.set_purpose()
+        self.set_branch()
         self.get_actual_qty()
         super().validate()
-    
+
+    def get_purpose_request(self):
+        if not getattr(self, "_purpose_request", None):
+            self._purpose_request = frappe.get_cached_doc("Purpose Request", self.pick_list_type)
+
+        if not self._purpose_request:
+            frappe.throw("Please set Purpose to Qr Code Bundling first")
+
+        return self._purpose_request
+        
+    def set_purpose(self):
+        self.purpose = self.get_purpose_request().get("pick_list_purpose")
+
+    def set_branch(self):
+        pr = self.get_purpose_request()
+        doctype = ref_field = fields = ""
+        match pr.request_to:
+            case "Delivery Note":
+                doctype, ref_field, fields = "Sales Order", self.locations[0].sales_order, "branch"
+            case "Stock Entry": 
+                doctype, ref_field, fields = "Material Request", self.material_request, "custom_branch"
+
+        if not (doctype and ref_field and fields):
+            frappe.throw("No reference documents exist for these items.")
+            
+        self.branch = frappe.get_value(doctype, ref_field, fields)
+
     def _get_pick_list_items(self, items):
         pi = frappe.qb.DocType("Pick List")
         pi_item = frappe.qb.DocType("Pick List Item")

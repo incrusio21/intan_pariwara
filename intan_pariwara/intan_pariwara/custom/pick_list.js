@@ -4,6 +4,14 @@ frappe.ui.form.off("Pick List", "material_request")
 frappe.ui.form.off("Pick List", "add_get_items_button")
 frappe.ui.form.on("Pick List", {
     refresh: function (frm) {
+		frm.set_query("pick_list_type", () => {
+			return {
+				filters: {
+					on_pick_list: 1,
+				},
+			};
+		});
+
         if (frm.doc.docstatus == 1) {
 			if (
 				frm.doc.status !== "Completed" &&
@@ -29,6 +37,13 @@ frappe.ui.form.on("Pick List", {
 		frm.remove_custom_button(__("Delivery Note"), __("Create"));
 		frm.remove_custom_button(__("Stock Entry"),__("Create"));
     },
+	pick_list_type: function (frm) {
+		if(!frm.doc.custom_purpose) return
+
+		frappe.db.get_value("Purpose Request", frm.doc.custom_purpose, "purpose", (data) => {
+			frm.set_value("purpose", data.pick_list_purpose)
+		})
+	},
 	material_request: (frm) => {
 		frm.clear_table("locations")
 		

@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from erpnext.accounts.utils import get_fiscal_year
 from frappe.model.mapper import get_mapped_doc
+from intan_pariwara.utils.qr_code import get_qr_code_bundle
 
 BarcodeScanResult = dict[str, str | None]
 
@@ -97,13 +98,10 @@ def validasi_siplah_titipan(self, method=None):
             frappe.throw("Usage of item from Material Reqest {} is restricted due to Pre Order {}".format(mr, po))
 
 @frappe.whitelist()
-def scan_qr_barcode(search_value: str, material_transfer: str, purpose : None | str =None) -> BarcodeScanResult:
-    qr_bundle = frappe.db.get_value(
-        "Qr Code Packing Bundle",
-        {"data_qr": search_value, "status": "Transit", "packing_purpose": purpose},
-        ["name", "packing_list", "packing_purpose", "packing_docname"],
-        as_dict=True,
-    )
+def scan_qr_barcode(search_value: str, material_transfer: str, purpose) -> BarcodeScanResult:
+    # di pakai untuk transit  
+    qr_bundle = get_qr_code_bundle({"data_qr": search_value, "status": "Transit"}, purpose, 1)
+
     if qr_bundle:
         qr_item = frappe.qb.DocType("Qr Code Bundle Item")
         ste_item = frappe.qb.DocType("Stock Entry Detail")
@@ -183,13 +181,14 @@ def make_stock_in_entry(source_name, target_doc=None):
     return doclist
 
 @frappe.whitelist()
-def detail_item_request(item, from_warehouse=None, to_warehouse=None):
+def detail_item_request(item, purpose, from_warehouse=None, to_warehouse=None):
     ress = {}
     fields = []
-    if not from_warehouse:
-        fields.append("from_warehouse as s_warehouse")
-
-    if not to_warehouse:
+    
+    if purpose in ["Material Transfer", "Material Issue"] and not from_warehouse:
+        fields.append("from_warehouse as s_warehouse" if purpose == "Material Transfer" else "warehouse as s_warehouse")
+    
+    if purpose in ["Material Transfer"] and not to_warehouse:
         fields.append("warehouse as t_warehouse")
 
     if fields:

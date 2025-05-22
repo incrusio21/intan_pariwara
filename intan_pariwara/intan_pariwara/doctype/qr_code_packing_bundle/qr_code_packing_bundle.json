@@ -92,10 +92,10 @@
   },
   {
    "fieldname": "packing_purpose",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Packing Purpose",
    "no_copy": 1,
-   "options": "Material Transfer\nDelivery\nSiplah Titipan",
+   "options": "Purpose Request",
    "read_only": 1
   },
   {
@@ -166,9 +166,10 @@
    "read_only": 1
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-09 09:01:13.522578",
+ "modified": "2025-05-21 11:58:33.657370",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Qr Code Packing Bundle",
@@ -187,6 +188,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

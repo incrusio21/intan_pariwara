@@ -1,0 +1,180 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-22 10:24:23.397333",
+  "name": "Material Transfer",
+  "on_material_request": 1,
+  "on_pick_list": 1,
+  "pick_list_purpose": "Material Transfer",
+  "purpose": "Material Transfer",
+  "qr_code_reference": "Material Request",
+  "reference": [
+   {
+    "fieldname": "branch",
+    "parent": "Material Transfer",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "custom_branch"
+   },
+   {
+    "fieldname": "set_warehouse",
+    "parent": "Material Transfer",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "set_warehouse"
+   }
+  ],
+  "request_to": "Stock Entry",
+  "same_purpose": 1,
+  "stock_entry_type": "Material Transfer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-22 10:28:24.310013",
+  "name": "Delivery",
+  "on_material_request": 0,
+  "on_pick_list": 1,
+  "pick_list_purpose": "Delivery",
+  "purpose": "",
+  "qr_code_reference": "Sales Order",
+  "reference": [
+   {
+    "fieldname": "branch",
+    "parent": "Delivery",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "branch"
+   },
+   {
+    "fieldname": "destination",
+    "parent": "Delivery",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "customer_name"
+   },
+   {
+    "fieldname": "destination_code",
+    "parent": "Delivery",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "customer"
+   },
+   {
+    "fieldname": "dropship_to",
+    "parent": "Delivery",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "relasi"
+   }
+  ],
+  "request_to": "Delivery Note",
+  "same_purpose": 0,
+  "stock_entry_type": null
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-22 10:29:06.944044",
+  "name": "Siplah Titipan",
+  "on_material_request": 1,
+  "on_pick_list": 1,
+  "pick_list_purpose": "Material Transfer",
+  "purpose": "Material Transfer",
+  "qr_code_reference": "Pre Order",
+  "reference": [
+   {
+    "fieldname": "branch",
+    "parent": "Siplah Titipan",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "branch"
+   },
+   {
+    "fieldname": "destination",
+    "parent": "Siplah Titipan",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "customer_name"
+   },
+   {
+    "fieldname": "destination_code",
+    "parent": "Siplah Titipan",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "customer"
+   },
+   {
+    "fieldname": "dropship_to",
+    "parent": "Siplah Titipan",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "relasi"
+   }
+  ],
+  "request_to": "Stock Entry",
+  "same_purpose": 1,
+  "stock_entry_type": "Siplah Titipan"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-22 10:29:56.343573",
+  "name": "Promotional Goods",
+  "on_material_request": 1,
+  "on_pick_list": 1,
+  "pick_list_purpose": "Material Issue",
+  "purpose": "Material Issue",
+  "qr_code_reference": "Material Request",
+  "reference": [
+   {
+    "fieldname": "branch",
+    "parent": "Promotional Goods",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "custom_branch"
+   },
+   {
+    "fieldname": "set_warehouse",
+    "parent": "Promotional Goods",
+    "parentfield": "reference",
+    "parenttype": "Purpose Request",
+    "ref_fieldname": "set_warehouse"
+   }
+  ],
+  "request_to": "Stock Entry",
+  "same_purpose": 1,
+  "stock_entry_type": "Issue of Promotional Goods"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-21 13:24:09.225124",
+  "name": "Purchase",
+  "on_material_request": 1,
+  "on_pick_list": 0,
+  "pick_list_purpose": null,
+  "purpose": "Purchase",
+  "qr_code_reference": null,
+  "reference": [],
+  "request_to": "Purchase Order",
+  "same_purpose": 0,
+  "stock_entry_type": null
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Purpose Request",
+  "modified": "2025-05-21 14:11:10.022459",
+  "name": "Material Issue",
+  "on_material_request": 1,
+  "on_pick_list": 0,
+  "pick_list_purpose": "",
+  "purpose": "Material Issue",
+  "qr_code_reference": null,
+  "reference": [],
+  "request_to": "Stock Entry",
+  "same_purpose": 0,
+  "stock_entry_type": "Material Issue"
+ }
+]

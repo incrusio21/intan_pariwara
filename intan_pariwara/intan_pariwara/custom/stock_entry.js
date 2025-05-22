@@ -8,6 +8,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         frappe.call({
             method: "intan_pariwara.intan_pariwara.custom.stock_entry.detail_item_request",
             args:{
+                purpose: frm.doc.purpose,
                 from_warehouse: frm.doc.from_warehouse,
                 to_warehouse: frm.doc.to_warehouse,
                 item: item.material_request_item
@@ -28,8 +29,9 @@ cur_frm.cscript.scan_barcode = function(){
     frappe.flags.dialog_set = false;
     var opts = {}
     if(!this.frm.doc.outgoing_stock_entry){
-        opts = { document_name_field: "material_request", document_detail_field: "material_request_item" }
+        opts = { document_name_field: "material_request", document_detail_field: "material_request_item", is_ste: 1 }
     }else{
+        // khusus transit
         opts = { 
             scan_api: "intan_pariwara.intan_pariwara.custom.stock_entry.scan_qr_barcode",
             document_name_field: "against_stock_entry", document_detail_field: "ste_detail",
@@ -41,7 +43,7 @@ cur_frm.cscript.scan_barcode = function(){
 
     const barcode_scanner = new intan_pariwara.utils.BarcodeScanner({
         frm: this.frm, 
-        purpose: this.frm.doc.stock_entry_type, 
+        purpose: this.frm.doc.stock_entry_type,
         ...opts
     });
 

@@ -12,7 +12,7 @@ from erpnext.accounts import (
 	utils as acc_utils
 )
 from erpnext.selling.doctype.quotation import quotation
-from erpnext.stock import stock_balance, get_item_details
+from erpnext.stock import get_item_details
 
 from erpnext.controllers.status_updater import StatusUpdater
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
@@ -591,41 +591,8 @@ def update_reference_in_payment_entry(
 		payment_entry.save(ignore_permissions=True)
 	return row, update_advance_paid
 
-def get_indented_qty(item_code, warehouse):
-	# Ordered Qty is always maintained in stock UOM
-	inward_qty = frappe.db.sql(
-		"""
-		select sum(mr_item.stock_qty - mr_item.ordered_qty)
-		from `tabMaterial Request Item` mr_item, `tabMaterial Request` mr
-		where mr_item.item_code=%s and mr_item.warehouse=%s
-			and mr.material_request_type in ('Purchase', 'Manufacture', 'Customer Provided', 'Material Transfer')
-			and mr_item.stock_qty > mr_item.ordered_qty and mr_item.parent=mr.name
-			and mr.status!='Stopped' and mr.docstatus=1
-	""",
-		(item_code, warehouse),
-	)
-	inward_qty = flt(inward_qty[0][0]) if inward_qty else 0
-
-	outward_qty = frappe.db.sql(
-		"""
-		select sum(mr_item.stock_qty - mr_item.ordered_qty)
-		from `tabMaterial Request Item` mr_item, `tabMaterial Request` mr
-		where mr_item.item_code=%s and mr_item.warehouse=%s
-			and mr.material_request_type in ('Material Issue', 'Promotional Goods')
-			and mr_item.stock_qty > mr_item.ordered_qty and mr_item.parent=mr.name
-			and mr.status!='Stopped' and mr.docstatus=1
-	""",
-		(item_code, warehouse),
-	)
-	outward_qty = flt(outward_qty[0][0]) if outward_qty else 0
-
-	requested_qty = inward_qty - outward_qty
-
-	return requested_qty
-
 get_item_details.get_basic_details = get_basic_details
 quotation._make_sales_order = _make_sales_order
 party_file._get_party_details = _get_party_details
 acc_utils.update_reference_in_payment_entry = update_reference_in_payment_entry
 StatusUpdater._update_percent_field_in_targets = _update_percent_field_in_targets
-stock_balance.get_indented_qty = get_indented_qty

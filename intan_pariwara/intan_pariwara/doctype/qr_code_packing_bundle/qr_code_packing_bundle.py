@@ -69,17 +69,25 @@ class QrCodePackingBundle(Document):
 		if db_update:
 			self.db_update()
 
+	def get_purpose_request(self):
+		if not getattr(self, "_purpose_request", None):
+			self._purpose_request = frappe.get_cached_doc("Purpose Request", self.packing_purpose)
+
+		if not self._purpose_request:
+			frappe.throw("Please set Purpose to Qr Code Bundling first")
+
+		return self._purpose_request
+
 	def get_prev_doc_detail(self):
-		doctype = "Sales Order"
-		if self.packing_purpose == "Delivery":
-			fields = ["branch", "customer_name as destination", "customer as destination_code", "relasi as dropship_to"]
-		
-		elif self.packing_purpose == "Material Transfer":
-			fields = ["custom_branch as branch", "set_warehouse"]
-			doctype = "Material Request"
-		elif self.packing_purpose == "Siplah Titipan":
-			fields = ["branch", "customer_name as destination", "customer as destination_code", "relasi as dropship_to"]
-			doctype = "Pre Order"
+		pr = self.get_purpose_request()
+		doctype, fields = pr.qr_code_reference, []
+
+		for ref in pr.reference:
+			fields.append(f"{ref.ref_fieldname} as {ref.fieldname}")
+
+		# cuma memastikan setting sudah di tambahkan
+		if not (doctype and fields):
+			frappe.throw("Please set Docfield to Qr Code Bundling first")
 
 		document = self.reference or (self.items[0].document_name if self.items else self.items_retail[0].document_name)
 		if ref_doc := frappe.get_value(doctype, document, fields, as_dict=1):
@@ -91,15 +99,23 @@ class QrCodePackingBundle(Document):
 			self.dropship_name = frappe.get_cached_value("Customer", ref_doc.dropship_to, "customer_name") if ref_doc.get("dropship_to") else ""
 
 	def get_item_detail(self):
+		pr = self.get_purpose_request()
+
 		self.items = []
 
 		doctype = frappe.qb.DocType(PACKING_TABLE[self.is_retail])
 		pick_list = frappe.qb.DocType("Pick List Item")
 
-		document_name, document_detail = "sales_order", "sales_order_item"
-		if self.packing_purpose in ["Siplah Titipan", "Material Transfer"]:
-			document_name, document_detail = "material_request", "material_request_item"
+		document_name = document_detail = "" 
+		match pr.request_to:
+			case "Delivery Note":
+				document_name = document_detail = "sales_order", "sales_order_item"
+			case "Stock Entry": 
+				document_name, document_detail = "material_request", "material_request_item"
 		
+		if not (document_name and document_detail):
+			frappe.throw("No reference documents exist for these items.")
+
 		query = (
 			frappe.qb.from_(doctype)
 			.inner_join(pick_list)

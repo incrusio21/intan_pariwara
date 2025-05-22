@@ -179,7 +179,9 @@ def make_material_request(source_name, target_doc=None):
 	requested_item_qty = get_requested_item_qty(source_name)
 
 	def postprocess(source, target):
-		target.material_request_type = "Siplah Titipan"
+		target.purpose = "Siplah Titipan"
+		target.set_material_request_type()
+		
 		target.schedule_date = source.delivery_date
 		if source.tc_name and frappe.db.get_value("Terms and Conditions", source.tc_name, "buying") != 1:
 			target.tc_name = None

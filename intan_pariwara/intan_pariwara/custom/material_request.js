@@ -4,6 +4,14 @@
 frappe.ui.form.off("Material Request", "make_custom_buttons")
 frappe.ui.form.on("Material Request", {
     refresh: function (frm) {
+		frm.set_query("purpose", () => {
+			return {
+				filters: {
+					on_material_request: 1,
+				},
+			};
+		});
+
         // if (frm.doc.docstatus == 1 && frm.doc.status != "Stopped" 
         //     && frm.doc.material_request_type === "Material Transfer"
         //     && flt(frm.doc.per_packing, precision) < 100) {
@@ -19,7 +27,7 @@ frappe.ui.form.on("Material Request", {
         //         );
         // }
     },
-
+	
     make_custom_buttons: function (frm) {
 		if (frm.doc.docstatus == 0) {
 			frm.add_custom_button(
@@ -44,23 +52,25 @@ frappe.ui.form.on("Material Request", {
 						__("Create")
 					);
 				};
+				
+				frappe.db.get_value("Purpose Request", frm.doc.purpose, "on_pick_list", (data) => {
+					if (data.on_pick_list) {
+						add_create_pick_list_button();
+						// frm.add_custom_button(
+						// 	__("Material Transfer"),
+						// 	() => frm.events.make_stock_entry(frm),
+						// 	__("Create")
+						// );
+	
+						// frm.add_custom_button(
+						// 	__("Material Transfer (In Transit)"),
+						// 	() => frm.events.make_in_transit_stock_entry(frm),
+						// 	__("Create")
+						// );
+					}
+				})
 
-				if (in_list(["Material Transfer", "Siplah Titipan"], frm.doc.material_request_type)) {
-					add_create_pick_list_button();
-					// frm.add_custom_button(
-					// 	__("Material Transfer"),
-					// 	() => frm.events.make_stock_entry(frm),
-					// 	__("Create")
-					// );
-
-					// frm.add_custom_button(
-					// 	__("Material Transfer (In Transit)"),
-					// 	() => frm.events.make_in_transit_stock_entry(frm),
-					// 	__("Create")
-					// );
-				}
-
-				if (frm.doc.material_request_type === "Material Issue") {
+				if (frm.doc.purpose === "Material Issue") {
 					frm.add_custom_button(
 						__("Issue Material"),
 						() => frm.events.make_stock_entry(frm),
@@ -123,5 +133,13 @@ frappe.ui.form.on("Material Request", {
 		if (frm.doc.docstatus == 1 && frm.doc.status == "Stopped") {
 			frm.add_custom_button(__("Re-open"), () => frm.events.update_status(frm, "Submitted"));
 		}
+	},
+
+	purpose: function (frm) {
+		if(!frm.doc.purpose) return
+
+		frappe.db.get_value("Purpose Request", frm.doc.purpose, "purpose", (data) => {
+			frm.set_value("material_request_type", data.purpose)
+		})
 	}
 })
