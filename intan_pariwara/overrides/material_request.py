@@ -20,16 +20,16 @@ class MaterialRequest(MaterialRequest):
         total_qty = 0.0
         per_picked = 0.0
 
-        total_packed = frappe._dict(frappe.db.sql("""
-            SELECT material_request_item, SUM(qty) 
+        total_picked = frappe._dict(frappe.db.sql("""
+            SELECT material_request_item, SUM(picked_qty) 
                 FROM `tabPick List Item` 
                 WHERE material_request = %(detail_id)s AND docstatus = 1
                 Group By material_request_item
             """, {"detail_id": self.name}))
         
         for mr_item in self.items:
-            # Update packed_qty langsung ke database
-            mr_item.db_set("picked_qty", total_packed.get(mr_item.name) or 0)
+            # Update picked_qty langsung ke database
+            mr_item.db_set("picked_qty", total_picked.get(mr_item.name) or 0)
 
             total_picked_qty += flt(mr_item.picked_qty) if mr_item.stock_qty > mr_item.picked_qty else flt(mr_item.stock_qty)
             total_qty += flt(mr_item.stock_qty)

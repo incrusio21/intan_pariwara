@@ -46,6 +46,7 @@ page_js = {"print" : "public/js/print.js"}
 doctype_js = {
     "Customer" : "intan_pariwara/custom/customer.js",
     "Delivery Note" : "intan_pariwara/custom/delivery_note.js",
+    "Delivery Trip" : "intan_pariwara/custom/delivery_trip.js",
     "Journal Entry" : "intan_pariwara/custom/journal_entry.js",
     "Material Request" : "intan_pariwara/custom/material_request.js",
     "Pick List" : "intan_pariwara/custom/pick_list.js",
@@ -222,6 +223,10 @@ doc_events = {
 		# "before_validate": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 		# "before_cancel": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 	},
+    "Delivery Trip": {
+        "on_submit": "intan_pariwara.intan_pariwara.custom.delivery_trip.update_used_delivery_note",
+        "on_cancel": "intan_pariwara.intan_pariwara.custom.delivery_trip.update_used_delivery_note",
+	},
     "Item": {
         "validate": "intan_pariwara.intan_pariwara.custom.item.validate_produk_inti_type"
 	},
@@ -294,6 +299,7 @@ scheduler_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
+    "erpnext.buying.doctype.supplier_quotation.supplier_quotation.make_purchase_order": "intan_pariwara.intan_pariwara.custom.supplier_quotation.make_purchase_order",
 	"erpnext.selling.doctype.quotation.quotation.make_sales_order": "intan_pariwara.intan_pariwara.custom.quotation.make_sales_order",
 	"erpnext.selling.doctype.sales_order.sales_order.make_delivery_note": "intan_pariwara.intan_pariwara.custom.sales_order.make_delivery_note",
 	"erpnext.selling.doctype.sales_order.sales_order.create_pick_list": "intan_pariwara.intan_pariwara.custom.sales_order.create_pick_list",
