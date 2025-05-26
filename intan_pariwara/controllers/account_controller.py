@@ -2,6 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 import frappe
+from frappe import _
 from frappe.utils import cint, flt
 from frappe.query_builder import Criterion
 from frappe.query_builder.custom import ConstantColumn
@@ -202,6 +203,37 @@ class AccountsController:
         ):
             self.calculate_commission()
             self.calculate_contribution()
+
+    def calculate_contribution(self):
+        if not self.meta.get_field("sales_team"):
+            return
+
+        total = 0.0
+        sales_team = self.get("sales_team")
+
+        self.validate_sales_team(sales_team)
+
+        for sales_person in sales_team:
+            self.round_floats_in(sales_person)
+
+            sales_person.allocated_amount = flt(
+                flt(self.amount_eligible_for_commission) * sales_person.allocated_percentage / 100.0,
+                self.precision("allocated_amount", sales_person),
+            )
+
+            if not sales_person.commission_rate:
+                sales_person.commission_rate = frappe.get_value("Transaction Type Comission", {"parent": self.sales_person, "transaction_type": self.transaction_type}, "commission_rate")
+            
+            if sales_person.commission_rate:
+                sales_person.incentives = flt(
+                    sales_person.allocated_amount * flt(sales_person.commission_rate) / 100.0,
+                    self.precision("incentives", sales_person),
+                )
+
+            total += sales_person.allocated_percentage
+
+        if sales_team and total != 100.0:
+            frappe.throw(_("Total allocated percentage for sales team should be 100"))
 
 def get_advance_payment_entries(
     party_type,

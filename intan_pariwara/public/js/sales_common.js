@@ -363,6 +363,18 @@ intan_pariwara.sales_common = {
                 this.price_list_rate(doc, cdt, cdn)
             }
             
+            discount_percent(doc) {
+                doc.items.forEach((item) => {
+                    frappe.model.set_value(item.doctype, item.name, "discount_percentage", doc.discount_percent || 0)
+                });
+            }
+
+            discount_percent_rebate(doc) {
+                doc.items.forEach((item) => {
+                    frappe.model.set_value(item.doctype, item.name, "rebate", doc.discount_percent_rebate || 0)
+                });
+            }
+
             discount_percentage(doc, cdt, cdn) {
 				var item = frappe.get_doc(cdt, cdn);
                 if(!doc.apply_rebate && doc.is_max_rebate_applied && 

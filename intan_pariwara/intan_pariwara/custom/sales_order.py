@@ -52,15 +52,18 @@ class SalesOrder:
 			})
 
 	def validate_produk_inti(self):
-		is_smart = non_smart = False
+		is_smart = non_smart = no_discount = False
+
 		for d in self.doc.items:
-			if d.produk_inti_type == "Smartbook":
-				is_smart = True
-			else:
-				non_smart = True
+			is_smart |= d.produk_inti_type == "Smartbook"
+			non_smart |= d.produk_inti_type != "Smartbook"
+			no_discount |= not d.discount_amount
 
 			if is_smart and non_smart:
-				frappe.throw("There are Smartbook and Non-Smartbook items in a this transaction.")
+				frappe.throw("There are Smartbook and Non-Smartbook items in this transaction.")
+
+		if is_smart and no_discount:
+			frappe.msgprint("Item discounts in the table are currently set to 0%.")
 
 	def validate_negotiation(self):
 		if self.doc.get("__islocal") or self.doc.negotiations != "Yes":

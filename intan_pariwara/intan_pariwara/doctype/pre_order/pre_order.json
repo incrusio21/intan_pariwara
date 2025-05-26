@@ -11,11 +11,13 @@
   "naming_series",
   "customer",
   "customer_name",
+  "penanggung_jawab",
   "receivable_amount",
   "has_relation",
   "relasi_group",
   "relasi",
   "relasi_name",
+  "pj_relasi",
   "fund_source",
   "apply_rebate",
   "column_break_7",
@@ -28,10 +30,12 @@
   "sales_id",
   "negotiations",
   "produk_inti_type",
+  "poo_profile",
   "column_break1",
   "order_type",
   "company",
   "seller",
+  "seller_address",
   "delivery_date",
   "payment_date",
   "custom_calon_siplah",
@@ -1171,6 +1175,7 @@
   {
    "allow_on_submit": 1,
    "fetch_from": "branch.custom_default_warehouse",
+   "fetch_if_empty": 1,
    "fieldname": "set_warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
@@ -1357,12 +1362,40 @@
   {
    "fieldname": "section_break_cokw",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "poo_profile",
+   "fieldtype": "Link",
+   "label": "POE Profile",
+   "options": "POE Profile",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.custom_penanggung_jawab",
+   "fieldname": "penanggung_jawab",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Penanggung Jawab"
+  },
+  {
+   "fetch_from": "relasi.custom_penanggung_jawab",
+   "fieldname": "pj_relasi",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "PJ Relasi"
+  },
+  {
+   "fetch_from": "seller.address",
+   "fieldname": "seller_address",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Seller Address"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-02 16:06:28.737015",
+ "modified": "2025-05-24 08:53:43.361423",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Pre Order",
