@@ -434,7 +434,7 @@ erpnext.PointOfOrder.Controller = class {
 		return frappe.run_serially([
 			() => frappe.dom.freeze(),
 			() => this.make_sales_invoice_frm(),
-			// () => this.set_pos_profile_data(),
+			() => this.set_pos_profile_data(),
 			() => this.set_pos_profile_status(),
 			() => this.cart.load_invoice(),
 			() => frappe.dom.unfreeze(),
@@ -481,26 +481,27 @@ erpnext.PointOfOrder.Controller = class {
 			callback: (r) => {
 				frappe.model.sync(r.message);
 				frappe.get_doc(r.message.doctype, r.message.name).__run_link_triggers = false;
-				// this.set_pos_profile_data().then(() => {
+				this.set_pos_profile_data().then(() => {
 					frappe.dom.unfreeze();
-				// });
+				});
 			},
 		});
 	}
 
-	// set_pos_profile_data() {
-	// 	if (this.company && !this.frm.doc.company) this.frm.doc.company = this.company;
-	// 	if (
-	// 		(this.pos_profile && !this.frm.doc.pos_profile) |
-	// 		(this.frm.doc.is_return && this.pos_profile != this.frm.doc.pos_profile)
-	// 	) {
-	// 		this.frm.doc.pos_profile = this.pos_profile;
-	// 	}
+	set_pos_profile_data() {
+		this.frm.doc.company = this.company;
+		
+		if (
+			(this.poo_profile && !this.frm.doc.poo_profile) |
+			(this.frm.doc.is_return && this.poo_profile != this.frm.doc.poo_profile)
+		) {
+			this.frm.doc.poo_profile = this.poo_profile;
+		}
 
-	// 	if (!this.frm.doc.company) return;
+		if (!this.frm.doc.company) return;
 
-	// 	return this.frm.trigger("set_pos_data");
-	// }
+		return this.frm.trigger("set_pos_data");
+	}
 
 	set_pos_profile_status() {
 		this.page.set_indicator(this.poe_profile, "blue");

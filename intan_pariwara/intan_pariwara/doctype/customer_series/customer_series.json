@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "jenis_relasi",
+  "kabupaten",
   "kode_kab",
   "column_break_xncp",
   "current"
@@ -26,6 +27,7 @@
    "options": "Jenis Relasi"
   },
   {
+   "fetch_from": "kabupaten.custom_kode_kab",
    "fieldname": "kode_kab",
    "fieldtype": "Data",
    "in_standard_filter": 1,
@@ -34,11 +36,17 @@
   {
    "fieldname": "column_break_xncp",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "kabupaten",
+   "fieldtype": "Link",
+   "label": "Kabupaten",
+   "options": "Territory"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-24 14:43:44.466632",
+ "modified": "2025-05-23 14:17:42.505312",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Customer Series",
