@@ -12,12 +12,12 @@
         </tr>
         <tr>
             <td colspan="4">
-                {{ "-" }}
+                {{ frappe.db.get_value("Company", doc.company, "address") }}
             </td>
         </tr>
         <tr>
             <td colspan="4">
-                {{ "-" }}
+                {{ frappe.db.get_value("Company", doc.company, "phone_no") }}
             </td>
         </tr>
         <tr><td>&nbsp;</td></tr>
@@ -174,7 +174,7 @@
         <tr>
             <td>Ship To</td>
             <td>:</td>
-            <td colspan="2">{{ doc.address_display or "" }}</td>
+            <td colspan="2">{{ doc.shipping_address or "" }}</td>
         </tr>
         <tr>
             <td>Bill To</td>
