@@ -1,0 +1,143 @@
+<div>
+    <table style="width: 100%;font-size: inherit;">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 42%">
+        <col style="width: 30%">
+        <tr>
+            <td class="text-center uppercase" colspan="4">
+                <b>{{ "Intan Pariwara" }}</b>
+            </td>
+        </tr>
+        <tr>
+            {% set ad_comp = frappe.db.get_value("Company", doc.company, ["address","phone_no"], as_dict=1) %}
+            <td class="text-center" colspan="4">
+                {{ ad_comp.address or "" }}
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center" colspan="4">
+                {{ ad_comp.phone_no or "" }}
+            </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td class="text-center" colspan="4">
+                <b style="font-size: small;">PURCHASE RECEIPT</b>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center" colspan="4" style="border-bottom: 3px double #000;">
+                {{ doc.name }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        {% set po = frappe.db.get_all("Purchase Receipt Item", 
+            filters={"parent": doc.name }, pluck="purchase_order", group_by="purchase_order") %}
+        <tr>
+            <td>PO Number</td>
+            <td>:</td>
+            <td>{{ po|join(",") }}</td>
+            <td>To:</td>
+        </tr>
+        <tr>
+            <td>Receive Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.posting_date, "dd/MM/YYYY") }}</td>
+            <td>{{ doc.get_formatted("supplier_name") }}</td>
+        </tr>
+        <tr>
+            <td>GI Number From Supplier</td>
+            <td>:</td>
+            <td>{{ "" }}</td>        
+            {% set ad_cust = frappe.db.get_value("Supplier", doc.supplier, ["primary_address"], as_dict=1) %}
+            <td>
+                {% if ad_cust.primary_address %}
+                    {{ ad_cust.primary_address }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Purchase Receipt Date</td>
+            <td>:</td>
+            <td>{{ frappe.utils.formatdate(doc.posting_date, "dd/MM/YYYY") }}</td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered" style="width: 100%;font-size: inherit;">
+        <col style="width: 5%">
+        <col style="width: 19%">
+        <col style="width: 26%">
+        <col style="width: 10%">
+        <col style="width: 14%">
+        <col style="width: 14%">
+        <col style="width: 12%">
+        <tr>
+            <td class="text-center">No</td>
+            <td class="text-center">Item Code</td>
+            <td class="text-center">Item Name</td>
+            <td class="text-center">Qty PO</td>
+            <td class="text-center">Qty Received</td>
+            <td class="text-center">Qty Return</td>
+            <td class="text-center">UoM</td>
+        </tr>
+        {% set total = {"grand_total": 0 } %}
+        {% for d in doc.items %}
+        <tr>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.idx }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_code }}</td>
+            <td style="vertical-align: middle !important;">{{ d.item_name }}</td>
+            <td class="text-right" style="vertical-align: middle !important;"></td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("qty") }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ "" }}</td>
+            <td class="text-center" style="vertical-align: middle !important;">{{ d.get_formatted("stock_uom") }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <table style="width: 100%;font-size: inherit;margin-top:10px">
+        <col style="width: 25%">
+        <col style="width: 3%">
+        <col style="width: 38%">
+        <col style="width: 34%">
+        <tr>
+            <td>Total Qty</td>
+            <td>:</td>
+            <td colspan="2">{{ doc.get_formatted("total_qty") }}</td>
+        </tr>
+        <tr>
+            <td>Total Box</td>
+            <td>:</td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered" style="page-break-inside: avoid;width:100%; text-align:center; font-size:8pt">
+        <colgroup>
+            <col style="width:50%">
+            <col style="width:50%">
+        </colgroup>
+        <tbody>
+            <tr>
+                <td>Supplier Officer</td>
+                <td>IPV Officer</td>
+            </tr>
+            <tr>
+                <td><br><br><br><br>(TTD)</td>
+                <td><br><br><br><br>(TTD)</td>
+            </tr>
+            <tr>
+                <td>{{ "Supplier Person Name" }}</td>
+                <td>{{ "Warehouse Name" }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
