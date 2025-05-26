@@ -1309,10 +1309,12 @@ erpnext.PointOfOrder.ItemCart = class {
 			this.update_customer_section();
 		});
 
-		
-		this.events.item_selector_updated(
-			{ seller: frm.doc.seller, price_list : frm.doc.selling_price_list }
-		)
+		// memastikan tidak melakukan update ketika pertama kali page di buka
+		if(!frm.doc.__islocal){
+			this.events.item_selector_updated(
+				{ seller: frm.doc.seller, price_list : frm.doc.selling_price_list }
+			)
+		}
 		
 		this.$cart_items_wrapper.html("");
 		if (frm.doc.items.length) {

@@ -41,6 +41,7 @@ intan_pariwara.stock.DeliveryNoteController = class DeliveryNoteController exten
         this.frm.remove_custom_button(__("Sales Return"), __("Create"));
 
         if (doc.docstatus == 1 
+            && !doc.is_return
             && flt(doc.per_return_request, 2) < 100
             && frappe.model.can_create("Sales Return Request")) {
             this.frm.add_custom_button(

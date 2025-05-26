@@ -2,14 +2,17 @@
     @page
     {
         size: 100mm 73mm;
-        margin: 1mm 1mm 1mm 1mm;
+        margin-top: 2mm;
+        margin-bottom: 1mm;
+        margin-left: 1mm;
+        margin-right: 1mm;
     }
 </style>
 
 {% set items = get_item_per_koli(doc.items) %}
 {% for d in items %}
     {% set code = doc.transaction_date|string +";241217/YOSHC/S1;"+d.item_code+";"+doc.name+";"+d.qty|string+";2;"+loop.index|string %}
-    <div class="page-break" style="page-break-inside: avoid;margin-top: 3mm">
+    <div class="page-break" style="page-break-inside: avoid;margin-top: 2mm">
         <div style="display: flex;flex-direction: column;justify-content: space-between;height:68mm;width:98mm;border: 1px solid #000">
             <div style="display: flex;">
                 <div style="width: 40%">

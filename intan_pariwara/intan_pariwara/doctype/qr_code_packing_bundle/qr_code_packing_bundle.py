@@ -109,7 +109,7 @@ class QrCodePackingBundle(Document):
 		document_name = document_detail = "" 
 		match pr.request_to:
 			case "Delivery Note":
-				document_name = document_detail = "sales_order", "sales_order_item"
+				document_name, document_detail = "sales_order", "sales_order_item"
 			case "Stock Entry": 
 				document_name, document_detail = "material_request", "material_request_item"
 		

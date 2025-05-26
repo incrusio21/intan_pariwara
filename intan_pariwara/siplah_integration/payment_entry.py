@@ -1,6 +1,9 @@
-import frappe
 import json
+
+import frappe
+from frappe import unscrub
 from frappe.utils import flt, getdate
+
 """
 	SIPLAH will push No SIPLAH, Amount, and Costs (Deduction)
 	
@@ -17,29 +20,32 @@ from frappe.utils import flt, getdate
 	"""
 
 @frappe.whitelist()
-def post_payment(jumlah=None,tanggal=None,mop=None,no_siplah=None,biaya=None,sinv_name=None,customer=None, ref_no=None,va_number=None):
+def post_payment(
+	jumlah=None,
+	tanggal=None,
+	mop=None,
+	no_siplah=None,
+	biaya=None,
+	sinv_name=None,
+	customer=None, 
+	ref_no=None,
+	va_number=None
+):
 	
-	if not jumlah:
-		frappe.throw("Parameter Jumlah mandatory")
+	for param, name in {"jumlah":jumlah,"tanggal":tanggal,"mop":mop}.items():
+		if not param:
+			frappe.throw(f"Parameter {unscrub(name)} mandatory")
 
-	if not tanggal:
-		frappe.throw("Parameter Tanggal mandatory")
-
-	if not mop:
-		frappe.throw("Parameter MOP mandatory")
-
-	
 	body = frappe._dict({
-			"no_siplah": no_siplah,
-			"jumlah": jumlah,
-			"biaya": biaya,
-			"tanggal": tanggal,
-			"mop":mop,
-			"ref_no": ref_no or va_number or no_siplah,
-		})
+		"no_siplah": no_siplah,
+		"jumlah": jumlah,
+		"biaya": biaya,
+		"tanggal": tanggal,
+		"mop": mop,
+		"ref_no": ref_no or va_number or no_siplah,
+	})
 	
-	ref_doc_id = ""
-	ref_type = ""
+	ref_doc_id = ref_type = ""
 
 	# PE API
 	# 1. No SIPLAH : find Sales Invoice or Sales Order that linked with No SIPLAH
@@ -48,39 +54,28 @@ def post_payment(jumlah=None,tanggal=None,mop=None,no_siplah=None,biaya=None,sin
 
 	if no_siplah:
 		ref_doc_id, ref_type = get_sinv_siplah(no_siplah)
-
-	if ref_doc_id == "" and sinv_name:
-		ref_type = "Sales Invoice"
-		ref_doc_id = sinv_name
-
-	if ref_doc_id == "" and va_number:
-		if frappe.db.exists("Sales Invoice", {"va_number":va_number}, "name"):
+	elif sinv_name:
+		ref_doc_id, ref_type = sinv_name, "Sales Invoice"
+	elif va_number:
+		if frappe.db.exists("Sales Invoice", { "va_number": va_number}, "name"):
 			ref_type = "Sales Invoice"
-			ref_doc_id = frappe.get_value("Sales Invoice", {"va_number":va_number},"name")
-
-		if frappe.db.exists("Customer", {"va_number":va_number}, "name"):
-			customer = frappe.get_value("Customer", {"va_number":va_number}, "name")
+			ref_doc_id = frappe.get_value("Sales Invoice", {"va_number": va_number},"name")
+		elif frappe.db.exists("Customer", {"va_number": va_number}, "name"):
+			customer = frappe.get_value("Customer", {"va_number": va_number}, "name")
 
 	pe_dict = {}
 
-	if ref_doc_id:
-		pe_dict = create_payment_entry(body, ref_type=ref_type, ref_doc_id=ref_doc_id)
-
-	if ref_doc_id == "" and customer:
-		pe_dict = create_payment_entry(body, customer=customer)
-		
-	if ref_doc_id == "" and customer == "":
+	if ref_doc_id or customer:
+		pe_dict = create_payment_entry(body, ref_type, ref_doc_id, customer)
+	else:
 		frappe.throw("Tidak menemukan Customer atau Sales Invoice.")
 
 	return pe_dict or body
 
 def get_sinv_siplah(no_siplah):
-	if frappe.db.exists("Sales Invoice",{"no_siplah": no_siplah}):
-		return frappe.db.get_value("Sales Invoice",{"no_siplah":no_siplah},"name"),"Sales Invoice"
-
-	if frappe.db.exists("Sales Order",{"custom_no_siplah": no_siplah},"name"):
-		return frappe.db.get_value("Sales Order",{"custom_no_siplah":no_siplah},"name"), "Sales Order"
-
+	for doc, fieldname in [("Sales Invoice", "custom_no_siplah"), ("Sales Order", "custom_no_siplah")]:
+		if frappe.db.exists(doc, { fieldname: no_siplah }):
+			return frappe.db.get_value(doc, {fieldname: no_siplah}, "name"), doc
 
 	frappe.throw("No SIPLAH tidak ditemukan di Invoice/Order manapun.") 
 
@@ -161,4 +156,5 @@ def create_payment_entry(args, ref_type=None, ref_doc_id=None, customer=None):
 
 	pe.save()
 	pe.submit()
+	
 	return "Payment Entry {} berhasil terbentuk".format(pe.name)

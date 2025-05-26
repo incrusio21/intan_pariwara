@@ -22,6 +22,8 @@ intan_pariwara.utils.Transaction = class Transaction {
 
     set_target_warehouse(){
         var frm = this.frm
+        // jika advance skip get warehouse
+        if(frm.doc.is_advance) return
 
         frappe.call({
             method: "intan_pariwara.controllers.queries.get_default_warehouse",

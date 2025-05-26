@@ -488,14 +488,15 @@ def make_stock_entry(source_name, target_doc=None, kwargs=None):
 		frappe.throw("Packing List doesnt have reference")
 
 	def set_missing_values(source, target):
+		target.purpose = None
 		target.stock_entry_type = frappe.get_value("Purpose Request", source.purpose, "stock_entry_type")
 		target.set_purpose_for_stock_entry()
 		
 		target.from_warehouse = source.set_from_warehouse
 
-		if packing.purpose == "Material Transfer":
+		if target.stock_entry_type == "Material Transfer":
 			target.add_to_transit = 1
-			target.custom_end_target = target.set_warehouse
+			target.custom_end_target = source.set_warehouse
 			target.to_warehouse = frappe.get_cached_value("Company", target.company, "default_in_transit_warehouse")
 		else:
 			target.to_warehouse = source.set_warehouse

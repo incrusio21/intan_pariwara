@@ -49,17 +49,6 @@ frappe.ui.form.on("Pre Order", {
 	set_label: function (frm) {
 		frm.fields_dict.customer_address.set_label(__(frm.doc.quotation_to + " Address"));
 	},
-
-	discount_percent(frm) {
-		frm.doc.items.forEach((item) => {
-			frappe.model.set_value(item.doctype, item.name, "discount_percentage", frm.doc.discount_percent || 0)
-		});
-	},
-	discount_percent_rebate(frm) {
-		frm.doc.items.forEach((item) => {
-			frappe.model.set_value(item.doctype, item.name, "rebate", frm.doc.discount_percent_rebate || 0)
-		});
-	}
 });
 
 frappe.ui.form.on('Pre Order Item', {
@@ -95,6 +84,22 @@ intan_pariwara.selling.PreOrderController = class PreOrderController extends int
 		}
 
 		new intan_pariwara.utils.OtpVerified({ frm: this.frm });
+	}
+
+	poo_profile(frm) {
+		// if (!frm.pos_profile || frm.pos_profile == "") {
+		// 	this.update_customer_groups_settings([]);
+		// 	return;
+		// }
+
+		// frappe.call({
+		// 	method: "erpnext.selling.page.point_of_sale.point_of_sale.get_pos_profile_data",
+		// 	args: { pos_profile: frm.pos_profile },
+		// 	callback: ({ message: profile }) => {
+		// 		this.update_customer_groups_settings(profile?.customer_groups);
+		// 		this.frm.set_value("company", profile?.company);
+		// 	},
+		// });
 	}
 
 	make_material_request() {

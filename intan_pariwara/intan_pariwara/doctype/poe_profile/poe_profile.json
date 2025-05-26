@@ -93,8 +93,7 @@
    "label": "Warehouse",
    "oldfieldname": "warehouse",
    "oldfieldtype": "Link",
-   "options": "Warehouse",
-   "reqd": 1
+   "options": "Warehouse"
   },
   {
    "fieldname": "campaign",
@@ -345,7 +344,7 @@
  "icon": "icon-cog",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-20 10:14:25.024817",
+ "modified": "2025-05-16 14:23:35.232892",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "POE Profile",

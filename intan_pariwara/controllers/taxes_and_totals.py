@@ -28,13 +28,16 @@ class calculate_taxes_and_totals(calculate_taxes_and_totals):
         super().initialize_taxes()
                
     def set_discount_amount(self):
+        if not self.doc.get("customer"):
+            return
+
         if self.doc.customer[0] == "R" and \
             self.doc.custom_calon_siplah == "Ya":
 
             self.doc.discount_amount = frappe.get_cached_value("Company", self.doc.company, "default_siplah_discount") \
-                if not self.already_discount else 0.0
+                if not self.doc.get("already_discount") else 0.0
                 
-        if self.doc.additional_discount_percentage:
+        if self.doc.get("additional_discount_percentage"):
             self.doc.discount_amount = flt(
                 flt(self.doc.get(scrub(self.doc.apply_discount_on)))
                 * self.doc.additional_discount_percentage

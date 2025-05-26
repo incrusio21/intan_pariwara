@@ -16,14 +16,15 @@
         {% endif %}
         <tr>
             <td colspan="4">
-                {{ doc.seller }}
+                {{ doc.customer_name }}
             </td>
         </tr>
         <tr>
             <td colspan="4">
-                {{ seller.address or "" }}
-                <br>
-                {{ seller.mobile_no or "" }}
+                {% set ad_cust = frappe.db.get_value("Address", doc.customer_address, ["address_line1", "city", "state"], as_dict=1) %}
+                {% if ad_cust.address_line1 %}
+                    {{ ad_cust.address_line1 }} {{ ad_cust.city or "" }} {{ ad_cust.state or "" }}
+                {% endif %}
             </td>
         </tr>
         <tr><td>&nbsp;</td></tr>
@@ -50,7 +51,7 @@
             <td>Contact Number</td>
             <td>:</td>
             <td>{{ rl_cust.phone or "" }}</td>
-            <td>{{ doc.customer_name }}</td>
+            <td></td>
         </tr>
         
         <tr>
@@ -63,17 +64,14 @@
                 {% endif %}
             </td>
             <td>
-                {% set ad_cust = frappe.db.get_value("Address", doc.customer_address, ["address_line1", "city", "state"], as_dict=1) %}
-                {% if ad_cust.address_line1 %}
-                    {{ ad_cust.address_line1 }} {{ ad_cust.city or "" }} {{ ad_cust.state or "" }}
-                {% endif %}
+                
             </td>
         </tr>
         <tr>
             <td>Position</td>
             <td>:</td>
             <td>{{ "-" }}</td>
-            <td>{{ doc.contact_mobile or "" }}</td>
+            <td></td>
         </tr>
         <tr>
             <td>Date</td>

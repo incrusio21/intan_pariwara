@@ -10,6 +10,7 @@
   "details_section",
   "address",
   "mobile_no",
+  "logo",
   "section_break_ldeo",
   "only_buku",
   "exclude_buku"
@@ -47,11 +48,16 @@
    "fieldname": "mobile_no",
    "fieldtype": "Data",
    "label": "Mobile No"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-12 15:47:21.936970",
+ "modified": "2025-05-20 08:43:28.249422",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Seller",
