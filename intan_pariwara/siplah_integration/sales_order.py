@@ -109,7 +109,7 @@ def get_transaction_details(no_siplah, siplah_list, doc=None, docname=None):
 
 		sitems["item_tax_rate"] = get_item_tax_map(
 			doc.company,
-			sitems["item_tax_template"],
+			sitems.get("item_tax_template"),
 			False
 		)
 
@@ -130,7 +130,7 @@ def get_transaction_details(no_siplah, siplah_list, doc=None, docname=None):
 		item.qty = sitems['qty']
 		item.price_list_rate = sitems['price_list_rate']
 		item.rate = sitems['price']
-		item.item_tax_template = sitems['item_tax_template']
+		item.item_tax_template = sitems.get('item_tax_template')
 		item.item_tax_rate = json.dumps(sitems['item_tax_rate'])
 		item.delivery_date = doc.delivery_date
 
