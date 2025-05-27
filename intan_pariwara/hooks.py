@@ -224,6 +224,7 @@ doc_events = {
 		# "before_cancel": "intan_pariwara.intan_pariwara.custom.delivery_note.add_picking_list_to_status_updater",
 	},
     "Delivery Trip": {
+        "validate": "intan_pariwara.intan_pariwara.custom.delivery_trip.set_total_koli",
         "on_submit": "intan_pariwara.intan_pariwara.custom.delivery_trip.update_used_delivery_note",
         "on_cancel": "intan_pariwara.intan_pariwara.custom.delivery_trip.update_used_delivery_note",
 	},
