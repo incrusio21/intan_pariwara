@@ -25,6 +25,7 @@ frappe.ui.form.on("Delivery Trip", {
 								fieldtype:"Link",
 								label:__("Warehouse"),
 								fieldname:"set_warehouse",
+								options:"Warehouse"
 							},
 							{
 								fieldtype:"Small Text",
