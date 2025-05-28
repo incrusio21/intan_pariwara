@@ -12,12 +12,12 @@
         </tr>
         <tr>
             <td colspan="4">
-                {{ "-" }}
+                {{ frappe.db.get_value("Company", doc.company, "address") }}
             </td>
         </tr>
         <tr>
             <td colspan="4">
-                {{ "-" }}
+                {{ frappe.db.get_value("Company", doc.company, "phone_no") }}
             </td>
         </tr>
         <tr><td>&nbsp;</td></tr>
@@ -164,6 +164,26 @@
             <td class="text-center">Total Amount</td>
             <td class="text-right">{{ frappe.utils.fmt_money(total["grand_total"], currency=doc.currency) }}</td>
         </tr>
+        {% set taxes = {} %}
+        {% for t in doc.taxes %}
+            {% if t.description == "2149.001 - PPN Keluaran" %}
+                {%if taxes.update({"Vat 12% * 11/12": t.tax_amount }) %}{% endif %}
+            {% endif %}
+        {% endfor %}
+        {% for t_label, t_val in taxes.items() %}
+            <tr>
+                <td class="text-center" colspan="5" rowspan="2"></td>
+                <td class="text-center">{{ t_label }}</td>
+                <td class="text-right">{{ frappe.utils.fmt_money(t_val, currency=doc.currency) }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            {% if not taxes %}
+            <td class="text-center" colspan="5"></td>
+            {% endif %}
+            <td class="text-center">Grand Total</td>
+            <td class="text-right">{{ doc.get_formatted("grand_total") }}</td>
+        </tr>
     </table>
 
     <table style="width: 100%;font-size: inherit;margin-top:10px">
@@ -174,7 +194,7 @@
         <tr>
             <td>Ship To</td>
             <td>:</td>
-            <td colspan="2">{{ doc.address_display or "" }}</td>
+            <td colspan="2">{{ doc.shipping_address or "" }}</td>
         </tr>
         <tr>
             <td>Bill To</td>

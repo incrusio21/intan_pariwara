@@ -199,7 +199,7 @@ def make_material_request(source_name, target_doc=None, set_warehouse=None, need
 	requested_item_qty = get_requested_item_qty(source_name)
 
 	def postprocess(source, target):
-		target.purpose = "Purchase" if not set_warehouse else "Material Transfer"
+		target.purpose = "Purchase" if not set_warehouse else "Stock Transfer"
 		target.set_material_request_type()
 
 		if set_warehouse:
