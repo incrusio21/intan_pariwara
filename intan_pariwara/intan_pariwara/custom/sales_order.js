@@ -2,6 +2,10 @@
 // For license information, please see license.txt
 intan_pariwara.sales_common.setup_selling_controller(erpnext.selling.SalesOrderController)
 
+cur_frm.cscript.custom_refresh = function(doc){
+	cur_frm.events.should_load_siplah(cur_frm);
+}
+
 frappe.ui.form.off("Sales Order", "refresh")
 frappe.ui.form.on("Sales Order", {
     refresh: function (frm) {
@@ -98,13 +102,20 @@ frappe.ui.form.on("Sales Order", {
 			frm.set_df_property("reserve_stock", "description", null);
 		}
 
-		if (!frm.is_new() && (frm.doc.custom_no_siplah != "") || frm.doc.custom_no_siplah !== undefined){
+		
+	},
+	should_load_siplah(frm){
+		if ((!frm.is_new() && frm.doc.custom_no_siplah)){
 			frm.set_df_property("custom_no_siplah", "options", [frm.doc.custom_no_siplah]);
 			if (frm.doc.custom_no_siplah) frm.events.custom_no_siplah(frm);
 			if (frm.doc.docstatus == 1) frm.set_df_property("custom_no_siplah", "read_only", 1);
-			
+			frm.remove_custom_button("Load SIPLAH");	
 		} else {
-			frm.events.show_load_siplah(frm);
+			if (frm.doc.custom_calon_siplah == "Ya"){
+				frm.events.show_load_siplah(frm);	
+			} else {
+				frm.remove_custom_button("Load SIPLAH");
+			}
 		}
 	},
 	show_load_siplah(frm){
@@ -114,7 +125,8 @@ frappe.ui.form.on("Sales Order", {
 						"method":"intan_pariwara.siplah_integration.sales_order.get_list_siplah",
 						"args": {
 							"customer": frm.doc.customer,
-							"relasi": frm.doc.relasi
+							"relasi": frm.doc.relasi,
+							"company": frm.doc.company
 
 						},
 						callback:function(r){
@@ -148,7 +160,10 @@ frappe.ui.form.on("Sales Order", {
 		frm.set_df_property("custom_no_siplah", "options", []);	
 		frm.set_value("custom_no_siplah", "");
 		frm.clear_table("tabel_siplah_items");
-		frm.events.show_load_siplah(frm);
+		frm.events.should_load_siplah(frm);
+	},
+	company(frm){
+		frm.events.should_load_siplah(frm);
 	},
 	custom_no_siplah(frm){
 		if(!frm.doc.custom_no_siplah) {
