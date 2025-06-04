@@ -7,17 +7,19 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "naming_series",
   "sales_person",
+  "sales_id",
   "branch",
   "area",
   "regency_code",
   "from_date",
   "to_date",
   "column_break_ymej",
-  "naming_series",
   "item_code",
   "item_name",
   "item_group",
+  "supplier",
   "quarter",
   "target_amount",
   "target_qty"
@@ -105,11 +107,24 @@
    "fieldname": "target_qty",
    "fieldtype": "Float",
    "label": "Target Qty"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "sales_person.employee",
+   "fetch_if_empty": 1,
+   "fieldname": "sales_id",
+   "fieldtype": "Data",
+   "label": "Sales ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-27 10:17:11.452871",
+ "modified": "2025-05-27 16:26:03.047876",
  "modified_by": "Administrator",
  "module": "Intan Pariwara",
  "name": "Sales Target",

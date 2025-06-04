@@ -86,12 +86,12 @@
         <tr>
             <td>Expected Delivery Date</td>
             <td>:</td>
-            <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
+            <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
         </tr>
         <tr>
             <td>Expected Payment Date</td>
             <td>:</td>
-            <td>{{ frappe.utils.formatdate(doc.delivery_date, "dd/MM/YYYY") if doc.delivery_date else "" }}</td>
+            <td>{{ frappe.utils.formatdate(doc.payment_date, "dd/MM/YYYY") if doc.payment_date else "" }}</td>
         </tr>
         <tr>
             <td>Probable SIPLah</td>

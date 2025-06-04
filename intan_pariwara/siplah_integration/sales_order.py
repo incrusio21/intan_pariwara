@@ -7,7 +7,7 @@ from datetime import datetime
 from intan_pariwara import load_env
 
 @frappe.whitelist()
-def get_list_siplah(customer=None, relasi=None):
+def get_list_siplah(customer=None, relasi=None, company=None):
 
 	token, tokenExp = get_token()
 
@@ -18,11 +18,11 @@ def get_list_siplah(customer=None, relasi=None):
 		nss = frappe.get_value("Customer", customer, "custom_nss")
 		if not nss:
 
-			url = "{}/erp/v1/transactionsone/{}".format(load_env().BASE_URL,customer)
+			url = "{}/erp/v1/transactionsone/{}/{}".format(load_env().BASE_URL,customer,company)
 		else:
 			url = "{}/erp/v1/transactions/{}/{}".format(load_env().BASE_URL,relasi,nss)
 	else:
-		url = "{}/erp/v1/transactionsone/{}".format(load_env().BASE_URL,customer)
+		url = "{}/erp/v1/transactionsone/{}/{}".format(load_env().BASE_URL,customer,company)
 
 	headers = {
 		'Content-Type': 'application/json',
