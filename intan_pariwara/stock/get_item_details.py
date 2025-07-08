@@ -7,20 +7,30 @@ import json
 import frappe
 from frappe.utils import add_days, cint, cstr, flt
 
+from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.accounts.doctype.pricing_rule.pricing_rule import get_pricing_rule_for_item
 from erpnext.setup.doctype.brand.brand import get_brand_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from erpnext.stock.get_item_details import (
 	apply_price_list_on_item,
+	calculate_service_end_date,
+	get_conversion_factor,
 	get_default_bom,
+	get_default_cost_center,
+	get_default_discount_account,
+	get_default_expense_account,
+	get_default_income_account,
+	get_default_supplier,
 	get_gross_profit, 
 	get_item_tax_map, 
 	get_item_tax_template,
+	get_item_warehouse,
 	get_party_item_code,
 	get_pos_profile_item_details,
 	get_price_list_currency_and_exchange_rate,
-	get_price_list_rate, 
+	get_price_list_rate,
+	get_provisional_account, 
 	process_args, 
 	process_string_args,
 	remove_standard_fields,
@@ -28,7 +38,9 @@ from erpnext.stock.get_item_details import (
 	update_bin_details,
 	update_party_blanket_order,
 	update_stock, 
-	validate_item_details
+	validate_item_details,
+	sales_doctypes,
+	purchase_doctypes
 )
 
 @frappe.whitelist()
@@ -178,7 +190,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	if item.variant_of and not item.taxes and frappe.db.exists("Item Tax", {"parent": item.variant_of}):
 		item.update_template_tables()
 
-	item_defaults = get_item_details.get_item_defaults(item.name, args.company)
+	item_defaults = get_item_defaults(item.name, args.company)
 	item_group_defaults = get_item_group_defaults(item.name, args.company)
 	brand_defaults = get_brand_defaults(item.name, args.company)
 
@@ -190,7 +202,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 		}
 	)
 
-	warehouse = get_item_details.get_item_warehouse(item, args, overwrite_warehouse, defaults)
+	warehouse = get_item_warehouse(item, args, overwrite_warehouse, defaults)
 
 	if args.get("doctype") == "Material Request" and not args.get("material_request_type"):
 		args["material_request_type"] = frappe.db.get_value(
@@ -208,7 +220,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	# Set the UOM to the Default Sales UOM or Default Purchase UOM if configured in the Item Master
 	if not args.get("uom"):
-		if args.get("doctype") in get_item_details.sales_doctypes:
+		if args.get("doctype") in sales_doctypes:
 			args.uom = item.sales_uom if item.sales_uom else item.stock_uom
 		elif (args.get("doctype") in ["Purchase Order", "Purchase Receipt", "Purchase Invoice"]) or (
 			args.get("doctype") == "Material Request" and args.get("material_request_type") == "Purchase"
@@ -230,20 +242,20 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"description": cstr(item.description).strip(),
 			"image": cstr(item.image).strip(),
 			"warehouse": warehouse,
-			"income_account": get_item_details.get_default_income_account(
+			"income_account": get_default_income_account(
 				args, item_defaults, item_group_defaults, brand_defaults
 			),
 			"expense_account": expense_account
-			or get_item_details.get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults),
-			"discount_account": get_item_details.get_default_discount_account(
+			or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults),
+			"discount_account": get_default_discount_account(
 				args, item_defaults, item_group_defaults, brand_defaults
 			),
 			"custom_delivery_account": None,
-			"provisional_expense_account": get_item_details.get_provisional_account(
+			"provisional_expense_account": get_provisional_account(
 				args, item_defaults, item_group_defaults, brand_defaults
 			),
 			"produk_inti_type": item.produk_inti_type,
-			"cost_center": get_item_details.get_default_cost_center(args, item_defaults, item_group_defaults, brand_defaults),
+			"cost_center": get_default_cost_center(args, item_defaults, item_group_defaults, brand_defaults),
 			"has_serial_no": item.has_serial_no,
 			"has_batch_no": item.has_batch_no,
 			"batch_no": args.get("batch_no"),
@@ -282,18 +294,18 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 		}
 	)
 
-	default_supplier = get_item_details.get_default_supplier(args, item_defaults, item_group_defaults, brand_defaults)
+	default_supplier = get_default_supplier(args, item_defaults, item_group_defaults, brand_defaults)
 	if default_supplier:
 		out.supplier = default_supplier
 
 	if item.get("enable_deferred_revenue") or item.get("enable_deferred_expense"):
-		out.update(get_item_details.calculate_service_end_date(args, item))
+		out.update(calculate_service_end_date(args, item))
 
 	# calculate conversion factor
 	if item.stock_uom == args.uom:
 		out.conversion_factor = 1.0
 	else:
-		out.conversion_factor = args.conversion_factor or get_item_details.get_conversion_factor(item.name, args.uom).get(
+		out.conversion_factor = args.conversion_factor or get_conversion_factor(item.name, args.uom).get(
 			"conversion_factor"
 		)
 
@@ -302,7 +314,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	args.stock_qty = out.stock_qty
 
 	# calculate last purchase rate
-	if args.get("doctype") in get_item_details.purchase_doctypes and not frappe.db.get_single_value(
+	if args.get("doctype") in purchase_doctypes and not frappe.db.get_single_value(
 		"Buying Settings", "disable_last_purchase_rate"
 	):
 		from erpnext.buying.doctype.purchase_order.purchase_order import item_last_purchase_rate
@@ -348,7 +360,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	child_doctype = args.doctype + " Item"
 	meta = frappe.get_meta(child_doctype)
 	if meta.get_field("barcode"):
-		get_item_details.update_barcode_value(out)
+		update_barcode_value(out)
 
 	if out.get("weight_per_unit"):
 		out["total_weight"] = out.weight_per_unit * out.stock_qty

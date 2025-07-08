@@ -309,7 +309,7 @@ override_whitelisted_methods = {
 	"erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_purchase_invoice": "intan_pariwara.intan_pariwara.custom.purchase_receipt.make_purchase_invoice",
 	"erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry": "intan_pariwara.intan_pariwara.custom.stock_entry.make_stock_in_entry",
     "erpnext.stock.get_item_details.get_item_details": "intan_pariwara.stock.get_item_details.get_item_details",
-	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.stock.queries.apply_price_list",
+	"erpnext.stock.get_item_details.apply_price_list": "intan_pariwara.stock.get_item_details.apply_price_list",
     "frappe.model.mapper.map_docs": "intan_pariwara.model.mapper.map_docs",
 	"frappe.model.workflow.apply_workflow": "intan_pariwara.model.workflow.apply_workflow",
 	"frappe.model.workflow.get_transitions": "intan_pariwara.model.workflow.get_transitions",
